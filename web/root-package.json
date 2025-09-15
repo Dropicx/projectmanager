@@ -1,0 +1,39 @@
+{
+  "name": "consulting-platform",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "scripts": {
+    "dev": "turbo dev --filter=web",
+    "dev:all": "turbo dev",
+    "build": "turbo build",
+    "build:web": "turbo build --filter=web",
+    "build:ai": "turbo build --filter=@consulting-platform/ai",
+    "build:worker": "turbo build --filter=worker",
+    "start": "turbo start --filter=web",
+    "worker:start": "turbo start --filter=worker",
+    "lint": "turbo lint",
+    "type-check": "turbo type-check",
+    "db:push": "turbo db:push",
+    "db:migrate": "turbo db:migrate",
+    "db:studio": "turbo db:studio",
+    "test": "turbo test",
+    "test:e2e": "turbo test:e2e",
+    "deploy": "railway up",
+    "clean": "turbo clean"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.2.4",
+    "@types/node": "^24.4.0",
+    "turbo": "^2.5.6",
+    "typescript": "^5.9.2"
+  },
+  "packageManager": "pnpm@9.14.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
+}
