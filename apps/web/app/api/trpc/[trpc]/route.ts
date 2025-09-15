@@ -1,9 +1,8 @@
 import { fetchRequestHandler } from '@trpc/server/adapters/fetch'
 import { type NextRequest } from 'next/server'
 import { appRouter } from '@consulting-platform/api'
-import { db } from '@consulting-platform/database'
-import { AIOrchestrator } from '@consulting-platform/ai'
-import { auth } from '@clerk/nextjs'
+import { createContext } from '@consulting-platform/api/trpc/trpc'
+import { auth } from '@clerk/nextjs/server'
 
 const handler = (req: NextRequest) =>
   fetchRequestHandler({
@@ -14,13 +13,12 @@ const handler = (req: NextRequest) =>
       const { userId } = await auth()
       
       return {
+        ...createContext(),
         user: userId ? {
           id: userId,
           email: '', // This would be fetched from Clerk
           organizationId: '' // This would be fetched from user metadata
-        } : undefined,
-        db,
-        ai: new AIOrchestrator()
+        } : undefined
       }
     },
   })

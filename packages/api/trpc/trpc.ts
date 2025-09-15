@@ -3,11 +3,8 @@ import { z } from 'zod'
 import { db } from '@consulting-platform/database'
 import { AIOrchestrator } from '@consulting-platform/ai'
 
-// Initialize tRPC
-const t = initTRPC.create()
-
-export const router = t.router
-export const publicProcedure = t.procedure
+// Create AI orchestrator instance
+const aiOrchestrator = new AIOrchestrator()
 
 // Context type
 export interface Context {
@@ -19,6 +16,18 @@ export interface Context {
   db: typeof db
   ai: AIOrchestrator
 }
+
+// Initialize tRPC with context
+const t = initTRPC.context<Context>().create()
+
+export const router = t.router
+export const publicProcedure = t.procedure
+
+// Context creator
+export const createContext = (): Context => ({
+  db,
+  ai: aiOrchestrator
+})
 
 // Middleware for authentication
 const authMiddleware = t.middleware(({ ctx, next }) => {

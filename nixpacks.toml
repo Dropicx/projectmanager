@@ -9,3 +9,6 @@ cmds = ["pnpm build"]
 
 [start]
 cmd = "pnpm start"
+
+[providers]
+node = "22.11.0"

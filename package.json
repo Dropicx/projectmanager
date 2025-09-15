@@ -3,13 +3,15 @@
   "version": "1.0.0",
   "private": true,
   "engines": {
-    "node": ">=22.14.0",
+    "node": ">=22.0.0",
     "pnpm": ">=9.0.0"
   },
   "scripts": {
     "dev": "turbo dev --filter=@consulting-platform/web",
     "dev:all": "turbo dev",
     "build": "turbo build",
+    "build:web": "turbo build --filter=@consulting-platform/web",
+    "build:worker": "turbo build --filter=@consulting-platform/worker",
     "start": "turbo start",
     "worker:start": "turbo start --filter=@consulting-platform/worker",
     "lint": "turbo lint",
