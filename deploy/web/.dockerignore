@@ -1,0 +1,8 @@
+# Use root .dockerignore but from deploy/web perspective
+../../node_modules
+../../**/node_modules
+../../.git
+../../.env*
+../../**/.next
+../../**/dist
+../../**/build
