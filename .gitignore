@@ -2,12 +2,18 @@
 node_modules/
 .pnp
 .pnp.js
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
 
 # Production builds
 .next/
 out/
 dist/
 build/
+.turbo/
 
 # Environment variables
 .env
@@ -15,6 +21,7 @@ build/
 .env.development.local
 .env.test.local
 .env.production.local
+.env.*.local
 
 # Logs
 npm-debug.log*
@@ -22,6 +29,7 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+*.log
 
 # Runtime data
 pids
@@ -32,8 +40,6 @@ pids
 # Coverage directory used by tools like istanbul
 coverage/
 *.lcov
-
-# nyc test coverage
 .nyc_output
 
 # Dependency directories
@@ -42,9 +48,11 @@ jspm_packages/
 
 # TypeScript cache
 *.tsbuildinfo
+.tscache/
 
 # Optional npm cache directory
 .npm
+.pnpm-store/
 
 # Optional eslint cache
 .eslintcache
@@ -91,6 +99,9 @@ temp/
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
 .idea
 .DS_Store
 *.suo
@@ -102,9 +113,75 @@ temp/
 # Database
 *.db
 *.sqlite
+*.sqlite3
 
 # Redis dump
 dump.rdb
 
 # OS generated files
 Thumbs.db
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini
+
+# Railway
+.railway/
+
+# Vercel
+.vercel
+
+# Netlify
+.netlify
+
+# AWS
+.aws/
+
+# Docker
+.dockerignore
+Dockerfile
+docker-compose*.yml
+
+# Testing
+test-results/
+playwright-report/
+playwright/.cache/
+
+# AI/ML
+*.pkl
+*.model
+*.weights
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Lock files (keep pnpm-lock.yaml)
+package-lock.json
+yarn.lock
+
+# IDE
+*.swp
+*.swo
+*~
+
+# MacOS
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
