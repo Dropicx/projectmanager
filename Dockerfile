@@ -25,11 +25,15 @@ COPY . .
 
 # Build the specified service
 ARG SERVICE
+WORKDIR /app/web
 RUN if [ "$SERVICE" = "web" ]; then \
-        cd web && pnpm build; \
-    elif [ "$SERVICE" = "worker" ]; then \
-        cd worker && pnpm build; \
+        pnpm build; \
     fi
+WORKDIR /app/worker
+RUN if [ "$SERVICE" = "worker" ]; then \
+        pnpm build; \
+    fi
+WORKDIR /app
 
 # Production stage for web
 FROM node:22-alpine AS web-runner
