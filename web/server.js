@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
-const { execSync } = require('child_process');
+const { spawn } = require('child_process');
+const path = require('path');
 
 // Railway provides PORT as an environment variable
 const port = process.env.PORT || 3000;
@@ -11,16 +12,24 @@ console.log('PORT:', process.env.PORT);
 console.log('NODE_ENV:', process.env.NODE_ENV);
 console.log(`Starting Next.js server on ${host}:${port}...`);
 
-try {
-  // Use execSync to run Next.js with the correct port
-  execSync(`node ./node_modules/.bin/next start -H ${host} -p ${port}`, {
-    stdio: 'inherit',
-    env: {
-      ...process.env,
-      PORT: port.toString()
-    }
-  });
-} catch (error) {
+// Find the next binary
+const nextBin = path.join(__dirname, 'node_modules', '.bin', 'next');
+
+// Use spawn to run the Next.js server
+const child = spawn(nextBin, ['start', '-H', host, '-p', port], {
+  stdio: 'inherit',
+  env: {
+    ...process.env,
+    PORT: port.toString()
+  },
+  shell: true
+});
+
+child.on('error', (error) => {
   console.error('Failed to start server:', error);
   process.exit(1);
-}
+});
+
+child.on('exit', (code) => {
+  process.exit(code);
+});
