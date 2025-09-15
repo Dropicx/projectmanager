@@ -9,7 +9,8 @@ WORKDIR /app
 # Install pnpm
 RUN corepack enable && corepack prepare pnpm@9.14.0 --activate
 
-# Copy monorepo files from context (Railway will use repo root as context)
+# Copy monorepo files from context
+# When Railway sets root directory to /deploy/worker, paths are relative to repo root
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/worker/package.json ./apps/worker/
 COPY packages/ai/package.json ./packages/ai/

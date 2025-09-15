@@ -29,8 +29,8 @@ projectmanager/
 
 2. **Configure Build Settings**
    - Go to Settings → General
-   - **Root Directory**: `/deploy/web`
-   - **Dockerfile Path**: `./Dockerfile` (relative to root directory)
+   - **Root Directory**: Leave empty (use repo root)
+   - **Dockerfile Path**: `deploy/web/Dockerfile`
 
 3. **Environment Variables**
    ```
@@ -47,8 +47,8 @@ projectmanager/
 
 2. **Configure Build Settings**
    - Go to Settings → General
-   - **Root Directory**: `/deploy/worker`
-   - **Dockerfile Path**: `./Dockerfile` (relative to root directory)
+   - **Root Directory**: Leave empty (use repo root)
+   - **Dockerfile Path**: `deploy/worker/Dockerfile`
 
 3. **Environment Variables**
    ```
