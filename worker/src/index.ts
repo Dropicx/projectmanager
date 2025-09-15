@@ -2,8 +2,7 @@ import { Worker, Queue } from 'bullmq'
 import { Redis } from 'ioredis'
 import { CronJob } from 'cron'
 import { AIOrchestrator } from '@consulting-platform/ai'
-import { db } from '@consulting-platform/database'
-import { projects } from '@consulting-platform/database/schema'
+import { db, projects } from '@consulting-platform/database'
 import { eq } from 'drizzle-orm'
 
 // Redis connection
