@@ -2,11 +2,6 @@
 builder = "nixpacks"
 buildCommand = "pnpm install --frozen-lockfile && pnpm build"
 
-[deploy]
-startCommand = "pnpm start"
-healthcheckPath = "/api/health"
-healthcheckTimeout = 30
-
 # Web Service Configuration
 [[services]]
 name = "web"
