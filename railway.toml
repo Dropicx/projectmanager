@@ -1,8 +1,9 @@
 [build]
-builder = "nixpacks"
-buildCommand = "pnpm install --frozen-lockfile && pnpm build:web"
+builder = "dockerfile"
+dockerfilePath = "Dockerfile"
 
 [deploy]
-startCommand = "cd apps/web && node -e \"require('child_process').execSync('pnpm exec next start -H 0.0.0.0 -p ' + (process.env.PORT || 3000), {stdio: 'inherit'})\""
 healthcheckPath = "/api/health"
 healthcheckTimeout = 30
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
