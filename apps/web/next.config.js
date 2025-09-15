@@ -1,23 +1,16 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  turbopack: {
-    rules: {
-      '*.svg': {
-        loaders: ['@svgr/webpack'],
-        as: '*.js',
-      },
-    },
-  },
-  transpilePackages: [
-    '@consulting-platform/database',
-    '@consulting-platform/api',
-    '@consulting-platform/ui'
-  ],
+  reactStrictMode: true,
+  output: 'standalone',
+  // Allow Railway domain
   images: {
-    domains: ['uploadthing.com', 'images.clerk.dev'],
+    domains: ['web-production-871ac.up.railway.app'],
   },
-  env: {
-    CUSTOM_KEY: process.env.CUSTOM_KEY,
+  // Configure for production
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '2mb',
+    },
   },
 }
 

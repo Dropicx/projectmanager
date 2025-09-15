@@ -6,7 +6,6 @@ buildCommand = "pnpm install --frozen-lockfile && pnpm build:web"
 startCommand = "pnpm start --filter=@consulting-platform/web"
 healthcheckPath = "/api/health"
 healthcheckTimeout = 30
-port = 3000
 
 # Environment Variables
 [env]
