@@ -127,8 +127,8 @@ importers:
         specifier: ^3.1.6
         version: 3.5.0
       drizzle-orm:
-        specifier: ^0.38.2
-        version: 0.38.4(@neondatabase/serverless@0.10.4)(@types/pg@8.15.5)(@types/react@18.3.24)(postgres@3.4.7)(react@18.3.1)
+        specifier: ^0.36.4
+        version: 0.36.4(@neondatabase/serverless@0.10.4)(@types/pg@8.15.5)(@types/react@18.3.24)(postgres@3.4.7)(react@18.3.1)
       ioredis:
         specifier: ^5.4.1
         version: 5.7.0
@@ -186,8 +186,8 @@ importers:
         specifier: ^11.0.0
         version: 11.5.1(typescript@5.9.2)
       drizzle-orm:
-        specifier: ^0.38.2
-        version: 0.38.4(@neondatabase/serverless@0.10.4)(@types/pg@8.15.5)(@types/react@18.3.24)(postgres@3.4.7)(react@18.3.1)
+        specifier: ^0.36.4
+        version: 0.36.4(@neondatabase/serverless@0.10.4)(@types/pg@8.15.5)(@types/react@18.3.24)(postgres@3.4.7)(react@18.3.1)
       hono:
         specifier: ^4.6.12
         version: 4.9.7
@@ -205,8 +205,8 @@ importers:
         specifier: ^0.10.4
         version: 0.10.4
       drizzle-orm:
-        specifier: ^0.38.2
-        version: 0.38.4(@neondatabase/serverless@0.10.4)(@types/pg@8.15.5)(@types/react@18.3.24)(postgres@3.4.7)(react@18.3.1)
+        specifier: ^0.36.4
+        version: 0.36.4(@neondatabase/serverless@0.10.4)(@types/pg@8.15.5)(@types/react@18.3.24)(postgres@3.4.7)(react@18.3.1)
       postgres:
         specifier: ^3.4.4
         version: 3.4.7
@@ -2165,11 +2165,11 @@ packages:
     resolution: {integrity: sha512-U4wWit0fyZuGuP7iNmRleQyK2V8wCuv57vf5l3MnG4z4fzNTjY/U13M8owyQ5RavqvqxBifWORaR3wIUzlN64g==}
     hasBin: true
 
-  drizzle-orm@0.38.4:
-    resolution: {integrity: sha512-s7/5BpLKO+WJRHspvpqTydxFob8i1vo2rEx4pY6TGY7QSMuUfWUuzaY0DIpXCkgHOo37BaFC+SJQb99dDUXT3Q==}
+  drizzle-orm@0.36.4:
+    resolution: {integrity: sha512-1OZY3PXD7BR00Gl61UUOFihslDldfH4NFRH2MbP54Yxi0G/PKn4HfO65JYZ7c16DeP3SpM3Aw+VXVG9j6CRSXA==}
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
-      '@cloudflare/workers-types': '>=4'
+      '@cloudflare/workers-types': '>=3'
       '@electric-sql/pglite': '>=0.2.0'
       '@libsql/client': '>=0.10.0'
       '@libsql/client-wasm': '>=0.10.0'
@@ -5915,7 +5915,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.38.4(@neondatabase/serverless@0.10.4)(@types/pg@8.15.5)(@types/react@18.3.24)(postgres@3.4.7)(react@18.3.1):
+  drizzle-orm@0.36.4(@neondatabase/serverless@0.10.4)(@types/pg@8.15.5)(@types/react@18.3.24)(postgres@3.4.7)(react@18.3.1):
     optionalDependencies:
       '@neondatabase/serverless': 0.10.4
       '@types/pg': 8.15.5

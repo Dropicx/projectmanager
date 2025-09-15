@@ -1,6 +1,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, Badge } from '@consulting-platform/ui'
 import { Brain, TrendingUp, AlertTriangle, Lightbulb } from 'lucide-react'
 
+export const dynamic = 'force-dynamic'
+
 export default function InsightsPage() {
   const insights = [
     {

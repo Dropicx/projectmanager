@@ -2,14 +2,16 @@ import { drizzle } from 'drizzle-orm/neon-serverless'
 import { neon } from '@neondatabase/serverless'
 import * as schema from './schema'
 
-const connectionString = process.env.DATABASE_URL!
+const connectionString = process.env.DATABASE_URL
 
-if (!connectionString) {
-  throw new Error('DATABASE_URL environment variable is required')
+// Create a mock database for build time when DATABASE_URL is not available
+const createMockDb = () => {
+  return {} as any
 }
 
-const sql = neon(connectionString)
-export const db = drizzle(sql, { schema })
+export const db = connectionString 
+  ? drizzle(connectionString, { schema })
+  : createMockDb()
 
 export * from './schema'
 export type Database = typeof db

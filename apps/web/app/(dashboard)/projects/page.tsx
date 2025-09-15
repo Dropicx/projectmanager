@@ -1,6 +1,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button, Badge } from '@consulting-platform/ui'
 import { Plus, Calendar, DollarSign, Users } from 'lucide-react'
 
+export const dynamic = 'force-dynamic'
+
 export default function ProjectsPage() {
   const projects = [
     {

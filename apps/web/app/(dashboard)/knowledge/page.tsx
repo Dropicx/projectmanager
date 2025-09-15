@@ -1,6 +1,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button, Badge } from '@consulting-platform/ui'
 import { Search, Plus, BookOpen, FileText, Users, Calendar } from 'lucide-react'
 
+export const dynamic = 'force-dynamic'
+
 export default function KnowledgePage() {
   const knowledgeItems = [
     {

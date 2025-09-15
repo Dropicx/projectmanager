@@ -1,6 +1,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@consulting-platform/ui'
 import { trpc } from '@/app/providers/trpc-provider'
 
+export const dynamic = 'force-dynamic'
+
 export default function DashboardPage() {
   return (
     <div className="space-y-6">

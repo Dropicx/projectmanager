@@ -10,7 +10,7 @@
     "@clerk/backend": "^1.0.0",
     "@trpc/server": "^11.0.0",
     "@trpc/client": "^11.0.0",
-    "drizzle-orm": "^0.38.2",
+    "drizzle-orm": "^0.36.4",
     "zod": "^3.24.1",
     "@consulting-platform/database": "workspace:*",
     "@consulting-platform/ai": "workspace:*"
