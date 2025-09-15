@@ -1,6 +1,6 @@
 import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime'
 import { fromEnv } from '@aws-sdk/credential-providers'
-import { NodeHttpHandler } from '@aws-sdk/node-http-handler'
+import { NodeHttpHandler } from '@smithy/node-http-handler'
 import { ModelConfig, AIResponse, AITask } from '../types'
 
 export class BedrockClient {
