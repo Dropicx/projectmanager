@@ -9,12 +9,12 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "bullmq": "^5.34.0",
-    "ioredis": "^5.4.1",
-    "cron": "^3.1.6",
-    "drizzle-orm": "^0.36.4",
+    "@consulting-platform/ai": "workspace:*",
     "@consulting-platform/database": "workspace:*",
-    "@consulting-platform/ai": "workspace:*"
+    "bullmq": "^5.34.0",
+    "cron": "^3.1.6",
+    "drizzle-orm": "^0.44.5",
+    "ioredis": "^5.4.1"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

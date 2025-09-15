@@ -5,15 +5,15 @@
   "main": "./index.ts",
   "types": "./index.ts",
   "dependencies": {
-    "hono": "^4.6.12",
-    "@hono/clerk-auth": "^2.0.0",
     "@clerk/backend": "^1.0.0",
-    "@trpc/server": "^11.0.0",
-    "@trpc/client": "^11.0.0",
-    "drizzle-orm": "^0.36.4",
-    "zod": "^3.24.1",
+    "@consulting-platform/ai": "workspace:*",
     "@consulting-platform/database": "workspace:*",
-    "@consulting-platform/ai": "workspace:*"
+    "@hono/clerk-auth": "^2.0.0",
+    "@trpc/client": "^11.0.0",
+    "@trpc/server": "^11.0.0",
+    "drizzle-orm": "^0.44.5",
+    "hono": "^4.6.12",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@types/node": "^22.14.0"

@@ -26,10 +26,10 @@
     "clean": "turbo clean"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
-    "@types/node": "^22.14.0",
+    "@biomejs/biome": "^2.2.4",
+    "@types/node": "^24.4.0",
     "turbo": "^2.5.6",
-    "typescript": "^5.6.3"
+    "typescript": "^5.9.2"
   },
   "packageManager": "pnpm@9.14.0",
   "workspaces": [
