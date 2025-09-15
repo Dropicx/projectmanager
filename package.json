@@ -31,13 +31,6 @@
     "turbo": "^2.5.6",
     "typescript": "^5.6.3"
   },
-  "pnpm": {
-    "overrides": {
-      "@esbuild-kit/core-utils": "^4.0.0",
-      "@esbuild-kit/esm-loader": "^4.0.0",
-      "node-domexception": "^2.0.0"
-    }
-  },
   "packageManager": "pnpm@9.14.0",
   "workspaces": [
     "apps/*",
