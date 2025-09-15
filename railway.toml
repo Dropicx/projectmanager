@@ -7,6 +7,19 @@ startCommand = "pnpm start"
 healthcheckPath = "/api/health"
 healthcheckTimeout = 30
 
+# Web Service Configuration
+[[services]]
+name = "web"
+port = 3000
+startCommand = "pnpm start"
+healthcheckPath = "/api/health"
+healthcheckTimeout = 30
+
+# Worker Service Configuration
+[[services]]
+name = "worker"
+startCommand = "pnpm worker:start"
+
 # Environment Variables
 [env]
 NODE_ENV = "production"
