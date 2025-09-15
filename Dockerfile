@@ -83,6 +83,7 @@ COPY --from=builder /app/worker/dist ./worker/dist
 COPY --from=builder /app/worker/package.json ./worker/package.json
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/worker/node_modules ./worker/node_modules
+# Copy all packages with their built dist directories
 COPY --from=builder /app/packages ./packages
 
 USER worker

@@ -14,7 +14,8 @@ coverage
 
 # Production
 **/build
-**/dist
+# Don't ignore dist - we need it for built packages
+# **/dist
 
 # Misc
 .DS_Store
