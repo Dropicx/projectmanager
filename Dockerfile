@@ -27,7 +27,7 @@ COPY . .
 WORKDIR /app/packages/ai
 RUN pnpm build && echo "AI package built, contents:" && ls -la && ls -la dist/
 WORKDIR /app/packages/database
-RUN pnpm build || true
+RUN pnpm build && echo "Database package built, contents:" && ls -la dist/
 WORKDIR /app/packages/api
 RUN pnpm build || true
 WORKDIR /app/packages/ui
