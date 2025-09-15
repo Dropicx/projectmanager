@@ -1,4 +1,4 @@
-import { Worker } from 'bullmq'
+import { Worker, Queue } from 'bullmq'
 import { Redis } from 'ioredis'
 import { CronJob } from 'cron'
 import { AIOrchestrator } from '@consulting-platform/ai'
@@ -11,6 +11,10 @@ const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379')
 
 // AI Orchestrator
 const aiOrchestrator = new AIOrchestrator()
+
+// Job queues
+const aiInsightsQueue = new Queue('ai-insights', { connection: redis })
+const riskAssessmentQueue = new Queue('risk-assessment', { connection: redis })
 
 // Background job processors
 const aiInsightsWorker = new Worker(
@@ -125,7 +129,7 @@ const dailyInsightsJob = new CronJob(
 
     // Queue AI insights for each project
     for (const project of activeProjects) {
-      await aiInsightsWorker.add('daily-insights', {
+      await aiInsightsQueue.add('daily-insights', {
         projectId: project.id
       })
     }
@@ -150,7 +154,7 @@ const weeklyRiskAssessmentJob = new CronJob(
 
     // Queue risk assessment for each project
     for (const project of activeProjects) {
-      await riskAssessmentWorker.add('weekly-risk-assessment', {
+      await riskAssessmentQueue.add('weekly-risk-assessment', {
         projectId: project.id
       })
     }
@@ -176,6 +180,8 @@ process.on('SIGINT', async () => {
   console.log('Shutting down workers...')
   await aiInsightsWorker.close()
   await riskAssessmentWorker.close()
+  await aiInsightsQueue.close()
+  await riskAssessmentQueue.close()
   await redis.quit()
   process.exit(0)
 })

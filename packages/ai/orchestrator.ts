@@ -187,6 +187,8 @@ export class AIOrchestrator {
       complexity: 7,
       urgency: 'batch',
       accuracyRequired: 'standard',
+      contextLength: 4000,
+      budgetConstraint: 100,
       projectId,
       userId: 'system' // This would be the actual user ID
     }
@@ -202,6 +204,8 @@ export class AIOrchestrator {
       complexity: 8,
       urgency: 'batch',
       accuracyRequired: 'critical',
+      contextLength: 4000,
+      budgetConstraint: 100,
       projectId,
       userId: 'system'
     }
@@ -217,6 +221,8 @@ export class AIOrchestrator {
       complexity: 3,
       urgency: 'realtime',
       accuracyRequired: 'standard',
+      contextLength: 4000,
+      budgetConstraint: 100,
       userId: 'system'
     }
 
