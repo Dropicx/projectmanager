@@ -65,7 +65,7 @@ NEXT_PUBLIC_APP_URL=https://your-app.up.railway.app
 ### 4. Worker Service
 
 **Railway Configuration:**
-- Service Name: `worker-production`
+- Service Name: `worker`
 - Build Command: Uses `Dockerfile.worker`
 - No exposed ports (background service)
 
@@ -90,24 +90,27 @@ MISTRAL_API_KEY=...
 **Deployment Steps:**
 1. Create a new service in Railway (separate from web)
 2. Connect the same GitHub repository
-3. **IMPORTANT**: Override the Dockerfile path:
-   - Go to service settings
-   - Set custom build command: `docker build -f Dockerfile.worker .`
-   - Or use the Railway CLI with `railway.worker.toml`
+3. **IMPORTANT**: Configure the service in Railway Dashboard:
+   - Go to service Settings → Build
+   - Set **Dockerfile Path**: `Dockerfile.worker`
+   - Or set **Custom Build Command**: `docker build -f Dockerfile.worker -t worker .`
+   - Leave Start Command empty (uses CMD from Dockerfile)
 4. Add environment variables
 5. Deploy
 
-## Multi-Service Deployment with Railway CLI
+## Setting Up Services in Railway Dashboard
 
-If using Railway CLI:
-
-```bash
-# Deploy web service
-railway up --service web
-
-# Deploy worker service with custom config
-railway up --service worker -c railway.worker.toml
-```
+### For the Worker Service:
+1. Click "New Service" in your Railway project
+2. Select "GitHub Repo"
+3. Choose your repository
+4. **Service Settings (Important!)**:
+   - Name: `worker`
+   - Go to Settings → Build
+   - **Dockerfile Path**: Set to `Dockerfile.worker`
+   - **Watch Paths** (optional): Set to `apps/worker/**` to only rebuild on worker changes
+5. Add environment variables
+6. Deploy
 
 ## Environment Variable Management
 
