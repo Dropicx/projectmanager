@@ -1,0 +1,22 @@
+{
+  "name": "@consulting-platform/database",
+  "version": "1.0.0",
+  "private": true,
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "scripts": {
+    "db:push": "drizzle-kit push:pg",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio",
+    "db:generate": "drizzle-kit generate:pg"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.0.1",
+    "drizzle-orm": "^0.44.5",
+    "postgres": "^3.4.4"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.11.10",
+    "drizzle-kit": "^0.31.4"
+  }
+}
