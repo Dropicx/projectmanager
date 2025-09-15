@@ -25,7 +25,7 @@ COPY . .
 
 # Build packages first
 WORKDIR /app/packages/ai
-RUN pnpm build && ls -la dist/
+RUN pnpm build && echo "AI package built, contents:" && ls -la && ls -la dist/
 WORKDIR /app/packages/database
 RUN pnpm build || true
 WORKDIR /app/packages/api
@@ -89,6 +89,14 @@ COPY --from=builder /app/worker/node_modules ./worker/node_modules
 # Ensure the AI package is properly linked by copying it directly
 COPY --from=builder /app/packages/ai ./worker/node_modules/@consulting-platform/ai
 COPY --from=builder /app/packages/database ./worker/node_modules/@consulting-platform/database
+
+# Debug: Check what was copied
+RUN echo "Checking worker node_modules structure:" && \
+    ls -la /app/worker/node_modules/@consulting-platform/ && \
+    echo "Checking AI package contents:" && \
+    ls -la /app/worker/node_modules/@consulting-platform/ai/ && \
+    echo "Checking for dist folder:" && \
+    ls -la /app/worker/node_modules/@consulting-platform/ai/dist/ || echo "dist folder not found"
 
 USER worker
 WORKDIR /app/worker
