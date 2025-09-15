@@ -1,0 +1,31 @@
+[build]
+nixpacksPlan = "node-22"
+builder = "nixpacks"
+buildCommand = "pnpm install --frozen-lockfile && pnpm build"
+
+[deploy]
+startCommand = "pnpm start"
+healthcheckPath = "/api/health"
+healthcheckTimeout = 30
+restartPolicyType = "on-failure"
+restartPolicyMaxRetries = 3
+
+# Web Service Configuration
+[services.web]
+port = 3000
+healthcheckPath = "/api/health"
+healthcheckTimeout = 30
+
+# Worker Service Configuration  
+[services.worker]
+startCommand = "pnpm worker:start"
+restartPolicyType = "on-failure"
+restartPolicyMaxRetries = 3
+
+# Environment Variables
+[env]
+NODE_ENV = "production"
+NEXT_TELEMETRY_DISABLED = "1"
+ENABLE_AI_INSIGHTS = "true"
+ENABLE_REALTIME_COLLAB = "true"
+AI_COST_LIMIT_CENTS = "50000"

@@ -1,0 +1,17 @@
+{
+  "name": "@consulting-platform/ai",
+  "version": "1.0.0",
+  "private": true,
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "dependencies": {
+    "@aws-sdk/client-bedrock-runtime": "^3.888.0",
+    "@aws-sdk/credential-providers": "^3.888.0",
+    "@aws-sdk/node-http-handler": "^3.374.0",
+    "zod": "^3.24.1",
+    "openai": "^4.67.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0"
+  }
+}
