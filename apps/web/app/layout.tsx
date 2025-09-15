@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
+import { ClerkProvider } from '@clerk/nextjs'
 import { TRPCProvider } from './providers/trpc-provider'
 import './globals.css'
 
@@ -16,20 +17,22 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
-        <header className="bg-white shadow-sm border-b">
-          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-            <h1 className="text-xl font-semibold">Consulting Platform</h1>
-            <div className="flex items-center gap-4">
-              <span className="text-gray-500 text-sm">Configure Clerk in Railway Environment Variables</span>
+    <ClerkProvider>
+      <html lang="en">
+        <body className={inter.className}>
+          <header className="bg-white shadow-sm border-b">
+            <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+              <h1 className="text-xl font-semibold">Consulting Platform</h1>
+              <div className="flex items-center gap-4">
+                <span className="text-gray-500 text-sm">Welcome to Consulting Platform</span>
+              </div>
             </div>
-          </div>
-        </header>
-        <TRPCProvider>
-          {children}
-        </TRPCProvider>
-      </body>
-    </html>
+          </header>
+          <TRPCProvider>
+            {children}
+          </TRPCProvider>
+        </body>
+      </html>
+    </ClerkProvider>
   )
 }

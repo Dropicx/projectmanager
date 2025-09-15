@@ -1,8 +1,8 @@
-import { SignInButton, SignUpButton, UserButton, useUser } from '@clerk/nextjs'
+'use client'
+
+import { SignInButton, SignUpButton } from '@clerk/nextjs'
 import { Button } from '@consulting-platform/ui'
 import Link from 'next/link'
-
-export const dynamic = 'force-dynamic'
 
 export default function HomePage() {
   return (
