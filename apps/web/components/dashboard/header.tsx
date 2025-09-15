@@ -1,8 +1,13 @@
 'use client'
 
-import { UserButton } from '@clerk/nextjs'
 import { Bell, Search } from 'lucide-react'
 import { Button } from '@consulting-platform/ui'
+import dynamic from 'next/dynamic'
+
+const UserButton = dynamic(
+  () => import('@clerk/nextjs').then(mod => mod.UserButton),
+  { ssr: false, loading: () => <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" /> }
+)
 
 export function DashboardHeader() {
   return (

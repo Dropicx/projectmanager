@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-import { ClerkProvider } from '@clerk/nextjs'
+import { ClerkProvider } from '@/components/providers/clerk-provider'
 import { TRPCProvider } from './providers/trpc-provider'
 import './globals.css'
 

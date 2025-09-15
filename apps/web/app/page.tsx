@@ -1,10 +1,30 @@
 'use client'
 
-import { SignInButton, SignUpButton, useUser, SignedIn, SignedOut } from '@clerk/nextjs'
 import { Button } from '@consulting-platform/ui'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
+
+// Dynamically import Clerk components to handle missing keys during build
+import dynamic from 'next/dynamic'
+
+const SignInButton = dynamic(
+  () => import('@clerk/nextjs').then(mod => mod.SignInButton),
+  { ssr: false, loading: () => <Button size="lg">Sign In</Button> }
+)
+
+const SignUpButton = dynamic(
+  () => import('@clerk/nextjs').then(mod => mod.SignUpButton),
+  { ssr: false, loading: () => <Button variant="outline" size="lg">Get Started</Button> }
+)
+
+const useUser = () => {
+  if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY) {
+    const { useUser: clerkUseUser } = require('@clerk/nextjs')
+    return clerkUseUser()
+  }
+  return { isSignedIn: false, user: null }
+}
 
 export default function HomePage() {
   const { isSignedIn, user } = useUser()
