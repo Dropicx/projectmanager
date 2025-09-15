@@ -11,6 +11,7 @@
     "dev:all": "turbo dev",
     "build": "turbo build",
     "build:web": "turbo build --filter=@consulting-platform/web",
+    "build:ai": "turbo build --filter=@consulting-platform/ai",
     "build:worker": "turbo build --filter=@consulting-platform/worker",
     "start": "turbo start",
     "worker:start": "turbo start --filter=@consulting-platform/worker",
