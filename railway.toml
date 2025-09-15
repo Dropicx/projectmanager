@@ -10,18 +10,6 @@ healthcheckTimeout = 30
 restartPolicyType = "on-failure"
 restartPolicyMaxRetries = 3
 
-# Web Service Configuration
-[services.web]
-port = 3000
-healthcheckPath = "/api/health"
-healthcheckTimeout = 30
-
-# Worker Service Configuration  
-[services.worker]
-startCommand = "pnpm worker:start"
-restartPolicyType = "on-failure"
-restartPolicyMaxRetries = 3
-
 # Environment Variables
 [env]
 NODE_ENV = "production"

@@ -96,16 +96,12 @@ restartPolicyMaxRetries = 3
 
 ## 🔄 GitHub Integration
 
-### 1. Railway Token Setup
-1. Go to Railway Dashboard → Account Settings
-2. Generate a new token
-3. Add to GitHub Secrets: `RAILWAY_TOKEN`
-
-### 2. GitHub Actions
-The `.github/workflows/deploy.yml` will automatically:
-- Build the project on push to main
-- Deploy to Railway
-- Run health checks
+### 1. Automatic Deployment
+Railway automatically:
+- Detects pushes to your connected GitHub repository
+- Triggers deployment on every push to main branch
+- Builds and deploys your services automatically
+- No GitHub Actions or tokens needed!
 
 ## 🚀 Deployment Commands
 
@@ -121,9 +117,9 @@ railway up --service worker
 railway up
 ```
 
-### GitHub Deployment
+### Automatic Deployment
 - Push to `main` branch
-- GitHub Actions will automatically deploy
+- Railway automatically detects changes and deploys
 - Check Railway dashboard for deployment status
 
 ## 🔍 Service References
