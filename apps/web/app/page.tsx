@@ -1,10 +1,21 @@
 'use client'
 
-import { SignInButton, SignUpButton } from '@clerk/nextjs'
+import { SignInButton, SignUpButton, useUser, SignedIn, SignedOut } from '@clerk/nextjs'
 import { Button } from '@consulting-platform/ui'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
 
 export default function HomePage() {
+  const { isSignedIn, user } = useUser()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (isSignedIn) {
+      router.push('/dashboard')
+    }
+  }, [isSignedIn, router])
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="container mx-auto px-4 py-16">

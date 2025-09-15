@@ -141,8 +141,6 @@ Desktop.ini
 .aws/
 
 # Docker
-.dockerignore
-Dockerfile
 docker-compose*.yml
 
 # Testing
