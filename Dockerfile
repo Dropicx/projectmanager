@@ -10,7 +10,10 @@ RUN corepack enable && corepack prepare pnpm@9.14.0 --activate
 # Copy package files
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/web/package.json ./apps/web/
-COPY packages/*/package.json ./packages/*/
+COPY packages/ui/package.json ./packages/ui/
+COPY packages/database/package.json ./packages/database/
+COPY packages/ai/package.json ./packages/ai/
+COPY packages/api/package.json ./packages/api/
 
 # Install dependencies
 RUN pnpm install --frozen-lockfile --prefer-offline
@@ -26,7 +29,10 @@ RUN corepack enable && corepack prepare pnpm@9.14.0 --activate
 # Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
-COPY --from=deps /app/packages/*/node_modules ./packages/*/node_modules
+COPY --from=deps /app/packages/ui/node_modules ./packages/ui/node_modules
+COPY --from=deps /app/packages/database/node_modules ./packages/database/node_modules
+COPY --from=deps /app/packages/ai/node_modules ./packages/ai/node_modules
+COPY --from=deps /app/packages/api/node_modules ./packages/api/node_modules
 
 # Copy source code
 COPY . .
