@@ -1,5 +1,4 @@
 [build]
-nixpacksPlan = "node-22"
 builder = "nixpacks"
 buildCommand = "pnpm install --frozen-lockfile && pnpm build"
 
@@ -7,8 +6,6 @@ buildCommand = "pnpm install --frozen-lockfile && pnpm build"
 startCommand = "pnpm start"
 healthcheckPath = "/api/health"
 healthcheckTimeout = 30
-restartPolicyType = "on-failure"
-restartPolicyMaxRetries = 3
 
 # Environment Variables
 [env]
