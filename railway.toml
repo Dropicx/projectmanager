@@ -1,19 +1,12 @@
 [build]
 builder = "nixpacks"
-buildCommand = "pnpm install --frozen-lockfile && pnpm build --filter=@consulting-platform/ai --filter=@consulting-platform/web"
+buildCommand = "pnpm install --frozen-lockfile && pnpm build:web"
 
-# Web Service Configuration
-[[services]]
-name = "web"
-port = 3000
+[deploy]
 startCommand = "pnpm start --filter=@consulting-platform/web"
 healthcheckPath = "/api/health"
 healthcheckTimeout = 30
-
-# Worker Service Configuration (temporarily disabled)
-# [[services]]
-# name = "worker"
-# startCommand = "pnpm worker:start"
+port = 3000
 
 # Environment Variables
 [env]

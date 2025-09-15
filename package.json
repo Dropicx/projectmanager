@@ -13,7 +13,7 @@
     "build:web": "turbo build --filter=@consulting-platform/web",
     "build:ai": "turbo build --filter=@consulting-platform/ai",
     "build:worker": "turbo build --filter=@consulting-platform/worker",
-    "start": "turbo start",
+    "start": "turbo start --filter=@consulting-platform/web",
     "worker:start": "turbo start --filter=@consulting-platform/worker",
     "lint": "turbo lint",
     "type-check": "turbo type-check",
