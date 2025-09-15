@@ -5,17 +5,26 @@ import { AIOrchestrator } from '@consulting-platform/ai'
 import { db, projects } from '@consulting-platform/database'
 import { eq } from 'drizzle-orm'
 
-// Redis connection
-const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379')
+// Redis connection configuration for BullMQ
+const redisOptions = {
+  maxRetriesPerRequest: null,
+  enableReadyCheck: false,
+}
+
+// Parse Redis URL if provided
+const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379'
+const redis = new Redis(redisUrl, redisOptions)
 
 // AI Orchestrator
 const aiOrchestrator = new AIOrchestrator()
 
-// Job queues
-const aiInsightsQueue = new Queue('ai-insights', { connection: redis })
-const riskAssessmentQueue = new Queue('risk-assessment', { connection: redis })
+// Job queues with proper Redis configuration
+const queueConnection = new Redis(redisUrl, redisOptions)
+const aiInsightsQueue = new Queue('ai-insights', { connection: queueConnection })
+const riskAssessmentQueue = new Queue('risk-assessment', { connection: queueConnection })
 
 // Background job processors
+const workerConnection1 = new Redis(redisUrl, redisOptions)
 const aiInsightsWorker = new Worker(
   'ai-insights',
   async (job) => {
@@ -60,11 +69,12 @@ const aiInsightsWorker = new Worker(
     }
   },
   {
-    connection: redis,
+    connection: workerConnection1,
     concurrency: 5
   }
 )
 
+const workerConnection2 = new Redis(redisUrl, redisOptions)
 const riskAssessmentWorker = new Worker(
   'risk-assessment',
   async (job) => {
@@ -109,7 +119,7 @@ const riskAssessmentWorker = new Worker(
     }
   },
   {
-    connection: redis,
+    connection: workerConnection2,
     concurrency: 3
   }
 )
@@ -182,6 +192,9 @@ process.on('SIGINT', async () => {
   await aiInsightsQueue.close()
   await riskAssessmentQueue.close()
   await redis.quit()
+  await queueConnection.quit()
+  await workerConnection1.quit()
+  await workerConnection2.quit()
   process.exit(0)
 })
 
