@@ -1,25 +1,32 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
-import { NextResponse } from 'next/server'
 
-const isPublicRoute = createRouteMatcher(['/', '/api/health'])
+const isPublicRoute = createRouteMatcher([
+  '/',
+  '/api/health',
+  '/sign-in(.*)',
+  '/sign-up(.*)',
+])
 
-// Only apply Clerk middleware if keys are configured
-const middleware = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-  ? clerkMiddleware(async (auth, req) => {
-      if (!isPublicRoute(req)) {
-        const { userId } = await auth()
-        if (!userId) {
-          return Response.redirect(new URL('/sign-in', req.url))
-        }
-      }
-    })
-  : () => NextResponse.next()
+export default clerkMiddleware(async (auth, req) => {
+  // If Clerk is not configured, allow all requests
+  if (!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY) {
+    return
+  }
 
-export default middleware
+  // Protect routes when Clerk is configured
+  if (!isPublicRoute(req)) {
+    const { userId } = await auth()
+    if (!userId) {
+      const signInUrl = new URL('/sign-in', req.url)
+      signInUrl.searchParams.set('redirect_url', req.url)
+      return Response.redirect(signInUrl)
+    }
+  }
+})
 
 export const config = {
   matcher: [
-    // Skip Next.js internals and all static files, unless found in search params
+    // Skip Next.js internals and all static files
     '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
     // Always run for API routes
     '/(api|trpc)(.*)',
