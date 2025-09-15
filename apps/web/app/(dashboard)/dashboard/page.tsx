@@ -1,15 +1,19 @@
+'use client'
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@consulting-platform/ui'
 import { trpc } from '@/app/providers/trpc-provider'
+import { useUser } from '@clerk/nextjs'
 
 export const dynamic = 'force-dynamic'
 
 export default function DashboardPage() {
+  const { user } = useUser()
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
         <p className="text-muted-foreground">
-          Welcome to your consulting platform dashboard
+          Welcome back, {user?.firstName || user?.username || 'User'}! Here's your consulting platform overview.
         </p>
       </div>
 
