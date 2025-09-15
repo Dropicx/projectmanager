@@ -12,9 +12,8 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/web/package.json ./apps/web/
 COPY packages/*/package.json ./packages/*/
 
-# Install dependencies with cache mount
-RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
-    pnpm install --frozen-lockfile --prefer-offline
+# Install dependencies
+RUN pnpm install --frozen-lockfile --prefer-offline
 
 # Stage 2: Builder
 FROM node:22-alpine AS builder
@@ -36,9 +35,8 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
-# Build with cache mount for Next.js
-RUN --mount=type=cache,id=nextjs,target=/app/apps/web/.next/cache \
-    pnpm build:web
+# Build the application
+RUN pnpm build:web
 
 # Stage 3: Runner
 FROM node:22-alpine AS runner
