@@ -1,0 +1,8 @@
+[build]
+builder = "nixpacks"
+buildCommand = "pnpm install --frozen-lockfile && pnpm build:web"
+
+[deploy]
+startCommand = "cd apps/web && npx next start -H 0.0.0.0 -p $PORT"
+healthcheckPath = "/api/health"
+healthcheckTimeout = 30
