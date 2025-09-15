@@ -6,6 +6,7 @@
     "dev": "next dev --turbo",
     "build": "next build",
     "start": "node server.js",
+    "start:prod": "next start -H 0.0.0.0 -p $PORT",
     "lint": "next lint",
     "type-check": "tsc --noEmit"
   },
