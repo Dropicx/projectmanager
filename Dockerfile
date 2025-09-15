@@ -61,6 +61,7 @@ COPY --from=builder /app/web/package.json ./web/package.json
 COPY --from=builder /app/web/next.config.js ./web/next.config.js
 COPY --from=builder /app/web/server.js ./web/server.js
 COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/web/node_modules ./web/node_modules
 COPY --from=builder /app/packages ./packages
 
 USER nextjs

@@ -13,7 +13,7 @@ console.log(`Starting Next.js server on ${host}:${port}...`);
 
 try {
   // Use execSync to run Next.js with the correct port
-  execSync(`npx next start -H ${host} -p ${port}`, {
+  execSync(`node ./node_modules/.bin/next start -H ${host} -p ${port}`, {
     stdio: 'inherit',
     env: {
       ...process.env,
