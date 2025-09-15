@@ -25,7 +25,7 @@ COPY . .
 
 # Build packages first
 WORKDIR /app/packages/ai
-RUN pnpm build
+RUN pnpm build && ls -la dist/
 WORKDIR /app/packages/database
 RUN pnpm build || true
 WORKDIR /app/packages/api
@@ -82,9 +82,13 @@ RUN addgroup --system --gid 1001 nodejs && \
 COPY --from=builder /app/worker/dist ./worker/dist
 COPY --from=builder /app/worker/package.json ./worker/package.json
 COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/worker/node_modules ./worker/node_modules
-# Copy all packages with their built dist directories
+# Copy packages to root packages directory
 COPY --from=builder /app/packages ./packages
+# Copy worker node_modules but replace symlinks with actual packages
+COPY --from=builder /app/worker/node_modules ./worker/node_modules
+# Ensure the AI package is properly linked by copying it directly
+COPY --from=builder /app/packages/ai ./worker/node_modules/@consulting-platform/ai
+COPY --from=builder /app/packages/database ./worker/node_modules/@consulting-platform/database
 
 USER worker
 WORKDIR /app/worker
