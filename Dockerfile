@@ -1,5 +1,23 @@
 # Web Service Dockerfile
-# Railway sets root directory to /apps/web
+# Build from monorepo root, Railway should NOT set root directory
+
+FROM node:22-alpine AS deps
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@9.14.0 --activate
+
+# Copy package files for monorepo
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/web/package.json ./apps/web/
+COPY packages/ui/package.json ./packages/ui/
+COPY packages/database/package.json ./packages/database/
+COPY packages/ai/package.json ./packages/ai/
+COPY packages/api/package.json ./packages/api/
+
+# Install ALL dependencies
+RUN pnpm install --frozen-lockfile
 
 FROM node:22-alpine AS builder
 RUN apk add --no-cache libc6-compat
@@ -8,22 +26,18 @@ WORKDIR /app
 # Install pnpm
 RUN corepack enable && corepack prepare pnpm@9.14.0 --activate
 
-# Copy only web app files (context is /apps/web)
-COPY package.json ./
-COPY tsconfig.json ./
-COPY next.config.js ./
-COPY server.js ./
-COPY app ./app
-COPY components ./components
-COPY public ./public
+# Copy node_modules from deps
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
+COPY --from=deps /app/packages ./packages
 
-# Install dependencies (will install only what's needed for this app)
-RUN pnpm install
+# Copy all source code
+COPY . .
 
 # Build
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
-RUN pnpm build
+RUN pnpm build:web
 
 # Production stage
 FROM node:22-alpine AS runner
