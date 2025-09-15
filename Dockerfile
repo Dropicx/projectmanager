@@ -1,4 +1,6 @@
-# Multi-stage Dockerfile for Web Service
+# Multi-service Dockerfile for Monorepo
+ARG SERVICE=web
+
 FROM node:22-alpine AS builder
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
@@ -6,7 +8,7 @@ WORKDIR /app
 # Install pnpm
 RUN corepack enable && corepack prepare pnpm@9.14.0 --activate
 
-# Copy all package.json files first for better caching
+# Copy all package.json files for better caching
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY web/package.json ./web/
 COPY worker/package.json ./worker/
@@ -21,22 +23,24 @@ RUN pnpm install --frozen-lockfile
 # Copy all source files
 COPY . .
 
-# Build the web application
-WORKDIR /app/web
-RUN pnpm build
+# Build the specified service
+ARG SERVICE
+RUN if [ "$SERVICE" = "web" ]; then \
+        cd web && pnpm build; \
+    elif [ "$SERVICE" = "worker" ]; then \
+        cd worker && pnpm build; \
+    fi
 
-# Production stage
-FROM node:22-alpine AS runner
+# Production stage for web
+FROM node:22-alpine AS web-runner
 WORKDIR /app
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Create non-root user
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-# Copy necessary files from builder
 COPY --from=builder /app/web/.next ./web/.next
 COPY --from=builder /app/web/public ./web/public
 COPY --from=builder /app/web/package.json ./web/package.json
@@ -46,9 +50,28 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/packages ./packages
 
 USER nextjs
-
 EXPOSE 3000
-
 ENV PORT=3000
 WORKDIR /app/web
 CMD ["node", "server.js"]
+
+# Production stage for worker
+FROM node:22-alpine AS worker-runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 worker
+
+COPY --from=builder /app/worker/dist ./worker/dist
+COPY --from=builder /app/worker/package.json ./worker/package.json
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/packages ./packages
+
+USER worker
+WORKDIR /app/worker
+CMD ["node", "dist/index.js"]
+
+# Final stage selector
+FROM ${SERVICE}-runner AS final
