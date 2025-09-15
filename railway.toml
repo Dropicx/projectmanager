@@ -10,10 +10,10 @@ startCommand = "pnpm start"
 healthcheckPath = "/api/health"
 healthcheckTimeout = 30
 
-# Worker Service Configuration
-[[services]]
-name = "worker"
-startCommand = "pnpm worker:start"
+# Worker Service Configuration (temporarily disabled)
+# [[services]]
+# name = "worker"
+# startCommand = "pnpm worker:start"
 
 # Environment Variables
 [env]
