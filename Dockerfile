@@ -23,6 +23,16 @@ RUN pnpm install --frozen-lockfile
 # Copy all source files
 COPY . .
 
+# Build packages first
+WORKDIR /app/packages/ai
+RUN pnpm build
+WORKDIR /app/packages/database
+RUN pnpm build || true
+WORKDIR /app/packages/api
+RUN pnpm build || true
+WORKDIR /app/packages/ui
+RUN pnpm build || true
+
 # Build the specified service
 ARG SERVICE
 WORKDIR /app/web
