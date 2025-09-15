@@ -17,28 +17,40 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  return (
-    <ClerkProvider>
-      <html lang="en">
-        <body className={inter.className}>
-          <header className="bg-white shadow-sm border-b">
-            <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-              <h1 className="text-xl font-semibold">Consulting Platform</h1>
-              <div className="flex items-center gap-4">
-                <SignedOut>
-                  <span className="text-gray-600">Please sign in to continue</span>
-                </SignedOut>
-                <SignedIn>
-                  <UserButton afterSignOutUrl="/" />
-                </SignedIn>
-              </div>
+  const clerkPubKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+
+  const content = (
+    <html lang="en">
+      <body className={inter.className}>
+        <header className="bg-white shadow-sm border-b">
+          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 className="text-xl font-semibold">Consulting Platform</h1>
+            <div className="flex items-center gap-4">
+              {clerkPubKey ? (
+                <>
+                  <SignedOut>
+                    <span className="text-gray-600">Please sign in to continue</span>
+                  </SignedOut>
+                  <SignedIn>
+                    <UserButton afterSignOutUrl="/" />
+                  </SignedIn>
+                </>
+              ) : (
+                <span className="text-gray-500 text-sm">Auth not configured</span>
+              )}
             </div>
-          </header>
-          <TRPCProvider>
-            {children}
-          </TRPCProvider>
-        </body>
-      </html>
-    </ClerkProvider>
+          </div>
+        </header>
+        <TRPCProvider>
+          {children}
+        </TRPCProvider>
+      </body>
+    </html>
   )
+
+  return clerkPubKey ? (
+    <ClerkProvider>
+      {content}
+    </ClerkProvider>
+  ) : content
 }
