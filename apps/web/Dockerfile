@@ -8,7 +8,7 @@ WORKDIR /app
 # Install pnpm
 RUN corepack enable && corepack prepare pnpm@9.14.0 --activate
 
-# Copy web app files
+# Copy only web app files (context is /apps/web)
 COPY package.json ./
 COPY tsconfig.json ./
 COPY next.config.js ./
@@ -17,7 +17,7 @@ COPY app ./app
 COPY components ./components
 COPY public ./public
 
-# Install dependencies
+# Install dependencies (will install only what's needed for this app)
 RUN pnpm install
 
 # Build
