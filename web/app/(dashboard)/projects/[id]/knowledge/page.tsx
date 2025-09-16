@@ -32,18 +32,21 @@ export default function ProjectKnowledgePage() {
     }
   })
 
-  // Generate wiki mutation
-  const generateWiki = api.knowledge.generateWiki.useMutation({
-    onSuccess: (data) => {
-      if (data?.content) {
-        setWikiContent(data.content)
-      }
-      setIsGeneratingWiki(false)
-    },
-    onError: () => {
+  // Generate wiki query - we'll use refetch to trigger it
+  const { data: generatedWiki, refetch: generateWiki, isRefetching: isGeneratingWikiData } = api.knowledge.generateWiki.useQuery(
+    { projectId },
+    {
+      enabled: false // Don't run automatically
+    }
+  )
+
+  // Update wiki content when generated
+  useEffect(() => {
+    if (generatedWiki?.content) {
+      setWikiContent(generatedWiki.content)
       setIsGeneratingWiki(false)
     }
-  })
+  }, [generatedWiki])
 
   // Search query
   const { data: searchResults } = api.knowledge.search.useQuery(
@@ -69,7 +72,7 @@ export default function ProjectKnowledgePage() {
 
   const handleGenerateWiki = async () => {
     setIsGeneratingWiki(true)
-    generateWiki.mutate({ projectId })
+    generateWiki()
   }
 
   const handleSaveWiki = async () => {
@@ -145,9 +148,9 @@ export default function ProjectKnowledgePage() {
                   variant="outline"
                   size="sm"
                   onClick={handleGenerateWiki}
-                  disabled={isGeneratingWiki || generateWiki.isPending}
+                  disabled={isGeneratingWiki || isGeneratingWikiData}
                 >
-                  {isGeneratingWiki || generateWiki.isPending ? (
+                  {isGeneratingWiki || isGeneratingWikiData ? (
                     <>
                       <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
                       Generating...
