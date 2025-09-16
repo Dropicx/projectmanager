@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Button, Input, Label, Textarea } from '@consulting-platform/ui'
-import { api } from '@/lib/trpc/client'
+import { trpc as api } from '@/app/providers/trpc-provider'
 
 interface TaskFormProps {
   projectId: string

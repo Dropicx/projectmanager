@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, Button, Badge } from '@consulting-platform/ui'
 import { Plus, Filter, Calendar, Clock, AlertCircle, CheckCircle, MoreVertical, Edit2, Trash2 } from 'lucide-react'
-import { api } from '@/lib/trpc/client'
+import { trpc as api } from '@/app/providers/trpc-provider'
 import { TaskForm } from './task-form'
 import { TaskFilters } from './task-filters'
 
