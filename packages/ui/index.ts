@@ -5,4 +5,5 @@ export { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 export { Input } from './components/input'
 export { Label } from './components/label'
 export { Textarea } from './components/textarea'
+export { Switch } from './components/switch'
 export { cn } from './lib/utils'
