@@ -69,7 +69,7 @@ export const knowledge_base = pgTable('knowledge_base', {
   project_id: uuid('project_id').references(() => projects.id),
   title: text('title').notNull(),
   content: text('content').notNull(),
-  embedding: vector('embedding', { dimensions: 1536 }), // For RAG
+  // embedding: vector('embedding', { dimensions: 1536 }), // Uncomment when pgvector is available // For RAG
   metadata: jsonb('metadata').default({}),
   tags: jsonb('tags').default([]),
   is_public: boolean('is_public').default(false),
