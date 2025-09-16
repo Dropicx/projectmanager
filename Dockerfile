@@ -41,7 +41,12 @@ RUN if [ "$SERVICE" = "web" ]; then \
     fi
 WORKDIR /app/worker
 RUN if [ "$SERVICE" = "worker" ]; then \
-        pnpm build; \
+        echo "Building worker service..." && \
+        pnpm build && \
+        echo "Worker built, checking dist contents:" && \
+        ls -la dist/ && \
+        echo "First 30 lines of index.js:" && \
+        head -n 30 dist/index.js; \
     fi
 WORKDIR /app
 
