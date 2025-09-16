@@ -4,7 +4,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { trpc } from '@/app/providers/trpc-provider'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button, Badge } from '@consulting-platform/ui'
-import { ArrowLeft, Edit, Trash, Calendar, DollarSign, Users, AlertCircle, Loader2, Brain } from 'lucide-react'
+import { ArrowLeft, Edit, Trash, Calendar, DollarSign, Users, AlertCircle, Loader2, Brain, Activity, Book } from 'lucide-react'
 import Link from 'next/link'
 import { TaskList } from '@/components/tasks/task-list'
 
@@ -95,6 +95,18 @@ export default function ProjectDetailPage() {
           <Badge variant={getStatusColor(project.status || 'planning')} className="text-sm">
             {project.status || 'planning'}
           </Badge>
+          <Link href={`/projects/${projectId}/status`}>
+            <Button variant="outline" size="sm">
+              <Activity className="mr-2 h-4 w-4" />
+              Status
+            </Button>
+          </Link>
+          <Link href={`/projects/${projectId}/knowledge`}>
+            <Button variant="outline" size="sm">
+              <Book className="mr-2 h-4 w-4" />
+              Knowledge
+            </Button>
+          </Link>
           <Button variant="outline" size="sm">
             <Edit className="mr-2 h-4 w-4" />
             Edit
