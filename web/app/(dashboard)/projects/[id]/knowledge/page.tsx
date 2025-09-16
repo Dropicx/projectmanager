@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle, Button, Input, Badge, Textare
 import { Book, Edit, Save, X, RefreshCw, Search, Plus, Brain, FileText, Hash } from 'lucide-react'
 import { trpc as api } from '@/app/providers/trpc-provider'
 import { QuickNote } from '@/components/knowledge/quick-note'
-import ReactMarkdown from 'react-markdown'
 
 export default function ProjectKnowledgePage() {
   const params = useParams()
@@ -25,36 +24,56 @@ export default function ProjectKnowledgePage() {
     limit: 100
   })
 
-  // Generate wiki
-  const { data: wikiData, refetch: refetchWiki } = api.knowledge.generateWiki.useQuery({
-    projectId: projectId
+  // Create mutation
+  const createKnowledge = api.knowledge.create.useMutation({
+    onSuccess: () => {
+      refetchEntries()
+      setIsEditingWiki(false)
+    }
   })
 
-  // Search knowledge base
+  // Generate wiki mutation
+  const generateWiki = api.knowledge.generateWiki.useMutation({
+    onSuccess: (data) => {
+      if (data?.content) {
+        setWikiContent(data.content)
+      }
+      setIsGeneratingWiki(false)
+    },
+    onError: () => {
+      setIsGeneratingWiki(false)
+    }
+  })
+
+  // Search query
   const { data: searchResults } = api.knowledge.search.useQuery(
     {
       query: searchQuery,
       projectId: projectId,
-      limit: 10
+      limit: 20
     },
-    { enabled: searchQuery.length > 2 }
+    {
+      enabled: searchQuery.length > 2
+    }
   )
 
   useEffect(() => {
-    if (wikiData?.content) {
-      setWikiContent(wikiData.content)
+    // Find existing wiki entry
+    const wikiEntry = entries?.find((e: any) =>
+      e.metadata?.isWiki === true || e.title === 'Project Wiki'
+    )
+    if (wikiEntry) {
+      setWikiContent(wikiEntry.content)
     }
-  }, [wikiData])
+  }, [entries])
 
   const handleGenerateWiki = async () => {
     setIsGeneratingWiki(true)
-    await refetchWiki()
-    setIsGeneratingWiki(false)
+    generateWiki.mutate({ projectId })
   }
 
   const handleSaveWiki = async () => {
-    // Create or update a documentation entry
-    await api.knowledge.create.mutate({
+    createKnowledge.mutate({
       projectId: projectId,
       title: 'Project Wiki',
       content: wikiContent,
@@ -65,10 +84,9 @@ export default function ProjectKnowledgePage() {
         lastEditedAt: new Date().toISOString()
       }
     })
-    setIsEditingWiki(false)
   }
 
-  const entryTypeConfig = {
+  const entryTypeConfig: Record<string, { icon: any; color: string }> = {
     note: { icon: FileText, color: 'bg-blue-100 text-blue-700' },
     meeting: { icon: '👥', color: 'bg-purple-100 text-purple-700' },
     decision: { icon: '💡', color: 'bg-yellow-100 text-yellow-700' },
@@ -87,202 +105,183 @@ export default function ProjectKnowledgePage() {
           <h1 className="text-3xl font-bold text-gray-900">Knowledge Base</h1>
           <p className="text-gray-600 mt-2">{project?.name}</p>
         </div>
+        <QuickNote
+          projectId={projectId}
+          onNoteAdded={() => refetchEntries()}
+        />
       </div>
 
-      {/* Quick Note Input */}
-      <QuickNote
-        projectId={projectId}
-        onNoteAdded={() => refetchEntries()}
-      />
-
       {/* Search Bar */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+        <Input
+          type="search"
+          placeholder="Search knowledge base..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-10"
+        />
+        {searchQuery.length > 0 && searchQuery.length <= 2 && (
+          <p className="text-sm text-gray-500 mt-1">Type at least 3 characters to search</p>
+        )}
+        {searchResults && searchQuery.length > 2 && (
+          <p className="text-sm text-gray-600 mt-1">
+            Found {searchResults.length} result{searchResults.length !== 1 ? 's' : ''}
+          </p>
+        )}
+      </div>
+
+      {/* Project Wiki Section */}
       <Card>
-        <CardContent className="py-4">
-          <div className="flex gap-2">
-            <div className="relative flex-grow">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Search knowledge base..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Button variant="outline">
-              <Search className="h-4 w-4" />
-            </Button>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Book className="h-5 w-5 text-indigo-600" />
+            <CardTitle>Project Wiki</CardTitle>
           </div>
-          {searchQuery.length > 2 && searchResults && (
-            <p className="text-sm text-gray-600 mt-2">
-              Found {searchResults.length} results
-            </p>
+          <div className="flex gap-2">
+            {!isEditingWiki ? (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleGenerateWiki}
+                  disabled={isGeneratingWiki || generateWiki.isPending}
+                >
+                  {isGeneratingWiki || generateWiki.isPending ? (
+                    <>
+                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Brain className="mr-2 h-4 w-4" />
+                      AI Generate
+                    </>
+                  )}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsEditingWiki(true)}
+                >
+                  <Edit className="mr-2 h-4 w-4" />
+                  Edit
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  size="sm"
+                  onClick={handleSaveWiki}
+                  disabled={createKnowledge.isPending}
+                >
+                  <Save className="mr-2 h-4 w-4" />
+                  {createKnowledge.isPending ? 'Saving...' : 'Save'}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setIsEditingWiki(false)
+                    // Reset to original content
+                    const wikiEntry = entries?.find((e: any) =>
+                      e.metadata?.isWiki === true || e.title === 'Project Wiki'
+                    )
+                    if (wikiEntry) {
+                      setWikiContent(wikiEntry.content)
+                    }
+                  }}
+                >
+                  <X className="mr-2 h-4 w-4" />
+                  Cancel
+                </Button>
+              </>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent>
+          {isEditingWiki ? (
+            <Textarea
+              value={wikiContent}
+              onChange={(e) => setWikiContent(e.target.value)}
+              placeholder="Write your project documentation here..."
+              rows={10}
+              className="font-mono"
+            />
+          ) : (
+            <div className="prose max-w-none">
+              {wikiContent ? (
+                <div className="whitespace-pre-wrap">{wikiContent}</div>
+              ) : (
+                <p className="text-gray-500 italic">
+                  No wiki content yet. Click "AI Generate" to create one automatically or "Edit" to write your own.
+                </p>
+              )}
+            </div>
           )}
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Wiki/Documentation Panel */}
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle className="flex items-center gap-2">
-                  <Book className="h-5 w-5 text-indigo-600" />
-                  Project Wiki
-                </CardTitle>
-                <div className="flex gap-2">
-                  {!isEditingWiki ? (
-                    <>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={handleGenerateWiki}
-                        disabled={isGeneratingWiki}
-                      >
-                        <RefreshCw className={`h-4 w-4 mr-1 ${isGeneratingWiki ? 'animate-spin' : ''}`} />
-                        Generate
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setIsEditingWiki(true)}
-                      >
-                        <Edit className="h-4 w-4 mr-1" />
-                        Edit
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setIsEditingWiki(false)}
-                      >
-                        <X className="h-4 w-4 mr-1" />
-                        Cancel
-                      </Button>
-                      <Button
-                        size="sm"
-                        onClick={handleSaveWiki}
-                      >
-                        <Save className="h-4 w-4 mr-1" />
-                        Save
-                      </Button>
-                    </>
-                  )}
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {isEditingWiki ? (
-                <Textarea
-                  value={wikiContent}
-                  onChange={(e) => setWikiContent(e.target.value)}
-                  className="min-h-[500px] font-mono text-sm"
-                  placeholder="# Project Overview
+      {/* Knowledge Entries */}
+      <div>
+        <h2 className="text-xl font-semibold mb-4">Recent Entries</h2>
+        {displayEntries && displayEntries.length > 0 ? (
+          <div className="space-y-3">
+            {displayEntries.map((entry: any) => {
+              const config = entryTypeConfig[entry.type] || entryTypeConfig.note
+              const Icon = config.icon
 
-## Introduction
-Add your project documentation here...
-
-## Key Concepts
-
-## Architecture
-
-## Resources"
-                />
-              ) : (
-                <div className="prose prose-sm max-w-none">
-                  {wikiContent ? (
-                    <ReactMarkdown>{wikiContent}</ReactMarkdown>
-                  ) : (
-                    <div className="text-center py-12 text-gray-500">
-                      <Brain className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                      <p>No wiki content yet.</p>
-                      <p className="text-sm mt-2">
-                        Click "Generate" to create one from existing knowledge or "Edit" to write manually.
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Knowledge Entries List */}
-        <div>
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Hash className="h-5 w-5 text-gray-600" />
-                Knowledge Entries
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {displayEntries && displayEntries.length > 0 ? (
-                <div className="space-y-3 max-h-[600px] overflow-y-auto">
-                  {displayEntries.map((entry: any) => {
-                    const entryType = (entry.metadata as any)?.type || 'note'
-                    const config = entryTypeConfig[entryType as keyof typeof entryTypeConfig]
-
-                    return (
-                      <div
-                        key={entry.id}
-                        className="border rounded-lg p-3 hover:bg-gray-50 cursor-pointer transition-colors"
-                      >
-                        <div className="flex items-start justify-between">
-                          <div className="flex-grow">
-                            <h4 className="font-medium text-sm text-gray-900 line-clamp-1">
-                              {entry.title}
-                            </h4>
-                            <p className="text-xs text-gray-600 line-clamp-2 mt-1">
-                              {entry.content}
-                            </p>
-                            <div className="flex items-center gap-2 mt-2">
-                              <Badge
-                                variant="secondary"
-                                className={`text-xs ${config?.color || 'bg-gray-100'}`}
-                              >
-                                {typeof config?.icon === 'string' ? (
-                                  <span className="mr-1">{config.icon}</span>
-                                ) : config?.icon ? (
-                                  <config.icon className="h-3 w-3 mr-1" />
-                                ) : null}
-                                {entryType}
-                              </Badge>
-                              {entry.similarity && (
-                                <Badge variant="outline" className="text-xs">
-                                  {(entry.similarity * 100).toFixed(0)}% match
-                                </Badge>
-                              )}
-                            </div>
-                            {entry.tags && Array.isArray(entry.tags) && entry.tags.length > 0 && (
-                              <div className="flex gap-1 mt-2 flex-wrap">
-                                {entry.tags.map((tag: string) => (
-                                  <span
-                                    key={tag}
-                                    className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded"
-                                  >
-                                    #{tag}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
-                          </div>
+              return (
+                <Card key={entry.id} className="hover:shadow-md transition-shadow">
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          {typeof Icon === 'string' ? (
+                            <span className="text-xl">{Icon}</span>
+                          ) : (
+                            <Icon className="h-5 w-5" />
+                          )}
+                          <h3 className="font-semibold">{entry.title}</h3>
+                          <Badge className={config.color}>
+                            {entry.type.replace('_', ' ')}
+                          </Badge>
                         </div>
+                        <p className="text-gray-600 whitespace-pre-wrap">
+                          {entry.content.substring(0, 200)}
+                          {entry.content.length > 200 && '...'}
+                        </p>
+                        {entry.tags && entry.tags.length > 0 && (
+                          <div className="flex gap-2 mt-2">
+                            {entry.tags.map((tag: string, index: number) => (
+                              <span key={index} className="inline-flex items-center gap-1 text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                                <Hash className="h-3 w-3" />
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                    )
-                  })}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-gray-500">
-                  <FileText className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-                  <p className="text-sm">No knowledge entries yet</p>
-                </div>
-              )}
+                      <div className="text-xs text-gray-500">
+                        {new Date(entry.created_at).toLocaleDateString()}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </div>
+        ) : (
+          <Card>
+            <CardContent className="p-8 text-center">
+              <Book className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-500">No knowledge entries yet.</p>
+              <p className="text-sm text-gray-400 mt-2">
+                Use the Quick Note button to add your first entry.
+              </p>
             </CardContent>
           </Card>
-        </div>
+        )}
       </div>
     </div>
   )
