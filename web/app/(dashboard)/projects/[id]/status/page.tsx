@@ -10,7 +10,7 @@ import ReactMarkdown from 'react-markdown'
 
 export default function ProjectStatusPage() {
   const params = useParams()
-  const projectId = projectId as string
+  const projectId = params.id as string
   const [isGenerating, setIsGenerating] = useState(false)
 
   // Fetch project details

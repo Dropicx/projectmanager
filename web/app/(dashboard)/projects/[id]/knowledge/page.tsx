@@ -10,7 +10,7 @@ import ReactMarkdown from 'react-markdown'
 
 export default function ProjectKnowledgePage() {
   const params = useParams()
-  const projectId = projectId as string
+  const projectId = params.id as string
   const [isEditingWiki, setIsEditingWiki] = useState(false)
   const [wikiContent, setWikiContent] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
