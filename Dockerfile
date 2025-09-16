@@ -119,10 +119,14 @@ RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 worker
 
 # Copy the entire built application with all dependencies
-# This ensures all node_modules are present
+# Important: Preserve the complete pnpm workspace structure
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/worker ./worker
 COPY --from=builder /app/packages ./packages
+# Copy package files for proper module resolution
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
+COPY --from=builder /app/pnpm-lock.yaml ./pnpm-lock.yaml
 
 # Clean up unnecessary files to reduce image size
 RUN find . -name "*.ts" -not -path "*/node_modules/*" -delete && \
@@ -136,11 +140,9 @@ RUN find . -name "*.ts" -not -path "*/node_modules/*" -delete && \
 RUN echo "=== Verifying worker setup ===" && \
     echo "Worker dist contents:" && ls -la /app/worker/dist/ && \
     echo "Packages AI dist:" && ls -la /app/packages/ai/dist/ && \
-    echo "AI node_modules check:" && ls -la /app/packages/ai/node_modules/@aws-sdk/ 2>/dev/null | head -5 || echo "AI node_modules not found" && \
-    echo "Worker node_modules check:" && ls -la /app/worker/node_modules/@consulting-platform/ 2>/dev/null || echo "Worker node_modules not found" && \
     echo "Root node_modules check:" && ls -la /app/node_modules/@aws-sdk/ 2>/dev/null | head -5 || echo "Root AWS SDK not found" && \
-    echo "Checking for AWS SDK in various locations:" && \
-    find /app -name "client-bedrock-runtime" -type d 2>/dev/null | head -5 && \
+    echo "PNPM store check:" && ls -la /app/node_modules/.pnpm/ 2>/dev/null | grep aws-sdk | head -5 || echo "No pnpm store found" && \
+    echo "Testing require resolution:" && node -e "try { require('@consulting-platform/ai'); console.log('AI package resolved successfully'); } catch(e) { console.error('Failed to resolve AI package:', e.message); }" && \
     echo "=== Setup verification complete ==="
 
 USER worker
