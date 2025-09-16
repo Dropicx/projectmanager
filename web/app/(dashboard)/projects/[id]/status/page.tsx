@@ -1,27 +1,30 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useParams } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle, Button, Badge, Progress } from '@consulting-platform/ui'
 import { RefreshCw, TrendingUp, AlertCircle, CheckCircle, Clock, Users, Calendar, Target, Activity, Brain } from 'lucide-react'
-import { api } from '@/lib/trpc/client'
+import { trpc as api } from '@/app/providers/trpc-provider'
 import { formatDistanceToNow } from 'date-fns'
 import ReactMarkdown from 'react-markdown'
 
-export default function ProjectStatusPage({ params }: { params: { id: string } }) {
+export default function ProjectStatusPage() {
+  const params = useParams()
+  const projectId = projectId as string
   const [isGenerating, setIsGenerating] = useState(false)
 
   // Fetch project details
-  const { data: project } = api.projects.get.useQuery({ id: params.id })
+  const { data: project } = api.projects.get.useQuery({ id: projectId })
 
   // Fetch knowledge entries
   const { data: recentEntries, refetch: refetchEntries } = api.knowledge.getByProject.useQuery({
-    projectId: params.id,
+    projectId: projectId,
     limit: 10
   })
 
   // Generate status query
   const { data: statusData, refetch: refetchStatus, isLoading } = api.knowledge.generateStatus.useQuery({
-    projectId: params.id
+    projectId: projectId
   })
 
   const handleRegenerate = async () => {

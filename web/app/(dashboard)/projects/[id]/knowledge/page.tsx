@@ -1,37 +1,40 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useParams } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle, Button, Input, Badge, Textarea } from '@consulting-platform/ui'
 import { Book, Edit, Save, X, RefreshCw, Search, Plus, Brain, FileText, Hash } from 'lucide-react'
-import { api } from '@/lib/trpc/client'
+import { trpc as api } from '@/app/providers/trpc-provider'
 import { QuickNote } from '@/components/knowledge/quick-note'
 import ReactMarkdown from 'react-markdown'
 
-export default function ProjectKnowledgePage({ params }: { params: { id: string } }) {
+export default function ProjectKnowledgePage() {
+  const params = useParams()
+  const projectId = projectId as string
   const [isEditingWiki, setIsEditingWiki] = useState(false)
   const [wikiContent, setWikiContent] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [isGeneratingWiki, setIsGeneratingWiki] = useState(false)
 
   // Fetch project
-  const { data: project } = api.projects.get.useQuery({ id: params.id })
+  const { data: project } = api.projects.get.useQuery({ id: projectId })
 
   // Fetch knowledge entries
   const { data: entries, refetch: refetchEntries } = api.knowledge.getByProject.useQuery({
-    projectId: params.id,
+    projectId: projectId,
     limit: 100
   })
 
   // Generate wiki
   const { data: wikiData, refetch: refetchWiki } = api.knowledge.generateWiki.useQuery({
-    projectId: params.id
+    projectId: projectId
   })
 
   // Search knowledge base
   const { data: searchResults } = api.knowledge.search.useQuery(
     {
       query: searchQuery,
-      projectId: params.id,
+      projectId: projectId,
       limit: 10
     },
     { enabled: searchQuery.length > 2 }
@@ -52,7 +55,7 @@ export default function ProjectKnowledgePage({ params }: { params: { id: string 
   const handleSaveWiki = async () => {
     // Create or update a documentation entry
     await api.knowledge.create.mutate({
-      projectId: params.id,
+      projectId: projectId,
       title: 'Project Wiki',
       content: wikiContent,
       type: 'documentation',
@@ -88,7 +91,7 @@ export default function ProjectKnowledgePage({ params }: { params: { id: string 
 
       {/* Quick Note Input */}
       <QuickNote
-        projectId={params.id}
+        projectId={projectId}
         onNoteAdded={() => refetchEntries()}
       />
 

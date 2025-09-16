@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, Button, Input, Label, Progress } from '@consulting-platform/ui'
 import { Brain, TrendingUp, AlertCircle, DollarSign, Activity, Zap, BarChart3, Calendar, Settings2 } from 'lucide-react'
-import { api } from '@/lib/trpc/client'
+import { trpc as api } from '@/app/providers/trpc-provider'
 import { formatDistanceToNow } from 'date-fns'
 
 export function AIUsageDashboard() {

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, Button, Input, Label, Textarea, Badge } from '@consulting-platform/ui'
 import { Plus, Save, X, FileText, Users, Lightbulb, AlertCircle, MessageSquare, ListTodo } from 'lucide-react'
-import { api } from '@/lib/trpc/client'
+import { trpc as api } from '@/app/providers/trpc-provider'
 
 interface QuickNoteProps {
   projectId: string
