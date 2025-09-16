@@ -13,13 +13,27 @@ const redisOptions = {
 }
 
 // Parse Redis URL if provided
-const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379'
-console.log('Worker starting with Redis URL:', redisUrl ? redisUrl.replace(/:[^:@]*@/, ':****@') : 'not set')
+let redisUrl = process.env.REDIS_URL || 'redis://localhost:6379'
+console.log('Original Redis URL:', redisUrl ? redisUrl.replace(/:[^:@]*@/, ':****@') : 'not set')
 console.log('Environment variables available:', Object.keys(process.env).filter(k => k.includes('REDIS')))
+
+// If using Railway's internal URL, try the public URL if available
+if (redisUrl.includes('.railway.internal')) {
+  const publicUrl = process.env.REDIS_PUBLIC_URL || process.env.REDISHOST
+  if (publicUrl) {
+    console.log('Using public Redis URL instead of internal')
+    redisUrl = publicUrl
+  } else {
+    console.log('Warning: Using Railway internal URL, may have connectivity issues')
+    // Railway internal URLs might need IPv6 support
+    console.log('Consider adding REDIS_PUBLIC_URL environment variable with the public Redis URL')
+  }
+}
 
 // Create Redis connection with error handling
 const redis = new Redis(redisUrl, {
   ...redisOptions,
+  family: 0, // 0 = auto-detect (both IPv4 and IPv6), 4 = IPv4 only, 6 = IPv6 only
   retryStrategy: (times) => {
     const delay = Math.min(times * 50, 2000)
     console.log(`Redis connection attempt ${times}, retrying in ${delay}ms...`)
@@ -45,6 +59,7 @@ const aiOrchestrator = new AIOrchestrator()
 // Job queues with proper Redis configuration
 const queueConnection = new Redis(redisUrl, {
   ...redisOptions,
+  family: 0,
   retryStrategy: (times) => Math.min(times * 50, 2000)
 })
 const aiInsightsQueue = new Queue('ai-insights', { connection: queueConnection })
@@ -53,6 +68,7 @@ const riskAssessmentQueue = new Queue('risk-assessment', { connection: queueConn
 // Background job processors
 const workerConnection1 = new Redis(redisUrl, {
   ...redisOptions,
+  family: 0,
   retryStrategy: (times) => Math.min(times * 50, 2000)
 })
 const aiInsightsWorker = new Worker(
@@ -106,6 +122,7 @@ const aiInsightsWorker = new Worker(
 
 const workerConnection2 = new Redis(redisUrl, {
   ...redisOptions,
+  family: 0,
   retryStrategy: (times) => Math.min(times * 50, 2000)
 })
 const riskAssessmentWorker = new Worker(
