@@ -20,11 +20,21 @@ COPY packages/ui/package.json ./packages/ui/
 # Install all dependencies
 RUN pnpm install --frozen-lockfile
 
+# Verify AWS SDK was installed
+RUN echo "=== Verifying AWS SDK installation in builder ===" && \
+    ls -la /app/node_modules/@aws-sdk/client-bedrock-runtime 2>/dev/null || echo "AWS SDK not in root node_modules" && \
+    ls -la /app/packages/ai/node_modules/@aws-sdk/client-bedrock-runtime 2>/dev/null || echo "AWS SDK not in AI package node_modules" && \
+    echo "=== End verification ==="
+
 # Copy all source files
 COPY . .
 
 # Build packages first
 WORKDIR /app/packages/ai
+# Ensure AI package has its dependencies
+RUN pnpm install --frozen-lockfile && \
+    echo "AI package dependencies:" && \
+    ls -la node_modules/@aws-sdk/ 2>/dev/null | head -5 || echo "No AWS SDK in AI node_modules"
 RUN echo "Building AI package..." && \
     chmod +x build.sh && \
     pnpm build && \
