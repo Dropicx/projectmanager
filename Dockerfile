@@ -105,37 +105,32 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Install pnpm for production dependency installation
-RUN corepack enable && corepack prepare pnpm@9.14.0 --activate
-
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 worker
 
-# Copy package files for installation
-COPY --from=builder /app/package.json /app/pnpm-workspace.yaml /app/pnpm-lock.yaml ./
-COPY --from=builder /app/worker/package.json ./worker/
-COPY --from=builder /app/packages/ai/package.json ./packages/ai/
-COPY --from=builder /app/packages/database/package.json ./packages/database/
-COPY --from=builder /app/packages/api/package.json ./packages/api/
-COPY --from=builder /app/packages/ui/package.json ./packages/ui/
+# Copy the entire built application with all dependencies
+# This ensures all node_modules are present
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/worker ./worker
+COPY --from=builder /app/packages ./packages
 
-# Install production dependencies only
-RUN pnpm install --frozen-lockfile --prod
-
-# Copy built artifacts
-COPY --from=builder /app/worker/dist ./worker/dist
-COPY --from=builder /app/packages/ai/dist ./packages/ai/dist
-COPY --from=builder /app/packages/database/dist ./packages/database/dist
-COPY --from=builder /app/packages/database/schema.ts ./packages/database/schema.ts
-COPY --from=builder /app/packages/database/index.ts ./packages/database/index.ts
+# Clean up unnecessary files to reduce image size
+RUN find . -name "*.ts" -not -path "*/node_modules/*" -delete && \
+    find . -name "*.tsx" -not -path "*/node_modules/*" -delete && \
+    find . -name "tsconfig.json" -not -path "*/node_modules/*" -delete && \
+    find . -name "*.map" -not -path "*/node_modules/*" -delete && \
+    find . -name ".gitignore" -delete && \
+    rm -rf ./packages/ui ./packages/api/src ./packages/ai/src ./packages/database/src ./worker/src
 
 # Debug: Verify the setup
 RUN echo "=== Verifying worker setup ===" && \
     echo "Worker dist contents:" && ls -la /app/worker/dist/ && \
     echo "Packages AI dist:" && ls -la /app/packages/ai/dist/ && \
-    echo "AI node_modules check:" && ls -la /app/packages/ai/node_modules/@aws-sdk/ | head -5 && \
-    echo "Worker node_modules check:" && ls -la /app/worker/node_modules/@consulting-platform/ && \
-    echo "Root node_modules check:" && ls -la /app/node_modules/@aws-sdk/ | head -5 && \
+    echo "AI node_modules check:" && ls -la /app/packages/ai/node_modules/@aws-sdk/ 2>/dev/null | head -5 || echo "AI node_modules not found" && \
+    echo "Worker node_modules check:" && ls -la /app/worker/node_modules/@consulting-platform/ 2>/dev/null || echo "Worker node_modules not found" && \
+    echo "Root node_modules check:" && ls -la /app/node_modules/@aws-sdk/ 2>/dev/null | head -5 || echo "Root AWS SDK not found" && \
+    echo "Checking for AWS SDK in various locations:" && \
+    find /app -name "client-bedrock-runtime" -type d 2>/dev/null | head -5 && \
     echo "=== Setup verification complete ==="
 
 USER worker
