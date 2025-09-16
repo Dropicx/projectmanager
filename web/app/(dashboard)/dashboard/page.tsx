@@ -2,18 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@consulting-platform/ui'
 import { trpc } from '@/app/providers/trpc-provider'
-
-// Force dynamic rendering to avoid build-time Clerk requirements
-export const dynamic = 'force-dynamic'
-export const runtime = 'nodejs'
-
-const useUser = () => {
-  if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY) {
-    const { useUser: clerkUseUser } = require('@clerk/nextjs')
-    return clerkUseUser()
-  }
-  return { user: null }
-}
+import { useUser } from '@clerk/nextjs'
 
 export default function DashboardPage() {
   const { user } = useUser()
