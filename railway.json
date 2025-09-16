@@ -3,11 +3,11 @@
   "build": {
     "builder": "DOCKERFILE",
     "watchPatterns": [
-      "/Dockerfile",
-      "/package.json",
-      "/pnpm-lock.yaml",
-      "/pnpm-workspace.yaml",
-      "/railway.json"
+      "Dockerfile",
+      "package.json",
+      "pnpm-lock.yaml",
+      "pnpm-workspace.yaml",
+      "railway.json"
     ]
   },
   "deploy": {

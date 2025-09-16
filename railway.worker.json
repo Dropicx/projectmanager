@@ -3,14 +3,14 @@
   "build": {
     "builder": "DOCKERFILE",
     "watchPatterns": [
-      "/worker/**",
-      "/packages/**",
-      "/package.json",
-      "/pnpm-lock.yaml",
-      "/pnpm-workspace.yaml",
-      "/tsconfig.json",
-      "/Dockerfile",
-      "/railway.worker.json"
+      "worker/**",
+      "packages/**",
+      "package.json",
+      "pnpm-lock.yaml",
+      "pnpm-workspace.yaml",
+      "tsconfig.json",
+      "Dockerfile",
+      "railway.worker.json"
     ]
   },
   "deploy": {
