@@ -13,6 +13,9 @@ const redisOptions = {
 
 // Parse Redis URL if provided
 const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379'
+console.log('Worker starting with Redis URL:', redisUrl ? redisUrl.replace(/:[^:@]*@/, ':****@') : 'not set')
+console.log('Environment variables available:', Object.keys(process.env).filter(k => k.includes('REDIS')))
+
 const redis = new Redis(redisUrl, redisOptions)
 
 // AI Orchestrator
