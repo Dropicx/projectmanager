@@ -160,7 +160,6 @@ export function DashboardSidebar() {
             isCollapsed && "lg:justify-center"
           )}>
             <UserButton
-              afterSignOutUrl="/"
               appearance={{
                 elements: {
                   avatarBox: "w-10 h-10"

@@ -121,6 +121,7 @@ async function pushSchema() {
         "project_id" uuid,
         "title" text NOT NULL,
         "content" text NOT NULL,
+        "embedding" jsonb,
         "metadata" jsonb DEFAULT '{}'::jsonb,
         "tags" jsonb DEFAULT '[]'::jsonb,
         "is_public" boolean DEFAULT false,
