@@ -36,6 +36,12 @@ RUN pnpm build || true
 # Build the specified service
 ARG SERVICE
 WORKDIR /app/web
+# Set dummy env vars for build time only
+ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_dummy_key_for_build_only
+ENV NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+ENV NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+ENV NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
+ENV NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/dashboard
 RUN if [ "$SERVICE" = "web" ]; then \
         pnpm build; \
     fi
