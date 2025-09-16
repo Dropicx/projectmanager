@@ -185,13 +185,14 @@ export default function ProjectStatusPage() {
             <div className="space-y-4">
               {recentEntries.map((entry: any) => {
                 const entryType = (entry.metadata as any)?.type || 'note'
-                const typeConfig = {
+                const typeConfigs: Record<string, { color: string; icon: string }> = {
                   note: { color: 'bg-blue-100 text-blue-700', icon: '📝' },
                   meeting: { color: 'bg-purple-100 text-purple-700', icon: '👥' },
                   decision: { color: 'bg-yellow-100 text-yellow-700', icon: '💡' },
                   feedback: { color: 'bg-green-100 text-green-700', icon: '💬' },
                   task_update: { color: 'bg-orange-100 text-orange-700', icon: '✅' }
-                }[entryType] || { color: 'bg-gray-100 text-gray-700', icon: '📄' }
+                }
+                const typeConfig = typeConfigs[entryType] || { color: 'bg-gray-100 text-gray-700', icon: '📄' }
 
                 return (
                   <div key={entry.id} className="flex gap-4">
