@@ -11,7 +11,9 @@
   "dependencies": {
     "@aws-sdk/client-bedrock-runtime": "^3.888.0",
     "@aws-sdk/credential-providers": "^3.888.0",
+    "@consulting-platform/database": "workspace:*",
     "@smithy/node-http-handler": "^4.2.1",
+    "drizzle-orm": "^0.44.5",
     "openai": "^5.20.2",
     "zod": "^3.25.76"
   },

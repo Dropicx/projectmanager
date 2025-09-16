@@ -146,6 +146,30 @@ async function pushSchema() {
 
     console.log("Tables created successfully!");
 
+    // Add new columns to organizations table if they don't exist
+    console.log("Adding budget tracking columns...");
+
+    const alterCommands = [
+      `ALTER TABLE "organizations" ADD COLUMN IF NOT EXISTS "monthly_budget_cents" integer DEFAULT 10000`,
+      `ALTER TABLE "organizations" ADD COLUMN IF NOT EXISTS "current_month_usage_cents" integer DEFAULT 0`,
+      `ALTER TABLE "organizations" ADD COLUMN IF NOT EXISTS "usage_reset_date" timestamp DEFAULT now()`,
+      `ALTER TABLE "organizations" ADD COLUMN IF NOT EXISTS "daily_limit_cents" integer DEFAULT 1000`,
+      `ALTER TABLE "organizations" ADD COLUMN IF NOT EXISTS "current_day_usage_cents" integer DEFAULT 0`
+    ];
+
+    for (const alterCmd of alterCommands) {
+      try {
+        await client.unsafe(alterCmd);
+        console.log(`✓ ${alterCmd.split('"')[3]} column added`);
+      } catch (err) {
+        if (err.message.includes('already exists')) {
+          console.log(`✓ ${alterCmd.split('"')[3]} column already exists`);
+        } else {
+          console.warn(`Warning: ${err.message}`);
+        }
+      }
+    }
+
     // Now add foreign keys
     console.log("Adding foreign key constraints...");
 

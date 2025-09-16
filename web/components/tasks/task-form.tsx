@@ -138,7 +138,7 @@ export function TaskForm({ projectId, task, onSuccess, onCancel }: TaskFormProps
           value={formData.tags.join(', ')}
           onChange={(e) => setFormData({
             ...formData,
-            tags: e.target.value.split(',').map(t => t.trim()).filter(t => t)
+            tags: e.target.value.split(',').map((t: string) => t.trim()).filter((t: string) => t)
           })}
           placeholder="bug, feature, urgent"
         />

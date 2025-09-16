@@ -149,7 +149,7 @@ export function TaskList({ projectId }: TaskListProps) {
 
       {/* Task List */}
       <div className="space-y-3">
-        {tasks?.map((task) => (
+        {tasks?.map((task: any) => (
           <Card key={task.id} className="hover:shadow-md transition-shadow">
             <CardContent className="p-4">
               <div className="flex items-start gap-3">

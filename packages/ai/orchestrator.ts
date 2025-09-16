@@ -1,27 +1,68 @@
 import { BedrockClient } from './bedrock/client'
 import { AITask, AIResponse, ModelConfig, ModelType, AITaskType } from './types'
+import { UsageLimiter } from './usage-limiter'
+import { db } from '@consulting-platform/database'
+import { users } from '@consulting-platform/database/schema'
+import { eq } from 'drizzle-orm'
 
 export class AIOrchestrator {
   private bedrockClient: BedrockClient
   private modelConfigs: Map<ModelType, ModelConfig>
+  private usageLimiter: UsageLimiter
 
   constructor() {
     this.bedrockClient = new BedrockClient()
     this.modelConfigs = this.initializeModelConfigs()
+    this.usageLimiter = new UsageLimiter()
   }
 
   async processRequest(task: AITask): Promise<AIResponse> {
     const modelConfig = this.selectOptimalModel(task)
     const modelId = this.getModelId(modelConfig.model)
-    
+
+    // Get user's organization
+    const organizationId = await this.getUserOrganization(task.userId)
+    if (!organizationId) {
+      throw new Error('User organization not found')
+    }
+
+    // Check budget before making API call
+    const estimatedTokens = this.usageLimiter.estimateTokens(task.prompt) + 2000 // Add buffer for response
+    const budgetCheck = await this.usageLimiter.checkBudget(
+      organizationId,
+      modelConfig.model,
+      estimatedTokens
+    )
+
+    if (!budgetCheck.allowed) {
+      throw new Error(`Budget limit exceeded: ${budgetCheck.reason}`)
+    }
+
+    // Log budget stats if near limit
+    if (budgetCheck.stats?.isNearLimit) {
+      console.warn(`⚠️ Organization ${organizationId} is at ${budgetCheck.stats.percentUsed.toFixed(1)}% of monthly budget`)
+    }
+
+    // Make the actual API call
+    const startTime = Date.now()
     const response = await this.bedrockClient.invokeModel(
       modelId,
       task.prompt,
       modelConfig
     )
+    const latencyMs = Date.now() - startTime
 
-    // Log interaction for cost tracking
-    await this.logInteraction(task, response)
+    // Record actual usage
+    await this.usageLimiter.recordUsage(
+      organizationId,
+      task.userId,
+      task.projectId || null,
+      modelConfig.model,
+      task.prompt,
+      response.content,
+      response.tokensUsed,
+      latencyMs
+    )
 
     return response
   }
@@ -166,16 +207,19 @@ export class AIOrchestrator {
     return configs
   }
 
-  private async logInteraction(task: AITask, response: AIResponse): Promise<void> {
-    // This would typically save to database
-    // For now, just log to console
-    console.log('AI Interaction:', {
-      taskType: task.type,
-      model: response.model,
-      tokensUsed: response.tokensUsed,
-      costCents: response.costCents,
-      latencyMs: response.latencyMs
-    })
+  private async getUserOrganization(userId: string): Promise<string | null> {
+    try {
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, userId))
+        .limit(1)
+
+      return user?.organization_id || null
+    } catch (error) {
+      console.error('Error fetching user organization:', error)
+      return null
+    }
   }
 
   // Utility methods for specific use cases

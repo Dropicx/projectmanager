@@ -1,3 +1,5 @@
 export { AIOrchestrator } from './orchestrator'
 export { BedrockClient } from './bedrock/client'
+export { UsageLimiter } from './usage-limiter'
+export type { UsageStats } from './usage-limiter'
 export * from './types'
