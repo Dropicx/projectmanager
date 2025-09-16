@@ -28,9 +28,8 @@ WORKDIR /app/packages/ai
 RUN echo "Building AI package..." && \
     pnpm build && \
     echo "AI package built successfully" && \
-    echo "AI package directory contents:" && ls -la && \
     echo "AI package dist contents:" && ls -la dist/ && \
-    echo "Checking index.js specifically:" && ls -la dist/index.js
+    echo "Verifying index.js exists:" && test -f dist/index.js && echo "✓ index.js found"
 
 WORKDIR /app/packages/database
 RUN echo "Building database package..." && \
