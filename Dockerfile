@@ -105,47 +105,37 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
+# Install pnpm for production dependency installation
+RUN corepack enable && corepack prepare pnpm@9.14.0 --activate
+
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 worker
 
-# Copy worker build output
+# Copy package files for installation
+COPY --from=builder /app/package.json /app/pnpm-workspace.yaml /app/pnpm-lock.yaml ./
+COPY --from=builder /app/worker/package.json ./worker/
+COPY --from=builder /app/packages/ai/package.json ./packages/ai/
+COPY --from=builder /app/packages/database/package.json ./packages/database/
+COPY --from=builder /app/packages/api/package.json ./packages/api/
+COPY --from=builder /app/packages/ui/package.json ./packages/ui/
+
+# Install production dependencies only
+RUN pnpm install --frozen-lockfile --prod
+
+# Copy built artifacts
 COPY --from=builder /app/worker/dist ./worker/dist
-COPY --from=builder /app/worker/package.json ./worker/package.json
-
-# Copy root node_modules (includes shared dependencies)
-COPY --from=builder /app/node_modules ./node_modules
-
-# Copy built packages with their dist folders AND all necessary files
 COPY --from=builder /app/packages/ai/dist ./packages/ai/dist
-COPY --from=builder /app/packages/ai/package.json ./packages/ai/package.json
-COPY --from=builder /app/packages/ai/tsconfig.json ./packages/ai/tsconfig.json
 COPY --from=builder /app/packages/database/dist ./packages/database/dist
-COPY --from=builder /app/packages/database/package.json ./packages/database/package.json
 COPY --from=builder /app/packages/database/schema.ts ./packages/database/schema.ts
 COPY --from=builder /app/packages/database/index.ts ./packages/database/index.ts
-
-# Copy AI package node_modules (includes AWS SDK dependencies)
-COPY --from=builder /app/packages/ai/node_modules ./packages/ai/node_modules
-
-# Copy database package node_modules
-COPY --from=builder /app/packages/database/node_modules ./packages/database/node_modules
-
-# Copy worker node_modules (includes local dependencies)
-COPY --from=builder /app/worker/node_modules ./worker/node_modules
-
-# Create proper symlinks for workspace packages
-RUN mkdir -p /app/worker/node_modules/@consulting-platform && \
-    ln -sf /app/packages/ai /app/worker/node_modules/@consulting-platform/ai && \
-    ln -sf /app/packages/database /app/worker/node_modules/@consulting-platform/database
 
 # Debug: Verify the setup
 RUN echo "=== Verifying worker setup ===" && \
     echo "Worker dist contents:" && ls -la /app/worker/dist/ && \
     echo "Packages AI dist:" && ls -la /app/packages/ai/dist/ && \
-    echo "AI package.json check:" && cat /app/packages/ai/package.json | grep main && \
-    echo "Symlink check:" && ls -la /app/worker/node_modules/@consulting-platform/ && \
-    echo "AI package via symlink:" && ls -la /app/worker/node_modules/@consulting-platform/ai/ && \
-    echo "AI dist via symlink:" && ls -la /app/worker/node_modules/@consulting-platform/ai/dist/ && \
+    echo "AI node_modules check:" && ls -la /app/packages/ai/node_modules/@aws-sdk/ | head -5 && \
+    echo "Worker node_modules check:" && ls -la /app/worker/node_modules/@consulting-platform/ && \
+    echo "Root node_modules check:" && ls -la /app/node_modules/@aws-sdk/ | head -5 && \
     echo "=== Setup verification complete ==="
 
 USER worker
