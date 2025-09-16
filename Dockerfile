@@ -36,8 +36,8 @@ RUN pnpm build || true
 # Build the specified service
 ARG SERVICE
 WORKDIR /app/web
-# Set dummy env vars for build time only
-ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_dummy_key_for_build_only
+# Set dummy env vars for build time only (using valid test key format)
+ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_bm9ibGUtZG9ua2V5LTIzLmNsZXJrLmFjY291bnRzLmRldiQ
 ENV NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
 ENV NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
 ENV NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard

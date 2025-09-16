@@ -6,6 +6,8 @@ import './globals.css'
 
 const inter = Inter({ subsets: ['latin'] })
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: 'Consulting Platform',
   description: 'Enterprise consulting project management platform with AI-powered insights',
