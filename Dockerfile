@@ -115,26 +115,35 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@9.14.0 --activate
+
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 worker
 
-# Copy the entire built application with all dependencies
-# Important: Preserve the complete pnpm workspace structure
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/worker ./worker
-COPY --from=builder /app/packages ./packages
-# Copy package files for proper module resolution
+# Copy package files and lockfile
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
 COPY --from=builder /app/pnpm-lock.yaml ./pnpm-lock.yaml
 
-# Clean up unnecessary files to reduce image size
-RUN find . -name "*.ts" -not -path "*/node_modules/*" -delete && \
-    find . -name "*.tsx" -not -path "*/node_modules/*" -delete && \
-    find . -name "tsconfig.json" -not -path "*/node_modules/*" -delete && \
-    find . -name "*.map" -not -path "*/node_modules/*" -delete && \
-    find . -name ".gitignore" -delete && \
-    rm -rf ./packages/ui ./packages/api/src ./packages/ai/src ./packages/database/src ./worker/src
+# Copy package.json files for all packages
+COPY --from=builder /app/worker/package.json ./worker/package.json
+COPY --from=builder /app/packages/ai/package.json ./packages/ai/package.json
+COPY --from=builder /app/packages/database/package.json ./packages/database/package.json
+COPY --from=builder /app/packages/api/package.json ./packages/api/package.json
+COPY --from=builder /app/packages/ui/package.json ./packages/ui/package.json
+
+# Copy built dist folders
+COPY --from=builder /app/worker/dist ./worker/dist
+COPY --from=builder /app/packages/ai/dist ./packages/ai/dist
+COPY --from=builder /app/packages/database/dist ./packages/database/dist
+# Copy required source files for database
+COPY --from=builder /app/packages/database/schema.ts ./packages/database/schema.ts
+COPY --from=builder /app/packages/database/index.ts ./packages/database/index.ts
+
+# Install production dependencies
+# This ensures all dependencies including nested ones are properly installed
+RUN pnpm install --prod --frozen-lockfile
 
 # Debug: Verify the setup
 RUN echo "=== Verifying worker setup ===" && \
