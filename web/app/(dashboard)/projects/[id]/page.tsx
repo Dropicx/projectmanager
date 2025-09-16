@@ -6,6 +6,7 @@ import { trpc } from '@/app/providers/trpc-provider'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button, Badge } from '@consulting-platform/ui'
 import { ArrowLeft, Edit, Trash, Calendar, DollarSign, Users, AlertCircle, Loader2, Brain } from 'lucide-react'
 import Link from 'next/link'
+import { TaskList } from '@/components/tasks/task-list'
 
 export default function ProjectDetailPage() {
   const params = useParams()
@@ -14,7 +15,6 @@ export default function ProjectDetailPage() {
   const [isDeleting, setIsDeleting] = useState(false)
 
   const { data: project, isLoading, error } = trpc.projects.getById.useQuery({ id: projectId })
-  const { data: tasks } = trpc.projects.getTasks.useQuery({ projectId })
   const utils = trpc.useUtils()
 
   const deleteProjectMutation = trpc.projects.delete.useMutation({
@@ -152,12 +152,12 @@ export default function ProjectDetailPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Tasks</CardTitle>
+            <CardTitle className="text-sm font-medium">Team</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{tasks?.length || 0}</div>
-            <p className="text-xs text-muted-foreground">Total tasks</p>
+            <div className="text-2xl font-bold">0</div>
+            <p className="text-xs text-muted-foreground">Team members</p>
           </CardContent>
         </Card>
       </div>
@@ -188,36 +188,7 @@ export default function ProjectDetailPage() {
       </Card>
 
       {/* Tasks Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Tasks</CardTitle>
-          <CardDescription>
-            Manage tasks and track progress for this project
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {tasks && tasks.length > 0 ? (
-            <div className="space-y-2">
-              {tasks.map((task: any) => (
-                <div key={task.id} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div>
-                    <p className="font-medium">{task.title}</p>
-                    <p className="text-sm text-muted-foreground">{task.description}</p>
-                  </div>
-                  <Badge variant={task.status === 'completed' ? 'default' : 'secondary'}>
-                    {task.status}
-                  </Badge>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground mb-4">No tasks yet</p>
-              <Button variant="outline">Add Task</Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <TaskList projectId={projectId} />
     </div>
   )
 }
