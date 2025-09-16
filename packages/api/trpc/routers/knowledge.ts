@@ -113,7 +113,7 @@ export const knowledgeRouter = router({
 
       // Perform semantic search using embeddings
       const results = entries
-        .map(entry => {
+        .map((entry: any) => {
           if (!entry.embedding) return null
           const similarity = cosineSimilarity(
             queryEmbedding,
@@ -121,8 +121,8 @@ export const knowledgeRouter = router({
           )
           return { ...entry, similarity }
         })
-        .filter(entry => entry !== null && entry.similarity > 0.7)
-        .sort((a, b) => b!.similarity - a!.similarity)
+        .filter((entry: any) => entry !== null && entry.similarity > 0.7)
+        .sort((a: any, b: any) => b!.similarity - a!.similarity)
         .slice(0, input.limit)
 
       return results
@@ -195,7 +195,7 @@ export const knowledgeRouter = router({
         projectName: project.name,
         projectDescription: project.description,
         status: project.status,
-        recentUpdates: entries.map(e => ({
+        recentUpdates: entries.map((e: any) => ({
           title: e.title,
           content: e.content.substring(0, 500),
           type: (e.metadata as any)?.type,
@@ -213,7 +213,7 @@ Description: ${context.projectDescription}
 Current Status: ${context.status}
 
 Recent Updates:
-${context.recentUpdates.map(u => `- [${u.type}] ${u.title}: ${u.content}`).join('\n')}
+${context.recentUpdates.map((u: any) => `- [${u.type}] ${u.title}: ${u.content}`).join('\n')}
 
 Please provide:
 1. Current Status Overview (2-3 sentences)
@@ -281,7 +281,7 @@ Project: ${project.name}
 Description: ${project.description}
 
 Documentation entries:
-${docs.map(d => `- ${d.title}: ${d.content.substring(0, 300)}`).join('\n')}
+${docs.map((d: any) => `- ${d.title}: ${d.content.substring(0, 300)}`).join('\n')}
 
 Please create a well-structured wiki with:
 1. Project Overview
