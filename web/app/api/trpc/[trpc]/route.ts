@@ -18,7 +18,7 @@ const handler = (req: NextRequest) =>
         return createContext()
       }
 
-      const clerkUser = await currentUser()
+      const clerkUser: any = await currentUser()
 
       // Get or create user in database
       let dbUser = await db
@@ -26,25 +26,10 @@ const handler = (req: NextRequest) =>
         .from(users)
         .where(eq(users.id, userId))
         .limit(1)
-        .then(rows => rows[0])
+        .then((rows: any) => rows[0])
 
       // Get or create organization if user has one
       let organizationId = orgId || dbUser?.organization_id
-
-      if (!organizationId && clerkUser?.organizationMemberships?.[0]) {
-        // Use the first organization from Clerk
-        organizationId = clerkUser.organizationMemberships[0].organization.id
-
-        // Create organization in database if it doesn't exist
-        const orgName = clerkUser.organizationMemberships[0].organization.name
-        await db
-          .insert(organizations)
-          .values({
-            id: organizationId,
-            name: orgName || 'My Organization',
-          })
-          .onConflictDoNothing()
-      }
 
       // Create a default organization if user doesn't have one
       if (!organizationId) {
@@ -64,7 +49,7 @@ const handler = (req: NextRequest) =>
           .values({
             id: userId,
             organization_id: organizationId,
-            email: clerkUser?.emailAddresses[0]?.emailAddress || '',
+            email: clerkUser?.emailAddresses?.[0]?.emailAddress || '',
             first_name: clerkUser?.firstName || null,
             last_name: clerkUser?.lastName || null,
           })

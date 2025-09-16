@@ -3,8 +3,6 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import { trpc } from '@/app/providers/trpc-provider'
 import {
   Dialog,
@@ -20,19 +18,13 @@ import {
 } from '@consulting-platform/ui'
 import { Loader2, AlertCircle } from 'lucide-react'
 
-const createProjectSchema = z.object({
-  name: z.string().min(1, 'Project name is required').max(100, 'Project name is too long'),
-  description: z.string().optional(),
-  budget: z.string().optional().transform((val) => {
-    if (!val || val === '') return undefined
-    const num = parseInt(val, 10)
-    return isNaN(num) ? undefined : num
-  }),
-  startDate: z.string().optional(),
-  endDate: z.string().optional(),
-})
-
-type CreateProjectFormData = z.input<typeof createProjectSchema>
+type CreateProjectFormData = {
+  name: string
+  description?: string
+  budget?: string
+  startDate?: string
+  endDate?: string
+}
 
 interface CreateProjectDialogProps {
   open: boolean
@@ -49,9 +41,7 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<CreateProjectFormData>({
-    resolver: zodResolver(createProjectSchema),
-  })
+  } = useForm<CreateProjectFormData>()
 
   const createProjectMutation = trpc.projects.create.useMutation({
     onSuccess: async (newProject) => {
@@ -88,7 +78,7 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
       await createProjectMutation.mutateAsync({
         name: data.name,
         description: data.description,
-        budget: data.budget as number | undefined,
+        budget: data.budget ? parseInt(data.budget, 10) : undefined,
         timeline,
       })
     } catch (error) {
@@ -124,7 +114,7 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
               <Input
                 id="name"
                 placeholder="e.g., Digital Transformation Initiative"
-                {...register('name')}
+                {...register('name', { required: 'Project name is required' })}
                 disabled={isSubmitting}
               />
               {errors.name && (

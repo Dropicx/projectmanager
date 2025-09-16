@@ -12,9 +12,9 @@ export default function DashboardPage() {
 
   // Calculate statistics
   const totalProjects = projects?.length || 0
-  const activeProjects = projects?.filter(p => p.status === 'active').length || 0
-  const completedProjects = projects?.filter(p => p.status === 'completed').length || 0
-  const totalBudget = projects?.reduce((sum, p) => sum + (p.budget || 0), 0) || 0
+  const activeProjects = projects?.filter((p: any) => p.status === 'active').length || 0
+  const completedProjects = projects?.filter((p: any) => p.status === 'completed').length || 0
+  const totalBudget = projects?.reduce((sum: number, p: any) => sum + (p.budget || 0), 0) || 0
 
   // Get recent projects (top 5)
   const recentProjects = projects?.slice(0, 5) || []
@@ -127,7 +127,7 @@ export default function DashboardPage() {
           <CardContent>
             {recentProjects.length > 0 ? (
               <div className="space-y-4">
-                {recentProjects.map((project) => (
+                {recentProjects.map((project: any) => (
                   <Link
                     key={project.id}
                     href={`/dashboard/projects/${project.id}`}
@@ -190,7 +190,7 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {projects && projects.length > 0 && projects.some(p => p.ai_insights) && (
+      {projects && projects.length > 0 && projects.some((p: any) => p.ai_insights) && (
         <Card>
           <CardHeader>
             <CardTitle>AI Insights</CardTitle>
@@ -203,7 +203,7 @@ export default function DashboardPage() {
               <div className="p-3 bg-blue-50 rounded-lg">
                 <p className="text-sm font-medium text-blue-900">Risk Assessment</p>
                 <p className="text-xs text-blue-700">
-                  AI analysis available for {projects.filter(p => p.risk_assessment).length} projects
+                  AI analysis available for {projects.filter((p: any) => p.risk_assessment).length} projects
                 </p>
               </div>
               <div className="p-3 bg-green-50 rounded-lg">

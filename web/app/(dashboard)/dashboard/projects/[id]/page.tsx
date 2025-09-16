@@ -198,7 +198,7 @@ export default function ProjectDetailPage() {
         <CardContent>
           {tasks && tasks.length > 0 ? (
             <div className="space-y-2">
-              {tasks.map((task) => (
+              {tasks.map((task: any) => (
                 <div key={task.id} className="flex items-center justify-between p-3 border rounded-lg">
                   <div>
                     <p className="font-medium">{task.title}</p>
