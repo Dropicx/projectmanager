@@ -1,8 +1,7 @@
 import { BedrockClient } from './bedrock/client'
 import { AITask, AIResponse, ModelConfig, ModelType, AITaskType } from './types'
 import { UsageLimiter } from './usage-limiter'
-import { db } from '@consulting-platform/database'
-import { users } from '@consulting-platform/database/schema'
+import { db, users } from '@consulting-platform/database'
 import { eq } from 'drizzle-orm'
 
 export class AIOrchestrator {

@@ -1,5 +1,4 @@
-import { db } from '@consulting-platform/database'
-import { organizations, ai_interactions } from '@consulting-platform/database/schema'
+import { db, organizations, ai_interactions } from '@consulting-platform/database'
 import { eq, sql, and, gte } from 'drizzle-orm'
 import { ModelType } from './types'
 

@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, Button, Input, Label, Switch } from '@consulting-platform/ui'
-import { Settings, Bell, Shield, Palette, Globe, CreditCard, Download, Save, ChevronRight } from 'lucide-react'
+import { Settings, Bell, Shield, Palette, Globe, CreditCard, Download, Save, ChevronRight, Brain, TrendingUp, AlertCircle } from 'lucide-react'
+import { AIUsageDashboard } from '@/components/settings/ai-usage-dashboard'
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState({
@@ -350,6 +351,9 @@ export default function SettingsPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* AI Usage Dashboard */}
+      <AIUsageDashboard />
 
       {/* Data & Privacy */}
       <Card>

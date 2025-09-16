@@ -25,9 +25,18 @@ COPY . .
 
 # Build packages first
 WORKDIR /app/packages/ai
-RUN pnpm build && echo "AI package built, contents:" && ls -la && ls -la dist/
+RUN echo "Building AI package..." && \
+    pnpm build && \
+    echo "AI package built successfully" && \
+    echo "AI package directory contents:" && ls -la && \
+    echo "AI package dist contents:" && ls -la dist/ || echo "dist folder not found"
+
 WORKDIR /app/packages/database
-RUN echo "Building database package..." && pnpm build && echo "Database package built, contents:" && ls -la dist/
+RUN echo "Building database package..." && \
+    pnpm build && \
+    echo "Database package built successfully" && \
+    ls -la dist/ || echo "dist folder not found"
+
 WORKDIR /app/packages/api
 RUN pnpm build || true
 WORKDIR /app/packages/ui
@@ -100,24 +109,35 @@ ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 worker
 
+# Copy worker build output
 COPY --from=builder /app/worker/dist ./worker/dist
 COPY --from=builder /app/worker/package.json ./worker/package.json
-COPY --from=builder /app/node_modules ./node_modules
-# Copy packages to root packages directory
-COPY --from=builder /app/packages ./packages
-# Copy worker node_modules but replace symlinks with actual packages
-COPY --from=builder /app/worker/node_modules ./worker/node_modules
-# Ensure the AI package is properly linked by copying it directly
-COPY --from=builder /app/packages/ai ./worker/node_modules/@consulting-platform/ai
-COPY --from=builder /app/packages/database ./worker/node_modules/@consulting-platform/database
 
-# Debug: Check what was copied
-RUN echo "Checking worker node_modules structure:" && \
-    ls -la /app/worker/node_modules/@consulting-platform/ && \
-    echo "Checking AI package contents:" && \
-    ls -la /app/worker/node_modules/@consulting-platform/ai/ && \
-    echo "Checking for dist folder:" && \
-    ls -la /app/worker/node_modules/@consulting-platform/ai/dist/ || echo "dist folder not found"
+# Copy root node_modules (includes shared dependencies)
+COPY --from=builder /app/node_modules ./node_modules
+
+# Copy built packages with their dist folders
+COPY --from=builder /app/packages/ai/dist ./packages/ai/dist
+COPY --from=builder /app/packages/ai/package.json ./packages/ai/package.json
+COPY --from=builder /app/packages/ai/tsconfig.json ./packages/ai/tsconfig.json
+COPY --from=builder /app/packages/database/dist ./packages/database/dist
+COPY --from=builder /app/packages/database/package.json ./packages/database/package.json
+
+# Copy worker node_modules (includes local dependencies)
+COPY --from=builder /app/worker/node_modules ./worker/node_modules
+
+# Create proper symlinks for workspace packages
+RUN mkdir -p /app/worker/node_modules/@consulting-platform && \
+    ln -sf /app/packages/ai /app/worker/node_modules/@consulting-platform/ai && \
+    ln -sf /app/packages/database /app/worker/node_modules/@consulting-platform/database
+
+# Debug: Verify the setup
+RUN echo "=== Verifying worker setup ===" && \
+    echo "Worker dist contents:" && ls -la /app/worker/dist/ && \
+    echo "Packages AI dist:" && ls -la /app/packages/ai/dist/ && \
+    echo "Symlink check:" && ls -la /app/worker/node_modules/@consulting-platform/ && \
+    echo "AI package via symlink:" && ls -la /app/worker/node_modules/@consulting-platform/ai/dist/ && \
+    echo "=== Setup verification complete ==="
 
 USER worker
 # Railway will provide PORT env var, expose both possible ports
