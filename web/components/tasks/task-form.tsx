@@ -84,7 +84,7 @@ export function TaskForm({ projectId, task, onSuccess, onCancel }: TaskFormProps
             onChange={(e) => setFormData({ ...formData, status: e.target.value })}
           >
             <option value="todo">To Do</option>
-            <option value="in_progress">In Progress</option>
+            <option value="in-progress">In Progress</option>
             <option value="review">Review</option>
             <option value="completed">Completed</option>
           </select>

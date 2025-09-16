@@ -8,7 +8,7 @@ const createTaskSchema = z.object({
   projectId: z.string().uuid(),
   title: z.string().min(1).max(200),
   description: z.string().optional(),
-  status: z.enum(['todo', 'in_progress', 'review', 'completed']).default('todo'),
+  status: z.enum(['todo', 'in-progress', 'review', 'completed']).default('todo'),
   priority: z.enum(['low', 'medium', 'high', 'urgent']).default('medium'),
   assigneeId: z.string().optional(),
   dueDate: z.string().datetime().optional(),
@@ -26,7 +26,7 @@ export const tasksRouter = router({
   getByProject: protectedProcedure
     .input(z.object({
       projectId: z.string().uuid(),
-      status: z.enum(['todo', 'in_progress', 'review', 'completed', 'all']).optional(),
+      status: z.enum(['todo', 'in-progress', 'review', 'completed', 'all']).optional(),
       assigneeId: z.string().optional(),
       sortBy: z.enum(['dueDate', 'priority', 'createdAt', 'title']).default('createdAt'),
       sortOrder: z.enum(['asc', 'desc']).default('desc')
@@ -210,7 +210,7 @@ export const tasksRouter = router({
   updateStatus: protectedProcedure
     .input(z.object({
       id: z.string().uuid(),
-      status: z.enum(['todo', 'in_progress', 'review', 'completed'])
+      status: z.enum(['todo', 'in-progress', 'review', 'completed'])
     }))
     .mutation(async ({ ctx, input }) => {
       const [updatedTask] = await ctx.db
@@ -269,7 +269,7 @@ export const tasksRouter = router({
         total: taskList.length,
         byStatus: {
           todo: taskList.filter(t => t.status === 'todo').length,
-          in_progress: taskList.filter(t => t.status === 'in_progress').length,
+          in_progress: taskList.filter(t => t.status === 'in-progress').length,
           review: taskList.filter(t => t.status === 'review').length,
           completed: taskList.filter(t => t.status === 'completed').length
         },

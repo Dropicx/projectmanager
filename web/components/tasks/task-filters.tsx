@@ -6,7 +6,7 @@ import { useState } from 'react'
 
 interface TaskFiltersProps {
   filters: {
-    status: 'todo' | 'in_progress' | 'review' | 'completed' | 'all'
+    status: 'todo' | 'in-progress' | 'review' | 'completed' | 'all'
     assigneeId?: string
     sortBy: 'dueDate' | 'priority' | 'createdAt' | 'title'
     sortOrder: 'asc' | 'desc'
@@ -42,7 +42,7 @@ export function TaskFilters({ filters, setFilters }: TaskFiltersProps) {
               >
                 <option value="all">All</option>
                 <option value="todo">To Do</option>
-                <option value="in_progress">In Progress</option>
+                <option value="in-progress">In Progress</option>
                 <option value="review">Review</option>
                 <option value="completed">Completed</option>
               </select>

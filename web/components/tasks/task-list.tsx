@@ -15,7 +15,7 @@ export function TaskList({ projectId }: TaskListProps) {
   const [isCreating, setIsCreating] = useState(false)
   const [editingTask, setEditingTask] = useState<any>(null)
   const [filters, setFilters] = useState({
-    status: 'all' as 'todo' | 'in_progress' | 'review' | 'completed' | 'all',
+    status: 'all' as 'todo' | 'in-progress' | 'review' | 'completed' | 'all',
     assigneeId: undefined as string | undefined,
     sortBy: 'createdAt' as 'dueDate' | 'priority' | 'createdAt' | 'title',
     sortOrder: 'desc' as 'asc' | 'desc'
@@ -49,7 +49,7 @@ export function TaskList({ projectId }: TaskListProps) {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'completed': return <CheckCircle className="h-4 w-4 text-green-600" />
-      case 'in_progress': return <Clock className="h-4 w-4 text-blue-600" />
+      case 'in-progress': return <Clock className="h-4 w-4 text-blue-600" />
       case 'review': return <AlertCircle className="h-4 w-4 text-orange-600" />
       default: return <div className="h-4 w-4 rounded-full border-2 border-gray-400" />
     }
@@ -58,7 +58,7 @@ export function TaskList({ projectId }: TaskListProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed': return 'bg-green-100 text-green-800'
-      case 'in_progress': return 'bg-blue-100 text-blue-800'
+      case 'in-progress': return 'bg-blue-100 text-blue-800'
       case 'review': return 'bg-orange-100 text-orange-800'
       default: return 'bg-gray-100 text-gray-800'
     }
