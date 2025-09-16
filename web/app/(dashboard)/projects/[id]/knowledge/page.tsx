@@ -17,7 +17,7 @@ export default function ProjectKnowledgePage() {
   const [isGeneratingWiki, setIsGeneratingWiki] = useState(false)
 
   // Fetch project
-  const { data: project } = api.projects.get.useQuery({ id: projectId })
+  const { data: project } = api.projects.getById.useQuery({ id: projectId })
 
   // Fetch knowledge entries
   const { data: entries, refetch: refetchEntries } = api.knowledge.getByProject.useQuery({

@@ -14,7 +14,7 @@ export default function ProjectStatusPage() {
   const [isGenerating, setIsGenerating] = useState(false)
 
   // Fetch project details
-  const { data: project } = api.projects.get.useQuery({ id: projectId })
+  const { data: project } = api.projects.getById.useQuery({ id: projectId })
 
   // Fetch knowledge entries
   const { data: recentEntries, refetch: refetchEntries } = api.knowledge.getByProject.useQuery({
