@@ -1,4 +1,8 @@
 export { Button, buttonVariants } from './components/button'
 export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent } from './components/card'
 export { Badge, badgeVariants } from './components/badge'
+export { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from './components/dialog'
+export { Input } from './components/input'
+export { Label } from './components/label'
+export { Textarea } from './components/textarea'
 export { cn } from './lib/utils'
