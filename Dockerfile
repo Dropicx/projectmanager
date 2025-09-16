@@ -124,6 +124,12 @@ COPY --from=builder /app/packages/database/package.json ./packages/database/pack
 COPY --from=builder /app/packages/database/schema.ts ./packages/database/schema.ts
 COPY --from=builder /app/packages/database/index.ts ./packages/database/index.ts
 
+# Copy AI package node_modules (includes AWS SDK dependencies)
+COPY --from=builder /app/packages/ai/node_modules ./packages/ai/node_modules
+
+# Copy database package node_modules
+COPY --from=builder /app/packages/database/node_modules ./packages/database/node_modules
+
 # Copy worker node_modules (includes local dependencies)
 COPY --from=builder /app/worker/node_modules ./worker/node_modules
 
