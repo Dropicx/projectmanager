@@ -20,7 +20,7 @@ export default function ProjectDetailPage() {
   const deleteProjectMutation = trpc.projects.delete.useMutation({
     onSuccess: () => {
       utils.projects.getAll.invalidate()
-      router.push('/dashboard/projects')
+      router.push('/projects')
     }
   })
 
@@ -66,7 +66,7 @@ export default function ProjectDetailPage() {
       <div className="flex flex-col items-center justify-center h-96 space-y-4">
         <AlertCircle className="h-12 w-12 text-destructive" />
         <p className="text-lg text-muted-foreground">Project not found</p>
-        <Link href="/dashboard/projects">
+        <Link href="/projects">
           <Button variant="outline">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Projects
@@ -81,7 +81,7 @@ export default function ProjectDetailPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link href="/dashboard/projects">
+          <Link href="/projects">
             <Button variant="ghost" size="icon">
               <ArrowLeft className="h-5 w-5" />
             </Button>
@@ -175,7 +175,7 @@ export default function ProjectDetailPage() {
         </CardHeader>
         <CardContent>
           <div className="flex gap-3">
-            <Link href={`/dashboard/projects/${projectId}/insights`}>
+            <Link href={`/projects/${projectId}/insights`}>
               <Button>Generate Insights</Button>
             </Link>
             {project.ai_insights && (

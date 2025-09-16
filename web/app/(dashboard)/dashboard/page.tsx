@@ -116,7 +116,7 @@ export default function DashboardPage() {
                   Your most recently updated projects
                 </CardDescription>
               </div>
-              <Link href="/dashboard/projects">
+              <Link href="/projects">
                 <Button variant="ghost" size="sm">
                   View all
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -130,7 +130,7 @@ export default function DashboardPage() {
                 {recentProjects.map((project: any) => (
                   <Link
                     key={project.id}
-                    href={`/dashboard/projects/${project.id}`}
+                    href={`/projects/${project.id}`}
                     className="block hover:bg-muted/50 rounded-lg p-2 -mx-2 transition-colors"
                   >
                     <div className="flex items-center justify-between">
@@ -150,7 +150,7 @@ export default function DashboardPage() {
             ) : (
               <div className="text-center py-8">
                 <p className="text-muted-foreground mb-4">No projects yet</p>
-                <Link href="/dashboard/projects">
+                <Link href="/projects">
                   <Button size="sm">Create your first project</Button>
                 </Link>
               </div>
@@ -167,19 +167,19 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <Link href="/dashboard/projects" className="block">
+              <Link href="/projects" className="block">
                 <Button variant="outline" className="w-full justify-start">
                   <Briefcase className="mr-2 h-4 w-4" />
                   Create New Project
                 </Button>
               </Link>
-              <Link href="/dashboard/insights" className="block">
+              <Link href="/insights" className="block">
                 <Button variant="outline" className="w-full justify-start">
                   <Brain className="mr-2 h-4 w-4" />
                   Generate AI Insights
                 </Button>
               </Link>
-              <Link href="/dashboard/knowledge" className="block">
+              <Link href="/knowledge" className="block">
                 <Button variant="outline" className="w-full justify-start">
                   <CheckCircle className="mr-2 h-4 w-4" />
                   Browse Knowledge Base

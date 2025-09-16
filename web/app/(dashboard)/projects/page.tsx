@@ -112,12 +112,12 @@ export default function ProjectsPage() {
                   Team members
                 </div>
                 <div className="flex gap-2 pt-2">
-                  <Link href={`/dashboard/projects/${project.id}`} className="flex-1">
+                  <Link href={`/projects/${project.id}`} className="flex-1">
                     <Button variant="outline" size="sm" className="w-full">
                       View Details
                     </Button>
                   </Link>
-                  <Link href={`/dashboard/projects/${project.id}/insights`} className="flex-1">
+                  <Link href={`/projects/${project.id}/insights`} className="flex-1">
                     <Button variant="outline" size="sm" className="w-full">
                       AI Insights
                     </Button>

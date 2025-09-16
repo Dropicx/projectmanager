@@ -55,7 +55,7 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
       onOpenChange(false)
 
       // Navigate to new project
-      router.push(`/dashboard/projects/${newProject.id}`)
+      router.push(`/projects/${newProject.id}`)
     },
     onError: (error) => {
       console.error('Failed to create project:', error)
