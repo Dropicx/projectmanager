@@ -1,6 +1,7 @@
 import { createServer } from 'http'
 
-const PORT = process.env.HEALTH_PORT || 3001
+// Railway provides PORT, use it if available, otherwise use 3001
+const PORT = process.env.PORT || process.env.HEALTH_PORT || 3001
 
 // Create a simple HTTP server for health checks
 const server = createServer((req, res) => {
