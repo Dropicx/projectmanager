@@ -268,21 +268,21 @@ export const tasksRouter = router({
       const stats = {
         total: taskList.length,
         byStatus: {
-          todo: taskList.filter(t => t.status === 'todo').length,
-          in_progress: taskList.filter(t => t.status === 'in-progress').length,
-          review: taskList.filter(t => t.status === 'review').length,
-          completed: taskList.filter(t => t.status === 'completed').length
+          todo: taskList.filter((t: any) => t.status === 'todo').length,
+          in_progress: taskList.filter((t: any) => t.status === 'in-progress').length,
+          review: taskList.filter((t: any) => t.status === 'review').length,
+          completed: taskList.filter((t: any) => t.status === 'completed').length
         },
         byPriority: {
-          low: taskList.filter(t => t.priority === 'low').length,
-          medium: taskList.filter(t => t.priority === 'medium').length,
-          high: taskList.filter(t => t.priority === 'high').length,
-          urgent: taskList.filter(t => t.priority === 'urgent').length
+          low: taskList.filter((t: any) => t.priority === 'low').length,
+          medium: taskList.filter((t: any) => t.priority === 'medium').length,
+          high: taskList.filter((t: any) => t.priority === 'high').length,
+          urgent: taskList.filter((t: any) => t.priority === 'urgent').length
         },
-        totalEstimatedHours: taskList.reduce((sum, t) => sum + (t.estimatedHours || 0), 0),
-        totalActualHours: taskList.reduce((sum, t) => sum + (t.actualHours || 0), 0),
+        totalEstimatedHours: taskList.reduce((sum: number, t: any) => sum + (t.estimatedHours || 0), 0),
+        totalActualHours: taskList.reduce((sum: number, t: any) => sum + (t.actualHours || 0), 0),
         completionRate: taskList.length > 0
-          ? Math.round((taskList.filter(t => t.status === 'completed').length / taskList.length) * 100)
+          ? Math.round((taskList.filter((t: any) => t.status === 'completed').length / taskList.length) * 100)
           : 0
       }
 
