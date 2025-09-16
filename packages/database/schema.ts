@@ -7,6 +7,12 @@ export const organizations = pgTable('organizations', {
   name: text('name').notNull(),
   subscription_tier: text('tier', { enum: ['free', 'pro', 'enterprise'] }).default('free'),
   settings: jsonb('settings').default({}),
+  // Budget tracking fields
+  monthly_budget_cents: integer('monthly_budget_cents').default(10000), // $100 default
+  current_month_usage_cents: integer('current_month_usage_cents').default(0),
+  usage_reset_date: timestamp('usage_reset_date').defaultNow(),
+  daily_limit_cents: integer('daily_limit_cents').default(1000), // $10 daily limit
+  current_day_usage_cents: integer('current_day_usage_cents').default(0),
   created_at: timestamp('created_at').defaultNow(),
   updated_at: timestamp('updated_at').defaultNow()
 })

@@ -48,7 +48,7 @@ export function TaskForm({ projectId, task, onSuccess, onCancel }: TaskFormProps
     }
   }
 
-  const isLoading = createTask.isLoading || updateTask.isLoading
+  const isLoading = createTask.isPending || updateTask.isPending
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
