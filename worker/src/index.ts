@@ -4,6 +4,7 @@ import { CronJob } from 'cron'
 import { AIOrchestrator } from '@consulting-platform/ai'
 import { db, projects } from '@consulting-platform/database'
 import { eq } from 'drizzle-orm'
+import './health' // Start health check server
 
 // Redis connection configuration for BullMQ
 const redisOptions = {
@@ -16,18 +17,44 @@ const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379'
 console.log('Worker starting with Redis URL:', redisUrl ? redisUrl.replace(/:[^:@]*@/, ':****@') : 'not set')
 console.log('Environment variables available:', Object.keys(process.env).filter(k => k.includes('REDIS')))
 
-const redis = new Redis(redisUrl, redisOptions)
+// Create Redis connection with error handling
+const redis = new Redis(redisUrl, {
+  ...redisOptions,
+  retryStrategy: (times) => {
+    const delay = Math.min(times * 50, 2000)
+    console.log(`Redis connection attempt ${times}, retrying in ${delay}ms...`)
+    return delay
+  },
+  reconnectOnError: (err) => {
+    console.log('Redis reconnect on error:', err.message)
+    return true
+  }
+})
+
+redis.on('error', (err) => {
+  console.error('Redis connection error:', err.message)
+})
+
+redis.on('connect', () => {
+  console.log('Successfully connected to Redis')
+})
 
 // AI Orchestrator
 const aiOrchestrator = new AIOrchestrator()
 
 // Job queues with proper Redis configuration
-const queueConnection = new Redis(redisUrl, redisOptions)
+const queueConnection = new Redis(redisUrl, {
+  ...redisOptions,
+  retryStrategy: (times) => Math.min(times * 50, 2000)
+})
 const aiInsightsQueue = new Queue('ai-insights', { connection: queueConnection })
 const riskAssessmentQueue = new Queue('risk-assessment', { connection: queueConnection })
 
 // Background job processors
-const workerConnection1 = new Redis(redisUrl, redisOptions)
+const workerConnection1 = new Redis(redisUrl, {
+  ...redisOptions,
+  retryStrategy: (times) => Math.min(times * 50, 2000)
+})
 const aiInsightsWorker = new Worker(
   'ai-insights',
   async (job) => {
@@ -77,7 +104,10 @@ const aiInsightsWorker = new Worker(
   }
 )
 
-const workerConnection2 = new Redis(redisUrl, redisOptions)
+const workerConnection2 = new Redis(redisUrl, {
+  ...redisOptions,
+  retryStrategy: (times) => Math.min(times * 50, 2000)
+})
 const riskAssessmentWorker = new Worker(
   'risk-assessment',
   async (job) => {

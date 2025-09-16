@@ -110,6 +110,8 @@ RUN echo "Checking worker node_modules structure:" && \
     ls -la /app/worker/node_modules/@consulting-platform/ai/dist/ || echo "dist folder not found"
 
 USER worker
+EXPOSE 3001
+ENV HEALTH_PORT=3001
 WORKDIR /app/worker
 CMD ["node", "dist/index.js"]
 
