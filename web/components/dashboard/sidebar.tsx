@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@consulting-platform/ui'
 import { useSidebar } from '@/contexts/sidebar-context'
+import dynamic from 'next/dynamic'
 import {
   LayoutDashboard,
   FolderOpen,
@@ -13,8 +14,15 @@ import {
   Users,
   BarChart3,
   Menu,
-  ChevronLeft
+  ChevronLeft,
+  Bell,
+  Search
 } from 'lucide-react'
+
+const UserButton = dynamic(
+  () => import('@clerk/nextjs').then(mod => mod.UserButton),
+  { ssr: false, loading: () => <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" /> }
+)
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -54,30 +62,33 @@ export function DashboardSidebar() {
       {/* Sidebar */}
       <div
         className={cn(
-          'fixed inset-y-0 z-50 flex flex-col bg-white shadow-lg transition-all duration-300',
+          'fixed inset-y-0 z-50 flex flex-col bg-gradient-to-b from-indigo-600 to-indigo-700 text-white shadow-xl transition-all duration-300',
           // Desktop width
-          isCollapsed ? 'lg:w-20' : 'lg:w-64',
+          isCollapsed ? 'lg:w-20' : 'lg:w-72',
           // Mobile/tablet visibility
-          isMobileOpen ? 'left-0 w-64' : '-left-64 lg:left-0',
+          isMobileOpen ? 'left-0 w-72' : '-left-72 lg:left-0',
           // Always visible on large screens
           'lg:left-0'
         )}
       >
-        {/* Header */}
-        <div className="flex h-16 items-center justify-between px-4 border-b">
+        {/* Header with branding */}
+        <div className="flex h-20 items-center justify-between px-4 border-b border-indigo-500/30">
           {!isCollapsed ? (
-            <h1 className="text-xl font-bold text-gray-900">Consulting</h1>
+            <div className="flex flex-col">
+              <h1 className="text-2xl font-bold text-white">Consailt</h1>
+              <p className="text-xs text-indigo-200">AI-Powered Consulting</p>
+            </div>
           ) : (
-            <span className="text-xl font-bold text-gray-900 hidden lg:block">C</span>
+            <span className="text-2xl font-bold text-white hidden lg:block">C</span>
           )}
 
           {/* Desktop collapse button */}
           <button
             onClick={toggleSidebar}
-            className="hidden lg:block p-1.5 rounded-md hover:bg-gray-100"
+            className="hidden lg:block p-1.5 rounded-md hover:bg-indigo-500/30 transition-colors"
           >
             <ChevronLeft className={cn(
-              "h-5 w-5 transition-transform",
+              "h-5 w-5 text-indigo-200 transition-transform",
               isCollapsed && "rotate-180"
             )} />
           </button>
@@ -85,11 +96,25 @@ export function DashboardSidebar() {
           {/* Mobile close button */}
           <button
             onClick={toggleMobile}
-            className="lg:hidden p-1.5 rounded-md hover:bg-gray-100"
+            className="lg:hidden p-1.5 rounded-md hover:bg-indigo-500/30"
           >
-            <ChevronLeft className="h-5 w-5" />
+            <ChevronLeft className="h-5 w-5 text-indigo-200" />
           </button>
         </div>
+
+        {/* Search bar (expanded only) */}
+        {!isCollapsed && (
+          <div className="px-4 py-3 border-b border-indigo-500/30">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-indigo-300" />
+              <input
+                type="search"
+                placeholder="Search projects..."
+                className="w-full pl-10 pr-3 py-2 bg-indigo-500/20 border border-indigo-400/30 rounded-lg text-sm text-white placeholder-indigo-300 focus:outline-none focus:bg-indigo-500/30 focus:border-indigo-400/50"
+              />
+            </div>
+          </div>
+        )}
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-4">
@@ -102,17 +127,17 @@ export function DashboardSidebar() {
                     href={item.href}
                     onClick={() => setIsMobileOpen(false)}
                     className={cn(
-                      'group flex items-center gap-x-3 rounded-md px-2 py-2 text-sm font-medium transition-colors',
+                      'group flex items-center gap-x-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all',
                       isActive
-                        ? 'bg-indigo-50 text-indigo-600'
-                        : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50'
+                        ? 'bg-white/20 text-white shadow-md'
+                        : 'text-indigo-100 hover:text-white hover:bg-indigo-500/20'
                     )}
                     title={isCollapsed ? item.name : undefined}
                   >
                     <item.icon
                       className={cn(
                         'h-6 w-6 shrink-0',
-                        isActive ? 'text-indigo-600' : 'text-gray-400 group-hover:text-indigo-600'
+                        isActive ? 'text-white' : 'text-indigo-200 group-hover:text-white'
                       )}
                     />
                     <span className={cn(
@@ -128,14 +153,36 @@ export function DashboardSidebar() {
           </ul>
         </nav>
 
-        {/* Footer info when collapsed */}
-        {isCollapsed && (
-          <div className="hidden lg:flex items-center justify-center py-4 border-t">
-            <div className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-sm font-bold">
-              CP
-            </div>
+        {/* User section at bottom */}
+        <div className="border-t border-indigo-500/30 p-4">
+          <div className={cn(
+            "flex items-center gap-3",
+            isCollapsed && "lg:justify-center"
+          )}>
+            <UserButton
+              afterSignOutUrl="/"
+              appearance={{
+                elements: {
+                  avatarBox: "w-10 h-10"
+                }
+              }}
+            />
+            {!isCollapsed && (
+              <div className="flex-1 hidden lg:block">
+                <p className="text-sm font-medium text-white">Account</p>
+                <p className="text-xs text-indigo-200">Manage profile</p>
+              </div>
+            )}
+            <button
+              className={cn(
+                "p-2 rounded-lg hover:bg-indigo-500/30 transition-colors",
+                isCollapsed && "lg:hidden"
+              )}
+            >
+              <Bell className="h-5 w-5 text-indigo-200" />
+            </button>
           </div>
-        )}
+        </div>
       </div>
     </>
   )
