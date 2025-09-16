@@ -26,10 +26,9 @@ COPY . .
 # Build packages first
 WORKDIR /app/packages/ai
 RUN echo "Building AI package..." && \
+    chmod +x build.sh && \
     pnpm build && \
-    echo "AI package built successfully" && \
-    echo "AI package dist contents:" && ls -la dist/ && \
-    echo "Verifying index.js exists:" && test -f dist/index.js && echo "✓ index.js found"
+    echo "AI package build completed"
 
 WORKDIR /app/packages/database
 RUN echo "Building database package..." && \
