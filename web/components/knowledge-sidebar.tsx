@@ -6,12 +6,6 @@ import {
   AccordionItem,
   AccordionTrigger,
   Button,
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
   cn,
   DropdownMenu,
   DropdownMenuContent,
@@ -33,7 +27,6 @@ import {
   Loader2,
   MoreHorizontal,
   Plus,
-  Search,
   Settings,
   SortAsc,
   Trash2,
@@ -66,8 +59,6 @@ export function KnowledgeSidebar({
   onCategorySelect,
   onSearch,
 }: KnowledgeSidebarProps) {
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<any>(null);
 
@@ -255,14 +246,6 @@ export function KnowledgeSidebar({
         <div className="p-4 space-y-2">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">Knowledge Base</h2>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setSearchOpen(true)}
-              className="h-8 w-8"
-            >
-              <Search className="h-4 w-4" />
-            </Button>
           </div>
 
           <div className="flex gap-1">
@@ -326,31 +309,6 @@ export function KnowledgeSidebar({
             Settings
           </Button>
         </div>
-
-        <CommandDialog open={searchOpen} onOpenChange={setSearchOpen}>
-          <CommandInput
-            placeholder="Search knowledge base..."
-            value={searchQuery}
-            onValueChange={setSearchQuery}
-          />
-          <CommandList>
-            <CommandEmpty>No results found.</CommandEmpty>
-            <CommandGroup heading="Categories">
-              {categories.map((category) => (
-                <CommandItem
-                  key={category.id}
-                  onSelect={() => {
-                    onCategorySelect?.(category.id);
-                    setSearchOpen(false);
-                  }}
-                >
-                  {renderCategoryIcon(category.icon, category.color)}
-                  {category.name}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </CommandDialog>
       </div>
 
       <CategoryDialog

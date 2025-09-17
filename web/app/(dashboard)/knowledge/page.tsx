@@ -20,6 +20,7 @@ import {
   Clock,
   Eye,
   FileText,
+  Folder,
   Grid,
   List,
   Loader2,
@@ -57,6 +58,14 @@ export default function KnowledgePage() {
     type: "all",
     limit: 50,
   });
+
+  // Fetch categories for search
+  const { data: categories = [] } = trpc.knowledge.getCategories.useQuery();
+
+  // Filter categories based on search query
+  const filteredCategories = debouncedSearch
+    ? categories.filter((cat) => cat.name.toLowerCase().includes(debouncedSearch.toLowerCase()))
+    : [];
 
   // Map backend type to frontend display type
   const mapBackendType = (type: string): string => {
@@ -113,7 +122,9 @@ export default function KnowledgePage() {
       );
     }
 
-    if (knowledgeItems.length === 0) {
+    const hasResults = knowledgeItems.length > 0 || filteredCategories.length > 0;
+
+    if (!hasResults) {
       return (
         <div className="flex flex-col items-center justify-center h-64 text-center">
           <BookOpen className="h-12 w-12 text-muted-foreground mb-4" />
@@ -134,50 +145,97 @@ export default function KnowledgePage() {
     }
 
     return (
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {knowledgeItems.map((item) => {
-          const Icon = getTypeIcon(item.type || "guide");
-          const displayType = mapBackendType(item.type || "guide");
-          return (
-            <Card key={item.id} className="hover:shadow-lg transition-shadow cursor-pointer">
-              <CardHeader>
-                <div className="flex items-start justify-between mb-2">
-                  <Icon className="h-5 w-5 text-primary" />
-                  <Badge variant={getTypeColor(item.type || "guide")} className="text-xs">
-                    {displayType}
-                  </Badge>
-                </div>
-                <CardTitle className="text-lg">{item.title}</CardTitle>
-                <CardDescription className="line-clamp-3">{item.content}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {item.tags && Array.isArray(item.tags) && item.tags.length > 0 ? (
-                    <div className="flex flex-wrap gap-1">
-                      {(item.tags as string[]).slice(0, 3).map((tag) => (
-                        <Badge key={tag} variant="outline" className="text-xs">
-                          {tag}
+      <div className="space-y-6">
+        {filteredCategories.length > 0 && (
+          <div>
+            <h3 className="text-sm font-medium text-muted-foreground mb-3">Categories</h3>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {filteredCategories.map((category) => (
+                <Card
+                  key={category.id}
+                  className="hover:shadow-lg transition-shadow cursor-pointer"
+                  onClick={() => {
+                    setSelectedCategory(category.id);
+                    setSearchQuery("");
+                  }}
+                >
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <Folder className="h-5 w-5 text-primary" />
+                      <Badge variant="secondary" className="text-xs">
+                        Category
+                      </Badge>
+                    </div>
+                    <CardTitle className="text-lg">{category.name}</CardTitle>
+                    {category.description && (
+                      <CardDescription className="line-clamp-2">
+                        {category.description}
+                      </CardDescription>
+                    )}
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-xs text-muted-foreground">
+                      {category.item_count || 0} items
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {knowledgeItems.length > 0 && (
+          <div>
+            {filteredCategories.length > 0 && (
+              <h3 className="text-sm font-medium text-muted-foreground mb-3">Knowledge Items</h3>
+            )}
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {knowledgeItems.map((item) => {
+                const Icon = getTypeIcon(item.type || "guide");
+                const displayType = mapBackendType(item.type || "guide");
+                return (
+                  <Card key={item.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+                    <CardHeader>
+                      <div className="flex items-start justify-between mb-2">
+                        <Icon className="h-5 w-5 text-primary" />
+                        <Badge variant={getTypeColor(item.type || "guide")} className="text-xs">
+                          {displayType}
                         </Badge>
-                      ))}
-                    </div>
-                  ) : null}
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <div className="flex items-center gap-3">
-                      <span className="flex items-center">
-                        <Eye className="h-3 w-3 mr-1" />
-                        {item.views || 0}
-                      </span>
-                    </div>
-                    <span className="flex items-center">
-                      <Calendar className="h-3 w-3 mr-1" />
-                      {item.createdAt ? formatDate(item.createdAt) : "N/A"}
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
+                      </div>
+                      <CardTitle className="text-lg">{item.title}</CardTitle>
+                      <CardDescription className="line-clamp-3">{item.content}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {item.tags && Array.isArray(item.tags) && item.tags.length > 0 ? (
+                          <div className="flex flex-wrap gap-1">
+                            {(item.tags as string[]).slice(0, 3).map((tag) => (
+                              <Badge key={tag} variant="outline" className="text-xs">
+                                {tag}
+                              </Badge>
+                            ))}
+                          </div>
+                        ) : null}
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                          <div className="flex items-center gap-3">
+                            <span className="flex items-center">
+                              <Eye className="h-3 w-3 mr-1" />
+                              {item.views || 0}
+                            </span>
+                          </div>
+                          <span className="flex items-center">
+                            <Calendar className="h-3 w-3 mr-1" />
+                            {item.createdAt ? formatDate(item.createdAt) : "N/A"}
+                          </span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     );
   };
@@ -191,7 +249,9 @@ export default function KnowledgePage() {
       );
     }
 
-    if (knowledgeItems.length === 0) {
+    const hasResults = knowledgeItems.length > 0 || filteredCategories.length > 0;
+
+    if (!hasResults) {
       return (
         <div className="flex flex-col items-center justify-center h-64 text-center">
           <BookOpen className="h-12 w-12 text-muted-foreground mb-4" />
@@ -212,50 +272,104 @@ export default function KnowledgePage() {
     }
 
     return (
-      <div className="space-y-3">
-        {knowledgeItems.map((item) => {
-          const Icon = getTypeIcon(item.type || "guide");
-          const displayType = mapBackendType(item.type || "guide");
-          return (
-            <Card key={item.id} className="hover:shadow-md transition-shadow cursor-pointer">
-              <CardContent className="p-4">
-                <div className="flex items-start gap-4">
-                  <Icon className="h-5 w-5 text-primary mt-1" />
-                  <div className="flex-1 space-y-2">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h3 className="font-semibold">{item.title}</h3>
-                        <p className="text-sm text-muted-foreground mt-1">{item.content}</p>
-                      </div>
-                      <Badge variant={getTypeColor(item.type || "guide")} className="text-xs ml-4">
-                        {displayType}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                      <span className="flex items-center">
-                        <Calendar className="h-3 w-3 mr-1" />
-                        {item.createdAt ? formatDate(item.createdAt) : "N/A"}
-                      </span>
-                      <span className="flex items-center">
-                        <Eye className="h-3 w-3 mr-1" />
-                        {item.views || 0} views
-                      </span>
-                      {item.tags && Array.isArray(item.tags) && item.tags.length > 0 ? (
-                        <div className="flex gap-1">
-                          {(item.tags as string[]).slice(0, 3).map((tag) => (
-                            <Badge key={tag} variant="outline" className="text-xs">
-                              {tag}
-                            </Badge>
-                          ))}
+      <div className="space-y-4">
+        {filteredCategories.length > 0 && (
+          <div>
+            <h3 className="text-sm font-medium text-muted-foreground mb-3">Categories</h3>
+            <div className="space-y-2">
+              {filteredCategories.map((category) => (
+                <Card
+                  key={category.id}
+                  className="hover:shadow-md transition-shadow cursor-pointer"
+                  onClick={() => {
+                    setSelectedCategory(category.id);
+                    setSearchQuery("");
+                  }}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-4">
+                      <Folder className="h-5 w-5 text-primary mt-1" />
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <h3 className="font-semibold">{category.name}</h3>
+                            {category.description && (
+                              <p className="text-sm text-muted-foreground mt-1">
+                                {category.description}
+                              </p>
+                            )}
+                          </div>
+                          <Badge variant="secondary" className="text-xs ml-4">
+                            Category
+                          </Badge>
                         </div>
-                      ) : null}
+                        <div className="text-xs text-muted-foreground mt-2">
+                          {category.item_count || 0} items
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {knowledgeItems.length > 0 && (
+          <div>
+            {filteredCategories.length > 0 && (
+              <h3 className="text-sm font-medium text-muted-foreground mb-3">Knowledge Items</h3>
+            )}
+            <div className="space-y-3">
+              {knowledgeItems.map((item) => {
+                const Icon = getTypeIcon(item.type || "guide");
+                const displayType = mapBackendType(item.type || "guide");
+                return (
+                  <Card key={item.id} className="hover:shadow-md transition-shadow cursor-pointer">
+                    <CardContent className="p-4">
+                      <div className="flex items-start gap-4">
+                        <Icon className="h-5 w-5 text-primary mt-1" />
+                        <div className="flex-1 space-y-2">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <h3 className="font-semibold">{item.title}</h3>
+                              <p className="text-sm text-muted-foreground mt-1">{item.content}</p>
+                            </div>
+                            <Badge
+                              variant={getTypeColor(item.type || "guide")}
+                              className="text-xs ml-4"
+                            >
+                              {displayType}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                            <span className="flex items-center">
+                              <Calendar className="h-3 w-3 mr-1" />
+                              {item.createdAt ? formatDate(item.createdAt) : "N/A"}
+                            </span>
+                            <span className="flex items-center">
+                              <Eye className="h-3 w-3 mr-1" />
+                              {item.views || 0} views
+                            </span>
+                            {item.tags && Array.isArray(item.tags) && item.tags.length > 0 ? (
+                              <div className="flex gap-1">
+                                {(item.tags as string[]).slice(0, 3).map((tag) => (
+                                  <Badge key={tag} variant="outline" className="text-xs">
+                                    {tag}
+                                  </Badge>
+                                ))}
+                              </div>
+                            ) : null}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     );
   };
@@ -269,7 +383,9 @@ export default function KnowledgePage() {
       );
     }
 
-    if (knowledgeItems.length === 0) {
+    const hasResults = knowledgeItems.length > 0 || filteredCategories.length > 0;
+
+    if (!hasResults) {
       return (
         <div className="flex flex-col items-center justify-center h-64 text-center">
           <BookOpen className="h-12 w-12 text-muted-foreground mb-4" />
