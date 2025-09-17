@@ -1,4 +1,4 @@
-import { project_members, projects, tasks } from "@consulting-platform/database";
+import { project_members, projects } from "@consulting-platform/database";
 import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
@@ -112,17 +112,12 @@ export const projectsRouter = router({
       return { success: true };
     }),
 
-  // Get project tasks
+  // Get project tasks (deprecated - tasks removed from schema)
   getTasks: protectedProcedure
     .input(z.object({ projectId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const projectTasks = await ctx.db
-        .select()
-        .from(tasks)
-        .where(eq(tasks.project_id, input.projectId))
-        .orderBy(desc(tasks.created_at));
-
-      return projectTasks;
+    .query(async () => {
+      // Tasks have been removed from the consultant-focused schema
+      return [];
     }),
 
   // Get project insights from AI

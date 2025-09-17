@@ -26,7 +26,7 @@ export function TaskList({ projectId }: TaskListProps) {
   const [filters, setFilters] = useState({
     status: "all" as "todo" | "in-progress" | "review" | "completed" | "all",
     assigneeId: undefined as string | undefined,
-    sortBy: "createdAt" as "dueDate" | "priority" | "createdAt" | "title",
+    sortBy: "createdAt" as "dueDate" | "priority" | "createdAt",
     sortOrder: "desc" as "asc" | "desc",
   });
 
@@ -35,9 +35,9 @@ export function TaskList({ projectId }: TaskListProps) {
     ...filters,
   });
 
-  const { data: stats } = api.tasks.getStats.useQuery(projectId);
+  const { data: stats } = api.tasks.getStats.useQuery({ projectId });
 
-  const updateStatus = api.tasks.updateStatus.useMutation({
+  const updateStatus = api.tasks.update.useMutation({
     onSuccess: () => refetch(),
   });
 
@@ -105,7 +105,7 @@ export function TaskList({ projectId }: TaskListProps) {
           </Card>
           <Card>
             <CardContent className="p-4">
-              <div className="text-2xl font-bold text-blue-600">{stats.byStatus.in_progress}</div>
+              <div className="text-2xl font-bold text-blue-600">{stats.byStatus["in-progress"]}</div>
               <p className="text-sm text-gray-600">In Progress</p>
             </CardContent>
           </Card>

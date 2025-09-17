@@ -1,3 +1,25 @@
+/**
+ * Database Schema - Consultant Knowledge Management System
+ * 
+ * This schema defines the complete database structure for a consultant knowledge
+ * management platform. It's designed to capture, organize, and leverage
+ * consulting expertise across organizations and engagements.
+ * 
+ * Key Design Principles:
+ * - Multi-tenant architecture with organization-based isolation
+ * - Rich knowledge capture with semantic search capabilities
+ * - AI-powered insights and recommendations
+ * - Comprehensive audit trails and analytics
+ * - Flexible engagement and project management
+ * 
+ * Core Entities:
+ * - Organizations: Consulting firms or individual consultants
+ * - Users: Individual consultants with roles and expertise
+ * - Engagements: Client projects and consulting work
+ * - Knowledge Base: The central repository of consulting knowledge
+ * - AI Interactions: Tracking and analytics for AI usage
+ */
+
 import { relations } from "drizzle-orm";
 import { boolean, integer, jsonb, pgTable, text, timestamp, uuid, real, index } from "drizzle-orm/pg-core";
 
@@ -5,21 +27,39 @@ import { boolean, integer, jsonb, pgTable, text, timestamp, uuid, real, index } 
 // CORE TABLES - Consultant Knowledge System
 // ==========================================
 
-// Organizations (Consulting Firms or Individual Consultants)
+/**
+ * Organizations Table - Multi-tenant Root Entity
+ * 
+ * Represents consulting firms, teams, or individual consultants.
+ * Each organization is isolated and has its own knowledge base,
+ * users, and AI usage tracking.
+ * 
+ * Key Features:
+ * - Multi-tenant isolation
+ * - AI budget management and usage tracking
+ * - Subscription tier management
+ * - Flexible organization types (individual, team, firm)
+ */
 export const organizations = pgTable("organizations", {
+  // Primary identification
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(),
+  
+  // Organization classification
   type: text("type", { enum: ["individual", "team", "firm"] }).default("individual"),
   subscription_tier: text("tier", { enum: ["free", "pro", "enterprise"] }).default("free"),
+  
+  // Configuration and settings
   settings: jsonb("settings").default({}),
 
-  // AI Budget tracking
+  // AI Budget Management - Critical for cost control
   monthly_budget_cents: integer("monthly_budget_cents").default(10000), // $100 default
   current_month_usage_cents: integer("current_month_usage_cents").default(0),
   usage_reset_date: timestamp("usage_reset_date").defaultNow(),
   daily_limit_cents: integer("daily_limit_cents").default(1000), // $10 daily limit
   current_day_usage_cents: integer("current_day_usage_cents").default(0),
 
+  // Audit fields
   created_at: timestamp("created_at").defaultNow(),
   updated_at: timestamp("updated_at").defaultNow(),
 });

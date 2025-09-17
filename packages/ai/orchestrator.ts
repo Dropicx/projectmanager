@@ -1,13 +1,35 @@
+/**
+ * AI Orchestrator - High-Level AI Task Management
+ * 
+ * This class provides intelligent AI task orchestration with:
+ * - Automatic model selection based on task requirements
+ * - Budget management and usage tracking
+ * - Cost optimization across multiple AI providers
+ * - User organization-based access control
+ * 
+ * The orchestrator acts as the main interface for AI operations,
+ * abstracting away the complexity of model selection and usage tracking.
+ */
+
 import { db, users } from "@consulting-platform/database";
 import { eq } from "drizzle-orm";
 import { BedrockClient } from "./bedrock/client";
 import type { AIResponse, AITask, ModelConfig, ModelType } from "./types";
 import { UsageLimiter } from "./usage-limiter";
 
+/**
+ * AIOrchestrator - Main class for managing AI operations
+ * 
+ * Responsibilities:
+ * - Model selection based on task requirements and budget constraints
+ * - Usage tracking and budget enforcement
+ * - User organization management
+ * - Cost optimization across different AI models
+ */
 export class AIOrchestrator {
-  private bedrockClient: BedrockClient;
-  private modelConfigs: Map<ModelType, ModelConfig>;
-  private usageLimiter: UsageLimiter;
+  private bedrockClient: BedrockClient;        // AWS Bedrock client for model invocations
+  private modelConfigs: Map<ModelType, ModelConfig>;  // Available model configurations
+  private usageLimiter: UsageLimiter;          // Budget and usage tracking
 
   constructor() {
     this.bedrockClient = new BedrockClient();
@@ -15,17 +37,31 @@ export class AIOrchestrator {
     this.usageLimiter = new UsageLimiter();
   }
 
+  /**
+   * Process an AI task request with intelligent model selection and budget management
+   * 
+   * This is the main entry point for AI operations. It:
+   * 1. Selects the optimal model based on task requirements
+   * 2. Validates user permissions and budget constraints
+   * 3. Executes the AI request
+   * 4. Records usage for billing and analytics
+   * 
+   * @param task - The AI task to process
+   * @returns Promise<AIResponse> - The AI model's response with metadata
+   * @throws Error if budget exceeded or user not found
+   */
   async processRequest(task: AITask): Promise<AIResponse> {
+    // Step 1: Select the optimal model based on task requirements and budget
     const modelConfig = this.selectOptimalModel(task);
     const modelId = this.getModelId(modelConfig.model);
 
-    // Get user's organization
+    // Step 2: Get user's organization for budget tracking
     const organizationId = await this.getUserOrganization(task.userId);
     if (!organizationId) {
       throw new Error("User organization not found");
     }
 
-    // Check budget before making API call
+    // Step 3: Pre-flight budget check to avoid unnecessary API calls
     const estimatedTokens = this.usageLimiter.estimateTokens(task.prompt) + 2000; // Add buffer for response
     const budgetCheck = await this.usageLimiter.checkBudget(
       organizationId,
@@ -37,19 +73,19 @@ export class AIOrchestrator {
       throw new Error(`Budget limit exceeded: ${budgetCheck.reason}`);
     }
 
-    // Log budget stats if near limit
+    // Step 4: Log warning if approaching budget limit
     if (budgetCheck.stats?.isNearLimit) {
       console.warn(
         `⚠️ Organization ${organizationId} is at ${budgetCheck.stats.percentUsed.toFixed(1)}% of monthly budget`
       );
     }
 
-    // Make the actual API call
+    // Step 5: Execute the AI request with performance tracking
     const startTime = Date.now();
     const response = await this.bedrockClient.invokeModel(modelId, task.prompt, modelConfig);
     const latencyMs = Date.now() - startTime;
 
-    // Record actual usage
+    // Step 6: Record actual usage for billing and analytics
     await this.usageLimiter.recordUsage(
       organizationId,
       task.userId,
@@ -64,45 +100,69 @@ export class AIOrchestrator {
     return response;
   }
 
+  /**
+   * Select the optimal AI model for a given task
+   * 
+   * This method implements intelligent model selection based on:
+   * - Task type and complexity requirements
+   * - Budget constraints and cost optimization
+   * - Context length requirements
+   * - Model capabilities and performance characteristics
+   * 
+   * @param task - The AI task requiring model selection
+   * @returns ModelConfig - The optimal model configuration
+   * @throws Error if no suitable model is found
+   */
   private selectOptimalModel(task: AITask): ModelConfig {
     const { complexity, urgency, accuracyRequired, contextLength, budgetConstraint } = task;
 
-    // Cost-optimized selection matrix
+    // Step 1: Filter models that meet basic requirements
+    // - Context length must be sufficient
+    // - Cost must be within budget constraints
     const candidates = Array.from(this.modelConfigs.values())
       .filter(
         (config) =>
           config.maxContextLength >= contextLength && config.costPer1MTokens <= budgetConstraint
       )
-      .sort((a, b) => a.costPer1MTokens - b.costPer1MTokens);
+      .sort((a, b) => a.costPer1MTokens - b.costPer1MTokens); // Sort by cost (cheapest first)
 
     if (candidates.length === 0) {
       throw new Error("No suitable model found for task requirements");
     }
 
-    // Select based on task type and requirements
+    // Step 2: Select model based on task type and specific requirements
+    // Each task type has an optimal model for best results
     switch (task.type) {
       case "quick_summary":
+        // Fast, cost-effective model for simple summaries
         return candidates.find((c) => c.model === "nova-lite") || candidates[0];
 
       case "project_analysis":
+        // High-capability model for comprehensive analysis
         return candidates.find((c) => c.model === "nova-pro") || candidates[0];
 
       case "risk_assessment":
+        // Premium model for critical risk evaluation
         return candidates.find((c) => c.model === "claude-3-7-sonnet") || candidates[0];
 
       case "technical_docs":
+        // Model optimized for technical content
         return candidates.find((c) => c.model === "mistral-large") || candidates[0];
 
       case "realtime_assist":
+        // Fast, lightweight model for real-time responses
         return candidates.find((c) => c.model === "llama-3-8b") || candidates[0];
 
       case "knowledge_search":
+        // Cost-effective model for search operations
         return candidates.find((c) => c.model === "nova-lite") || candidates[0];
 
       case "report_generation":
+        // High-quality model for formal reports
         return candidates.find((c) => c.model === "claude-3-7-sonnet") || candidates[0];
 
       default:
+        // Fallback to cheapest available model
         return candidates[0];
     }
   }

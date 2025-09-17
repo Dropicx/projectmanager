@@ -1,5 +1,5 @@
 import { AIOrchestrator } from "@consulting-platform/ai";
-import { db, projects } from "@consulting-platform/database";
+import { db, engagements } from "@consulting-platform/database";
 import { Queue, Worker } from "bullmq";
 import { CronJob } from "cron";
 import { eq } from "drizzle-orm";
@@ -81,7 +81,7 @@ const aiInsightsWorker = new Worker(
 
     try {
       // Get project data
-      const project = await db.select().from(projects).where(eq(projects.id, projectId)).limit(1);
+      const project = await db.select().from(engagements).where(eq(engagements.id, projectId)).limit(1);
 
       if (!project.length) {
         throw new Error("Project not found");
@@ -95,7 +95,7 @@ const aiInsightsWorker = new Worker(
 
       // Update project with insights
       await db
-        .update(projects)
+        .update(engagements)
         .set({
           ai_insights: {
             content: insights.content,
@@ -105,7 +105,7 @@ const aiInsightsWorker = new Worker(
           },
           updated_at: new Date(),
         })
-        .where(eq(projects.id, projectId));
+        .where(eq(engagements.id, projectId));
 
       console.log(`Generated AI insights for project ${projectId}`);
     } catch (error) {
@@ -131,7 +131,7 @@ const riskAssessmentWorker = new Worker(
 
     try {
       // Get project data
-      const project = await db.select().from(projects).where(eq(projects.id, projectId)).limit(1);
+      const project = await db.select().from(engagements).where(eq(engagements.id, projectId)).limit(1);
 
       if (!project.length) {
         throw new Error("Project not found");
@@ -145,7 +145,7 @@ const riskAssessmentWorker = new Worker(
 
       // Update project with risk assessment
       await db
-        .update(projects)
+        .update(engagements)
         .set({
           risk_assessment: {
             content: riskAssessment.content,
@@ -155,7 +155,7 @@ const riskAssessmentWorker = new Worker(
           },
           updated_at: new Date(),
         })
-        .where(eq(projects.id, projectId));
+        .where(eq(engagements.id, projectId));
 
       console.log(`Completed risk assessment for project ${projectId}`);
     } catch (error) {
@@ -176,7 +176,7 @@ const _dailyInsightsJob = new CronJob(
     console.log("Running daily AI insights generation...");
 
     // Get all active projects
-    const activeProjects = await db.select().from(projects).where(eq(projects.status, "active"));
+    const activeProjects = await db.select().from(engagements).where(eq(engagements.status, "active"));
 
     // Queue AI insights for each project
     for (const project of activeProjects) {
@@ -198,7 +198,7 @@ const _weeklyRiskAssessmentJob = new CronJob(
     console.log("Running weekly risk assessment...");
 
     // Get all active projects
-    const activeProjects = await db.select().from(projects).where(eq(projects.status, "active"));
+    const activeProjects = await db.select().from(engagements).where(eq(engagements.status, "active"));
 
     // Queue risk assessment for each project
     for (const project of activeProjects) {

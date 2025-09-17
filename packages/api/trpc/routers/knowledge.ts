@@ -1,5 +1,5 @@
 import { AIOrchestrator } from "@consulting-platform/ai";
-import { knowledge_base, projects } from "@consulting-platform/database";
+import { knowledge_base, engagements } from "@consulting-platform/database";
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
@@ -23,17 +23,17 @@ export const knowledgeRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      // Verify user has access to project
-      const project = await ctx.db
+      // Verify user has access to engagement
+      const engagement = await ctx.db
         .select()
-        .from(projects)
-        .where(eq(projects.id, input.projectId))
+        .from(engagements)
+        .where(eq(engagements.id, input.projectId))
         .limit(1);
 
-      if (!project.length) {
+      if (!engagement.length) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Project not found",
+          message: "Engagement not found",
         });
       }
 
@@ -44,8 +44,8 @@ export const knowledgeRouter = router({
       const [entry] = await ctx.db
         .insert(knowledge_base)
         .values({
-          organization_id: project[0].organization_id,
-          project_id: input.projectId,
+          organization_id: engagement[0].organization_id,
+          engagement_id: input.projectId,
           title: input.title,
           content: input.content,
           embedding: embedding,
@@ -82,7 +82,7 @@ export const knowledgeRouter = router({
         const entries = await ctx.db
           .select()
           .from(knowledge_base)
-          .where(eq(knowledge_base.project_id, input.projectId))
+          .where(eq(knowledge_base.engagement_id, input.projectId))
           .orderBy(desc(knowledge_base.created_at))
           .limit(input.limit)
           .catch(() => []); // Return empty array if table doesn't exist
@@ -121,7 +121,7 @@ export const knowledgeRouter = router({
         // Get all entries (with optional project filter)
         const conditions = [];
         if (input.projectId) {
-          conditions.push(eq(knowledge_base.project_id, input.projectId));
+          conditions.push(eq(knowledge_base.engagement_id, input.projectId));
         }
 
         const entries = await ctx.db
@@ -198,29 +198,29 @@ export const knowledgeRouter = router({
         const entries = await ctx.db
           .select()
           .from(knowledge_base)
-          .where(eq(knowledge_base.project_id, input.projectId))
+          .where(eq(knowledge_base.engagement_id, input.projectId))
           .orderBy(desc(knowledge_base.created_at))
           .limit(20)
           .catch(() => []);
 
-        // Get project details
-        const [project] = await ctx.db
+        // Get engagement details
+        const [engagement] = await ctx.db
           .select()
-          .from(projects)
-          .where(eq(projects.id, input.projectId));
+          .from(engagements)
+          .where(eq(engagements.id, input.projectId));
 
-        if (!project) {
+        if (!engagement) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Project not found",
+            message: "Engagement not found",
           });
         }
 
         // Prepare context for AI
         const context = {
-          projectName: project.name,
-          projectDescription: project.description,
-          status: project.status,
+          projectName: engagement.client_name,
+          projectDescription: engagement.description || '',
+          status: engagement.status,
           recentUpdates: entries.map((e: any) => ({
             title: e.title,
             content: e.content.substring(0, 500),
@@ -289,7 +289,7 @@ Format the response in markdown.`,
         const allEntries = await ctx.db
           .select()
           .from(knowledge_base)
-          .where(eq(knowledge_base.project_id, input.projectId))
+          .where(eq(knowledge_base.engagement_id, input.projectId))
           .catch(() => []);
 
         // Filter for documentation and decision types
@@ -298,15 +298,15 @@ Format the response in markdown.`,
           return metadata?.type === "documentation" || metadata?.type === "decision";
         });
 
-        const [project] = await ctx.db
+        const [engagement] = await ctx.db
           .select()
-          .from(projects)
-          .where(eq(projects.id, input.projectId));
+          .from(engagements)
+          .where(eq(engagements.id, input.projectId));
 
-        if (!project) {
+        if (!engagement) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Project not found",
+            message: "Engagement not found",
           });
         }
 
@@ -315,8 +315,8 @@ Format the response in markdown.`,
           type: "technical_docs",
           prompt: `Generate a comprehensive wiki/knowledge base structure for the project:
 
-Project: ${project.name}
-Description: ${project.description}
+Project: ${engagement.client_name}
+Description: ${engagement.description || ''}
 
 Documentation entries:
 ${docs.map((d: any) => `- ${d.title}: ${d.content.substring(0, 300)}`).join("\n")}
