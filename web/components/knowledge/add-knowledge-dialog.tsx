@@ -11,6 +11,11 @@ import {
   DialogTitle,
   Input,
   Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Textarea,
 } from "@consulting-platform/ui";
 import { Loader2, Plus, X } from "lucide-react";
@@ -29,15 +34,21 @@ export function AddKnowledgeDialog({ open, onOpenChange, onSuccess }: AddKnowled
   const [type, setType] = useState<
     "methodology" | "framework" | "template" | "case-study" | "guide" | "checklist"
   >("guide");
+  const [categoryIds, setCategoryIds] = useState<string[]>([]);
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
 
   const titleId = useId();
   const typeId = useId();
+  const categoryId = useId();
   const contentId = useId();
   const tagsId = useId();
 
   const utils = trpc.useUtils();
+
+  // Fetch categories for selection
+  const { data: categories = [] } = trpc.knowledge.getCategories.useQuery();
+
   const createMutation = trpc.knowledge.createGeneral.useMutation({
     onSuccess: () => {
       utils.knowledge.list.invalidate();
@@ -51,6 +62,7 @@ export function AddKnowledgeDialog({ open, onOpenChange, onSuccess }: AddKnowled
     setTitle("");
     setContent("");
     setType("guide");
+    setCategoryIds([]);
     setTags([]);
     setTagInput("");
   };
@@ -62,6 +74,7 @@ export function AddKnowledgeDialog({ open, onOpenChange, onSuccess }: AddKnowled
       title: title.trim(),
       content: content.trim(),
       type,
+      categoryIds: categoryIds.length > 0 ? categoryIds : undefined,
       tags,
     });
   };
@@ -107,20 +120,42 @@ export function AddKnowledgeDialog({ open, onOpenChange, onSuccess }: AddKnowled
             />
           </div>
 
-          <div className="grid gap-2">
-            <Label htmlFor={typeId}>Type</Label>
-            <select
-              id={typeId}
-              value={type}
-              onChange={(e) => setType(e.target.value as typeof type)}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            >
-              {typeOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor={typeId}>Type</Label>
+              <select
+                id={typeId}
+                value={type}
+                onChange={(e) => setType(e.target.value as typeof type)}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                {typeOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor={categoryId}>Category (optional)</Label>
+              <Select
+                value={categoryIds[0] || "none"}
+                onValueChange={(value: string) => setCategoryIds(value === "none" ? [] : [value])}
+              >
+                <SelectTrigger id={categoryId}>
+                  <SelectValue placeholder="Select a category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No category</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div className="grid gap-2">

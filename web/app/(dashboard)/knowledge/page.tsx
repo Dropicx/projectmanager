@@ -362,33 +362,16 @@ export default function KnowledgePage() {
 
         <main className="flex-1 flex flex-col">
           <div className="flex-1 p-6 space-y-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="lg:hidden"
-                  onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                >
-                  <List className="h-4 w-4" />
-                </Button>
-                <div>
-                  <h1 className="text-2xl font-bold tracking-tight">Knowledge Base</h1>
-                  <p className="text-sm text-muted-foreground">
-                    {isLoading ? "Loading..." : `${knowledgeItems?.length || 0} items`}{" "}
-                    {selectedCategory && "in category"}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button onClick={() => setAddDialogOpen(true)}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Knowledge
-                </Button>
-              </div>
-            </div>
-
             <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="lg:hidden"
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              >
+                <List className="h-4 w-4" />
+              </Button>
+
               <div className="relative flex-1 max-w-md">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -416,6 +399,11 @@ export default function KnowledgePage() {
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
+
+              <Button onClick={() => setAddDialogOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                Add Knowledge
+              </Button>
             </div>
 
             <div>
