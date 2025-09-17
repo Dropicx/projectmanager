@@ -143,7 +143,8 @@ COPY --from=builder /app/packages/database/index.ts ./packages/database/index.ts
 
 # Install production dependencies
 # This ensures all dependencies including nested ones are properly installed
-RUN pnpm install --prod --frozen-lockfile
+# Skip prepare script which is for dev tools like husky
+RUN pnpm install --prod --frozen-lockfile --ignore-scripts
 
 # Debug: Verify the setup
 RUN echo "=== Verifying worker setup ===" && \
