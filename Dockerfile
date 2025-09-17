@@ -47,7 +47,10 @@ RUN echo "Building database package..." && \
     ls -la dist/ || echo "dist folder not found"
 
 WORKDIR /app/packages/api
-RUN pnpm build || true
+RUN echo "Building API package..." && \
+    pnpm build && \
+    echo "API package built successfully" && \
+    ls -la dist/ || echo "API dist folder not found"
 WORKDIR /app/packages/ui
 RUN pnpm build || true
 
@@ -137,9 +140,13 @@ COPY --from=builder /app/packages/ui/package.json ./packages/ui/package.json
 COPY --from=builder /app/worker/dist ./worker/dist
 COPY --from=builder /app/packages/ai/dist ./packages/ai/dist
 COPY --from=builder /app/packages/database/dist ./packages/database/dist
+COPY --from=builder /app/packages/api/dist ./packages/api/dist
 # Copy required source files for database
 COPY --from=builder /app/packages/database/schema.ts ./packages/database/schema.ts
 COPY --from=builder /app/packages/database/index.ts ./packages/database/index.ts
+# Copy required source files for API
+COPY --from=builder /app/packages/api/lib ./packages/api/lib
+COPY --from=builder /app/packages/api/trpc ./packages/api/trpc
 
 # Install production dependencies
 # This ensures all dependencies including nested ones are properly installed
