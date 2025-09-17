@@ -1,6 +1,5 @@
 "use client";
 
-import { trpc } from "@/app/providers/trpc-provider";
 import { Button } from "@consulting-platform/ui/components/button";
 import {
   Card,
@@ -10,19 +9,16 @@ import {
   CardTitle,
 } from "@consulting-platform/ui/components/card";
 import { Skeleton } from "@consulting-platform/ui/components/skeleton";
-import { CalendarDays, ExternalLink, RefreshCw, Newspaper } from "lucide-react";
+import { format } from "date-fns";
+import { CalendarDays, ExternalLink, Newspaper, RefreshCw } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
-import { format } from "date-fns";
+import { trpc } from "@/app/providers/trpc-provider";
 
 export default function NewsPage() {
   const [daysBack, setDaysBack] = useState(7);
 
-  const {
-    data: articles,
-    isLoading,
-    refetch,
-  } = trpc.news.getRecentNews.useQuery({ daysBack });
+  const { data: articles, isLoading, refetch } = trpc.news.getRecentNews.useQuery({ daysBack });
 
   const { mutate: syncRssFeed, isPending: isSyncing } = trpc.news.syncRssFeed.useMutation({
     onSuccess: () => {
@@ -42,8 +38,8 @@ export default function NewsPage() {
           <p className="text-muted-foreground mt-2">Loading latest articles...</p>
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {[...Array(6)].map((_, i) => (
-            <Card key={i}>
+          {Array.from({ length: 6 }, (_, i) => i + 1).map((num) => (
+            <Card key={`skeleton-card-${num}`}>
               <CardHeader>
                 <Skeleton className="h-48 w-full rounded-md" />
               </CardHeader>
@@ -94,12 +90,7 @@ export default function NewsPage() {
             >
               Week
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRefresh}
-              disabled={isSyncing}
-            >
+            <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isSyncing}>
               <RefreshCw className={`h-4 w-4 mr-1 ${isSyncing ? "animate-spin" : ""}`} />
               {isSyncing ? "Syncing..." : "Refresh"}
             </Button>
@@ -156,7 +147,7 @@ export default function NewsPage() {
                   <div className="flex flex-wrap gap-1 mb-3">
                     {(article.categories as string[]).slice(0, 3).map((category, idx) => (
                       <span
-                        key={idx}
+                        key={`${article.id}-category-${idx}`}
                         className="text-xs bg-secondary px-2 py-1 rounded-md"
                       >
                         {category}

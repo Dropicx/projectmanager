@@ -1,13 +1,19 @@
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure } from "../trpc";
-import { getRecentNewsArticles, getAllNewsArticles, fetchAndStoreRSSFeed } from "../../lib/rss-parser";
+import {
+  fetchAndStoreRSSFeed,
+  getAllNewsArticles,
+  getRecentNewsArticles,
+} from "../../lib/rss-parser";
+import { protectedProcedure, router } from "../trpc";
 
-export const newsRouter = createTRPCRouter({
+export const newsRouter = router({
   getRecentNews: protectedProcedure
     .input(
-      z.object({
-        daysBack: z.number().min(1).max(30).default(7),
-      }).optional()
+      z
+        .object({
+          daysBack: z.number().min(1).max(30).default(7),
+        })
+        .optional()
     )
     .query(async ({ input }) => {
       const daysBack = input?.daysBack || 7;
