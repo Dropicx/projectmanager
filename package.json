@@ -28,6 +28,7 @@
     "deploy": "railway up",
     "clean": "turbo clean",
     "prepare": "husky install",
+    "sync:rss": "tsx scripts/sync-rss-feeds.ts",
     "pre-commit": "lint-staged",
     "security:audit": "audit-ci --config audit-ci.json",
     "security:check": "pnpm audit --audit-level moderate",

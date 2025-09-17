@@ -62,7 +62,7 @@ import {
   X,
 } from "lucide-react";
 import type React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { trpc } from "@/app/providers/trpc-provider";
 import { CategoryDialog } from "./knowledge/category-dialog";
 
@@ -278,12 +278,12 @@ export function KnowledgeSidebar({
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<any>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [localCategories, setLocalCategories] = useState<any[]>([]);
   const [sortOption, setSortOption] = useState<SortOption>("manual");
   const [filterOption, setFilterOption] = useState<FilterOption>({
     showEmpty: true,
     searchQuery: "",
   });
+  const [draggedCategories, setDraggedCategories] = useState<any[] | null>(null);
   const [filterPopoverOpen, setFilterPopoverOpen] = useState(false);
 
   const sensors = useSensors(
@@ -314,45 +314,43 @@ export function KnowledgeSidebar({
   });
 
   // Apply sorting and filtering to categories
-  useEffect(() => {
-    let processedCategories = [...categories];
+  const processedCategories = useMemo(() => {
+    // Use dragged categories if we're currently dragging, otherwise use the fetched categories
+    const baseCategories = draggedCategories || categories;
+    let processed = [...baseCategories];
 
     // Apply filtering
     if (!filterOption.showEmpty) {
-      processedCategories = processedCategories.filter(
-        (cat) => cat.item_count && cat.item_count > 0
-      );
+      processed = processed.filter((cat) => cat.item_count && cat.item_count > 0);
     }
 
     if (filterOption.searchQuery) {
       const query = filterOption.searchQuery.toLowerCase();
-      processedCategories = processedCategories.filter((cat) =>
-        cat.name.toLowerCase().includes(query)
-      );
+      processed = processed.filter((cat) => cat.name.toLowerCase().includes(query));
     }
 
     // Apply sorting
     switch (sortOption) {
       case "name-asc":
-        processedCategories.sort((a, b) => a.name.localeCompare(b.name));
+        processed.sort((a, b) => a.name.localeCompare(b.name));
         break;
       case "name-desc":
-        processedCategories.sort((a, b) => b.name.localeCompare(a.name));
+        processed.sort((a, b) => b.name.localeCompare(a.name));
         break;
       case "items-asc":
-        processedCategories.sort((a, b) => (a.item_count || 0) - (b.item_count || 0));
+        processed.sort((a, b) => (a.item_count || 0) - (b.item_count || 0));
         break;
       case "items-desc":
-        processedCategories.sort((a, b) => (b.item_count || 0) - (a.item_count || 0));
+        processed.sort((a, b) => (b.item_count || 0) - (a.item_count || 0));
         break;
       default:
         // Keep original order (by position)
-        processedCategories.sort((a, b) => (a.position || 0) - (b.position || 0));
+        processed.sort((a, b) => (a.position || 0) - (b.position || 0));
         break;
     }
 
-    setLocalCategories(processedCategories);
-  }, [categories, sortOption, filterOption.showEmpty, filterOption.searchQuery]);
+    return processed;
+  }, [categories, draggedCategories, sortOption, filterOption.showEmpty, filterOption.searchQuery]);
 
   const handleEditCategory = (category: any, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -380,11 +378,11 @@ export function KnowledgeSidebar({
     const { active, over } = event;
 
     if (over && active.id !== over.id) {
-      const oldIndex = localCategories.findIndex((cat) => cat.id === active.id);
-      const newIndex = localCategories.findIndex((cat) => cat.id === over.id);
+      const oldIndex = processedCategories.findIndex((cat) => cat.id === active.id);
+      const newIndex = processedCategories.findIndex((cat) => cat.id === over.id);
 
-      const newCategories = arrayMove(localCategories, oldIndex, newIndex);
-      setLocalCategories(newCategories);
+      const newCategories = arrayMove(processedCategories, oldIndex, newIndex);
+      setDraggedCategories(newCategories);
 
       // Update positions in the database only if in manual sort mode
       if (sortOption === "manual") {
@@ -400,6 +398,8 @@ export function KnowledgeSidebar({
 
         // Refetch categories after all updates are done
         utils.knowledge.getCategories.invalidate();
+        // Clear dragged state after successful update
+        setDraggedCategories(null);
       }
     }
 
@@ -408,10 +408,10 @@ export function KnowledgeSidebar({
 
   // Build category tree structure
   const buildCategoryTree = () => {
-    const rootCategories = localCategories.filter((cat) => !cat.parent_id);
-    const childMap = new Map<string, typeof localCategories>();
+    const rootCategories = processedCategories.filter((cat) => !cat.parent_id);
+    const childMap = new Map<string, typeof processedCategories>();
 
-    localCategories.forEach((cat) => {
+    processedCategories.forEach((cat) => {
       if (cat.parent_id) {
         if (!childMap.has(cat.parent_id)) {
           childMap.set(cat.parent_id, []);
@@ -450,7 +450,7 @@ export function KnowledgeSidebar({
     );
   };
 
-  const activeCategory = localCategories.find((cat) => cat.id === activeId);
+  const activeCategory = processedCategories.find((cat) => cat.id === activeId);
 
   return (
     <>
@@ -610,7 +610,7 @@ export function KnowledgeSidebar({
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
-          ) : localCategories.length === 0 ? (
+          ) : processedCategories.length === 0 ? (
             <div className="text-center py-8 px-4">
               <Folder className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
               <p className="text-sm text-muted-foreground mb-3">No categories yet</p>
@@ -632,7 +632,7 @@ export function KnowledgeSidebar({
               </Button>
 
               {/* Show message if filtering results in no categories */}
-              {localCategories.length === 0 && categories.length > 0 ? (
+              {processedCategories.length === 0 && categories.length > 0 ? (
                 <div className="text-center py-8 px-4">
                   <Search className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
                   <p className="text-sm text-muted-foreground mb-3">
