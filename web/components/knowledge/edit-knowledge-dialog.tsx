@@ -16,11 +16,11 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Textarea,
 } from "@consulting-platform/ui";
 import { Loader2, Plus, X } from "lucide-react";
 import { useEffect, useId, useState } from "react";
 import { trpc } from "@/app/providers/trpc-provider";
+import { KnowledgeEditor } from "./knowledge-editor";
 
 interface EditKnowledgeDialogProps {
   open: boolean;
@@ -39,7 +39,7 @@ export function EditKnowledgeDialog({
   const [content, setContent] = useState(knowledge.content || "");
   const [type, setType] = useState<
     "methodology" | "framework" | "template" | "case-study" | "guide" | "checklist"
-  >(mapFromKnowledgeType(knowledge.knowledge_type));
+  >(mapToFrontendType(knowledge.knowledge_type));
   const [categoryIds, setCategoryIds] = useState<string[]>([]);
   const [tags, setTags] = useState<string[]>(knowledge.tags || []);
   const [tagInput, setTagInput] = useState("");
@@ -58,12 +58,12 @@ export function EditKnowledgeDialog({
   // Fetch current categories for this knowledge item
   const { data: knowledgeCategories } = trpc.knowledge.getKnowledgeCategories.useQuery(
     { knowledgeId: knowledge.id },
-    { enabled: open }
+    { enabled: !!knowledge.id }
   );
 
   useEffect(() => {
     if (knowledgeCategories) {
-      setCategoryIds(knowledgeCategories.map((cat: any) => cat.id));
+      setCategoryIds(knowledgeCategories.map((c: any) => c.id));
     }
   }, [knowledgeCategories]);
 
@@ -83,7 +83,7 @@ export function EditKnowledgeDialog({
       content: content.trim(),
       type,
       categoryIds: categoryIds.length > 0 ? categoryIds : undefined,
-      tags,
+      tags: tags.length > 0 ? tags : undefined,
     });
   };
 
@@ -98,6 +98,25 @@ export function EditKnowledgeDialog({
     setTags(tags.filter((t) => t !== tag));
   };
 
+  function mapToFrontendType(
+    backendType: string
+  ): "methodology" | "framework" | "template" | "case-study" | "guide" | "checklist" {
+    const typeMap: Record<
+      string,
+      "methodology" | "framework" | "template" | "case-study" | "guide" | "checklist"
+    > = {
+      pattern: "methodology",
+      template: "template",
+      reference: "guide",
+      solution: "framework",
+      decision: "checklist",
+      insight: "case-study",
+      issue: "framework",
+      lesson_learned: "case-study",
+    };
+    return typeMap[backendType] || "guide";
+  }
+
   const typeOptions = [
     { value: "methodology", label: "Methodology" },
     { value: "framework", label: "Framework" },
@@ -105,30 +124,14 @@ export function EditKnowledgeDialog({
     { value: "case-study", label: "Case Study" },
     { value: "guide", label: "Guide" },
     { value: "checklist", label: "Checklist" },
-  ] as const;
-
-  function mapFromKnowledgeType(
-    knowledgeType: string
-  ): "methodology" | "framework" | "template" | "case-study" | "guide" | "checklist" {
-    const mapping: Record<string, any> = {
-      solution: "guide",
-      issue: "case-study",
-      decision: "guide",
-      pattern: "framework",
-      template: "template",
-      reference: "guide",
-      insight: "case-study",
-      lesson_learned: "case-study",
-    };
-    return mapping[knowledgeType] || "guide";
-  }
+  ];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Knowledge Item</DialogTitle>
-          <DialogDescription>Update the knowledge base item details below.</DialogDescription>
+          <DialogDescription>Update the information for this knowledge item.</DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
@@ -145,32 +148,51 @@ export function EditKnowledgeDialog({
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
               <Label htmlFor={typeId}>Type</Label>
-              <select
-                id={typeId}
+              <Select
                 value={type}
-                onChange={(e) => setType(e.target.value as typeof type)}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                onValueChange={(value) =>
+                  setType(
+                    value as
+                      | "methodology"
+                      | "framework"
+                      | "template"
+                      | "case-study"
+                      | "guide"
+                      | "checklist"
+                  )
+                }
               >
-                {typeOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger id={typeId}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {typeOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor={categoryId}>Category (optional)</Label>
+              <Label htmlFor={categoryId}>Categories</Label>
               <Select
                 value={categoryIds[0] || "none"}
-                onValueChange={(value: string) => setCategoryIds(value === "none" ? [] : [value])}
+                onValueChange={(value) => {
+                  if (value === "none") {
+                    setCategoryIds([]);
+                  } else {
+                    setCategoryIds([value]);
+                  }
+                }}
               >
                 <SelectTrigger id={categoryId}>
-                  <SelectValue placeholder="Select a category" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">No category</SelectItem>
-                  {categories.map((category) => (
+                  {categories.map((category: any) => (
                     <SelectItem key={category.id} value={category.id}>
                       {category.name}
                     </SelectItem>
@@ -182,12 +204,11 @@ export function EditKnowledgeDialog({
 
           <div className="grid gap-2">
             <Label htmlFor={contentId}>Content</Label>
-            <Textarea
-              id={contentId}
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Enter the knowledge content..."
-              className="min-h-[200px]"
+            <KnowledgeEditor
+              content={content}
+              onChange={setContent}
+              placeholder="Update your knowledge content..."
+              minHeight="min-h-[300px]"
             />
           </div>
 
@@ -227,18 +248,10 @@ export function EditKnowledgeDialog({
         </div>
 
         <DialogFooter>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={updateMutation.isPending}
-          >
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={!title.trim() || !content.trim() || updateMutation.isPending}
-          >
+          <Button onClick={handleSubmit} disabled={updateMutation.isPending}>
             {updateMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Update
           </Button>

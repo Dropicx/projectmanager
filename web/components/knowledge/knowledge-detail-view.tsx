@@ -14,6 +14,7 @@ import { ArrowLeft, Calendar, Edit, Hash, Trash2, User } from "lucide-react";
 import { useState } from "react";
 import { trpc } from "@/app/providers/trpc-provider";
 import { EditKnowledgeDialog } from "./edit-knowledge-dialog";
+import { KnowledgeViewer } from "./knowledge-editor";
 
 interface KnowledgeDetailViewProps {
   knowledgeId: string;
@@ -185,9 +186,7 @@ export function KnowledgeDetailView({ knowledgeId, onBack, onDelete }: Knowledge
               <h2 className="text-lg font-semibold">Content</h2>
             </CardHeader>
             <CardContent>
-              <div className="prose prose-sm max-w-none">
-                <div className="whitespace-pre-wrap">{item.content}</div>
-              </div>
+              <KnowledgeViewer content={item.content} />
             </CardContent>
           </Card>
 

@@ -16,11 +16,11 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Textarea,
 } from "@consulting-platform/ui";
 import { Loader2, Plus, X } from "lucide-react";
 import { useId, useState } from "react";
 import { trpc } from "@/app/providers/trpc-provider";
+import { KnowledgeEditor } from "./knowledge-editor";
 
 interface AddKnowledgeDialogProps {
   open: boolean;
@@ -161,12 +161,11 @@ export function AddKnowledgeDialog({ open, onOpenChange, onSuccess }: AddKnowled
 
           <div className="grid gap-2">
             <Label htmlFor={contentId}>Content</Label>
-            <Textarea
-              id={contentId}
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Enter the knowledge content..."
-              className="min-h-[200px]"
+            <KnowledgeEditor
+              content={content}
+              onChange={setContent}
+              placeholder="Start writing your knowledge content..."
+              minHeight="min-h-[300px]"
             />
           </div>
 
