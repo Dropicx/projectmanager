@@ -28,7 +28,7 @@ import {
   Settings,
   Users,
 } from "lucide-react";
-import { useId, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { trpc } from "@/app/providers/trpc-provider";
 
 interface CategoryDialogProps {
@@ -81,6 +81,23 @@ export function CategoryDialog({ open, onOpenChange, category, onSuccess }: Cate
   const parentId_ = useId();
 
   const utils = trpc.useUtils();
+
+  // Update form state when category prop changes
+  useEffect(() => {
+    if (category) {
+      setName(category.name || "");
+      setDescription(category.description || "");
+      setIcon(category.icon || "Folder");
+      setColor(category.color || "#6B7280");
+      setParentId(category.parent_id || null);
+    } else {
+      setName("");
+      setDescription("");
+      setIcon("Folder");
+      setColor("#6B7280");
+      setParentId(null);
+    }
+  }, [category]);
 
   // Get categories for parent selection
   const { data: categories = [] } = trpc.knowledge.getCategories.useQuery();

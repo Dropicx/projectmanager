@@ -146,14 +146,14 @@ function SortableCategory({
                   )}
                   onClick={() => onCategorySelect(category.id)}
                 >
-                  <div className="flex items-center w-full">
+                  <div className="flex items-center">
                     {renderCategoryIcon(category.icon, category.color)}
-                    <span className="text-sm font-medium flex-1">{category.name}</span>
+                    <span className="text-sm font-medium">{category.name}</span>
                   </div>
                 </Button>
 
                 {/* Accordion trigger just for expand/collapse */}
-                <AccordionTrigger className="px-2 py-1.5 hover:bg-transparent [&[data-state=open]>svg]:-rotate-90" />
+                <AccordionTrigger className="px-2 py-1.5 hover:bg-transparent [&[data-state=open]>svg]:rotate-90" />
 
                 {/* Item counter */}
                 <span className="text-xs text-muted-foreground min-w-[24px] text-center px-1">
@@ -219,9 +219,9 @@ function SortableCategory({
           )}
           onClick={() => onCategorySelect(category.id)}
         >
-          <div className="flex items-center w-full">
+          <div className="flex items-center">
             {level === 0 && renderCategoryIcon(category.icon, category.color)}
-            <span className="text-sm flex-1">{category.name}</span>
+            <span className="text-sm">{category.name}</span>
           </div>
         </Button>
 
