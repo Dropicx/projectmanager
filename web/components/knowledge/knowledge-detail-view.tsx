@@ -123,7 +123,12 @@ export function KnowledgeDetailView({ knowledgeId, onBack, onDelete }: Knowledge
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
                   <div className="flex items-center gap-1">
                     <Calendar className="h-3 w-3" />
-                    <span>Created {format(new Date(item.created_at), "MMM d, yyyy")}</span>
+                    <span>
+                      Created{" "}
+                      {item.created_at
+                        ? format(new Date(item.created_at), "MMM d, yyyy")
+                        : "Unknown"}
+                    </span>
                   </div>
                   {item.created_by && (
                     <div className="flex items-center gap-1">
@@ -157,10 +162,10 @@ export function KnowledgeDetailView({ knowledgeId, onBack, onDelete }: Knowledge
                   {getTypeLabel(item.knowledge_type)}
                 </Badge>
               )}
-              {item.tags && item.tags.length > 0 && (
+              {item.tags && Array.isArray(item.tags) && item.tags.length > 0 && (
                 <>
                   <Separator orientation="vertical" className="h-4" />
-                  {item.tags.map((tag: string) => (
+                  {(item.tags as string[]).map((tag: string) => (
                     <Badge key={tag} variant="secondary">
                       <Hash className="h-3 w-3 mr-1" />
                       {tag}

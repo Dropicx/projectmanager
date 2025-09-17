@@ -77,6 +77,7 @@ export {
   SheetTitle,
   SheetTrigger,
 } from "./components/sheet";
+export { Skeleton } from "./components/skeleton";
 export { Switch } from "./components/switch";
 export { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/tabs";
 export { Textarea } from "./components/textarea";

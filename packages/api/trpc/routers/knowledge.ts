@@ -332,6 +332,30 @@ export const knowledgeRouter = router({
     }),
 
   /**
+   * Delete a general knowledge item
+   */
+  deleteGeneral: protectedProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      // First delete any category associations
+      await ctx.db
+        .delete(knowledge_to_categories)
+        .where(eq(knowledge_to_categories.knowledge_id, input.id));
+
+      // Then delete the knowledge item (only if it belongs to the user's organization)
+      await ctx.db
+        .delete(knowledge_base)
+        .where(
+          and(
+            eq(knowledge_base.id, input.id),
+            eq(knowledge_base.organization_id, ctx.user.organizationId || "")
+          )
+        );
+
+      return { success: true };
+    }),
+
+  /**
    * Update a general knowledge item
    */
   updateGeneral: protectedProcedure

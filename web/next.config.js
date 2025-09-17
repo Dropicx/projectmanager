@@ -13,6 +13,8 @@ const nextConfig = {
         hostname: "**",
       },
     ],
+    // Disable image optimization in production to avoid cache write errors
+    unoptimized: process.env.NODE_ENV === "production",
   },
   // Configure for production
   experimental: {
@@ -20,6 +22,8 @@ const nextConfig = {
       bodySizeLimit: "2mb",
     },
   },
+  // Disable file system cache in production
+  cacheMaxMemorySize: 0,
 };
 
 module.exports = nextConfig;
