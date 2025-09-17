@@ -152,7 +152,7 @@ export default function KnowledgePage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {item.tags && item.tags.length > 0 && (
+                  {item.tags && Array.isArray(item.tags) && item.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1">
                       {(item.tags as string[]).slice(0, 3).map((tag) => (
                         <Badge key={tag} variant="outline" className="text-xs">
@@ -170,7 +170,7 @@ export default function KnowledgePage() {
                     </div>
                     <span className="flex items-center">
                       <Calendar className="h-3 w-3 mr-1" />
-                      {formatDate(item.createdAt)}
+                      {item.createdAt ? formatDate(item.createdAt) : "N/A"}
                     </span>
                   </div>
                 </div>
@@ -234,13 +234,13 @@ export default function KnowledgePage() {
                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
                       <span className="flex items-center">
                         <Calendar className="h-3 w-3 mr-1" />
-                        {formatDate(item.createdAt)}
+                        {item.createdAt ? formatDate(item.createdAt) : "N/A"}
                       </span>
                       <span className="flex items-center">
                         <Eye className="h-3 w-3 mr-1" />
                         {item.views || 0} views
                       </span>
-                      {item.tags && item.tags.length > 0 && (
+                      {item.tags && Array.isArray(item.tags) && item.tags.length > 0 && (
                         <div className="flex gap-1">
                           {(item.tags as string[]).slice(0, 3).map((tag) => (
                             <Badge key={tag} variant="outline" className="text-xs">
@@ -291,7 +291,7 @@ export default function KnowledgePage() {
 
     const groupedByDate = knowledgeItems.reduce(
       (acc, item) => {
-        const date = formatDate(item.createdAt);
+        const date = item.createdAt ? formatDate(item.createdAt) : "Unknown";
         if (!acc[date]) acc[date] = [];
         acc[date].push(item);
         return acc;
