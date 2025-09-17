@@ -123,7 +123,7 @@ export function CategoryDialog({ open, onOpenChange, category, onSuccess }: Cate
         description: description.trim() || undefined,
         icon,
         color,
-        parent_id: parentId,
+        parent_id: parentId || undefined,
       });
     } else {
       createMutation.mutate({

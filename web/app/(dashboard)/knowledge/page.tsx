@@ -192,7 +192,7 @@ export default function KnowledgePage() {
               <h3 className="text-sm font-medium text-muted-foreground mb-3">Knowledge Items</h3>
             )}
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {knowledgeItems.map((item) => {
+              {knowledgeItems.map((item: any) => {
                 const Icon = getTypeIcon(item.type || "guide");
                 const displayType = mapBackendType(item.type || "guide");
                 return (
@@ -327,7 +327,7 @@ export default function KnowledgePage() {
               <h3 className="text-sm font-medium text-muted-foreground mb-3">Knowledge Items</h3>
             )}
             <div className="space-y-3">
-              {knowledgeItems.map((item) => {
+              {knowledgeItems.map((item: any) => {
                 const Icon = getTypeIcon(item.type || "guide");
                 const displayType = mapBackendType(item.type || "guide");
                 return (
@@ -416,13 +416,13 @@ export default function KnowledgePage() {
     }
 
     const groupedByDate = knowledgeItems.reduce(
-      (acc, item) => {
+      (acc: any, item: any) => {
         const date = item.createdAt ? formatDate(item.createdAt) : "Unknown";
         if (!acc[date]) acc[date] = [];
         acc[date].push(item);
         return acc;
       },
-      {} as Record<string, typeof knowledgeItems>
+      {} as Record<string, any[]>
     );
 
     return (
@@ -435,7 +435,7 @@ export default function KnowledgePage() {
               <div className="flex-1 h-px bg-border" />
             </div>
             <div className="space-y-3 ml-7">
-              {items.map((item: any) => {
+              {(items as any[]).map((item: any) => {
                 const Icon = getTypeIcon(item.type || "guide");
                 const displayType = mapBackendType(item.type || "guide");
                 return (

@@ -12,7 +12,7 @@ export interface Context {
     email: string;
     organizationId: string;
   };
-  db: typeof db;
+  db: any; // Use any to avoid complex type inference issues
   ai: AIOrchestrator;
 }
 
@@ -28,6 +28,11 @@ export const createContext = (): Context => ({
   ai: aiOrchestrator,
 });
 
+// Authenticated context type
+type AuthContext = Context & {
+  user: NonNullable<Context["user"]>;
+};
+
 // Middleware for authentication
 const authMiddleware = t.middleware(({ ctx, next }) => {
   if (!ctx.user) {
@@ -40,8 +45,8 @@ const authMiddleware = t.middleware(({ ctx, next }) => {
     ctx: {
       ...ctx,
       user: ctx.user,
-    },
+    } as AuthContext,
   });
 });
 
-export const protectedProcedure = t.procedure.use(authMiddleware) as any;
+export const protectedProcedure = t.procedure.use(authMiddleware);

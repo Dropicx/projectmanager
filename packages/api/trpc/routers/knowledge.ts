@@ -96,8 +96,8 @@ export const knowledgeRouter = router({
             .from(knowledge_to_categories)
             .where(eq(knowledge_to_categories.category_id, input.categoryId));
 
-          const categoryItemIds = categoryItems.map((item) => item.knowledgeId);
-          return items.filter((item) => categoryItemIds.includes(item.id));
+          const categoryItemIds = categoryItems.map((item: any) => item.knowledgeId);
+          return items.filter((item: any) => categoryItemIds.includes(item.id));
         }
 
         return items;
@@ -121,7 +121,7 @@ export const knowledgeRouter = router({
 
       // Calculate actual item counts for each category
       const categoriesWithCounts = await Promise.all(
-        categories.map(async (category) => {
+        categories.map(async (category: any) => {
           const count = await ctx.db
             .select({ count: sql`count(*)::int` })
             .from(knowledge_to_categories)
@@ -575,7 +575,7 @@ export const knowledgeRouter = router({
 
         // Filter by type in memory if specified
         if (input.type && input.type !== "all") {
-          return entries.filter((entry) => {
+          return entries.filter((entry: any) => {
             return entry.knowledge_type === input.type;
           });
         }
@@ -617,16 +617,16 @@ export const knowledgeRouter = router({
 
         // Perform semantic search using embeddings
         const results = entries
-          .map((entry) => {
+          .map((entry: any) => {
             if (!entry.embedding) return null;
             const similarity = cosineSimilarity(queryEmbedding, entry.embedding as number[]);
             return { ...entry, similarity };
           })
           .filter(
-            (entry): entry is typeof entry & { similarity: number } =>
+            (entry: any): entry is typeof entry & { similarity: number } =>
               entry !== null && "similarity" in entry && entry.similarity > 0.7
           )
-          .sort((a, b) => b.similarity - a.similarity)
+          .sort((a: any, b: any) => b.similarity - a.similarity)
           .slice(0, input.limit);
 
         return results;
@@ -721,7 +721,7 @@ export const knowledgeRouter = router({
           projectName: engagement.client_name,
           projectDescription: engagement.description || "",
           status: engagement.status,
-          recentUpdates: entries.map((e) => ({
+          recentUpdates: entries.map((e: any) => ({
             title: e.title,
             content: e.content.substring(0, 500),
             type: e.knowledge_type || "note",
@@ -739,7 +739,7 @@ Description: ${context.projectDescription}
 Current Status: ${context.status}
 
 Recent Updates:
-${context.recentUpdates.map((u) => `- [${u.type}] ${u.title}: ${u.content}`).join("\n")}
+${context.recentUpdates.map((u: any) => `- [${u.type}] ${u.title}: ${u.content}`).join("\n")}
 
 Please provide:
 1. Current Status Overview (2-3 sentences)
@@ -793,7 +793,7 @@ Format the response in markdown.`,
           .catch(() => []);
 
         // Filter for documentation and decision types
-        const docs = allEntries.filter((entry) => {
+        const docs = allEntries.filter((entry: any) => {
           return entry.knowledge_type === "reference" || entry.knowledge_type === "decision";
         });
 
@@ -818,7 +818,7 @@ Project: ${engagement.client_name}
 Description: ${engagement.description || ""}
 
 Documentation entries:
-${docs.map((d) => `- ${d.title}: ${d.content.substring(0, 300)}`).join("\n")}
+${docs.map((d: any) => `- ${d.title}: ${d.content.substring(0, 300)}`).join("\n")}
 
 Please create a well-structured wiki with:
 1. Project Overview
