@@ -116,7 +116,13 @@ export function KnowledgeDetailView({ knowledgeId, onBack, onDelete }: Knowledge
   const handleSave = () => {
     if (!editedTitle.trim() || !editedContent.trim()) return;
 
-    const frontendType = mapBackendTypeToFrontend(editedType);
+    const frontendType = mapBackendTypeToFrontend(editedType) as
+      | "methodology"
+      | "framework"
+      | "template"
+      | "case-study"
+      | "guide"
+      | "checklist";
 
     updateMutation.mutate({
       id: knowledgeId,
@@ -150,8 +156,13 @@ export function KnowledgeDetailView({ knowledgeId, onBack, onDelete }: Knowledge
     setEditedTags(editedTags.filter((t) => t !== tag));
   };
 
-  const mapBackendTypeToFrontend = (backendType: string) => {
-    const typeMap: Record<string, string> = {
+  const mapBackendTypeToFrontend = (
+    backendType: string
+  ): "methodology" | "framework" | "template" | "case-study" | "guide" | "checklist" => {
+    const typeMap: Record<
+      string,
+      "methodology" | "framework" | "template" | "case-study" | "guide" | "checklist"
+    > = {
       solution: "framework",
       issue: "framework",
       decision: "checklist",

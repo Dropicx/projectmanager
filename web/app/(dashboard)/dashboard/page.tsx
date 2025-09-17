@@ -39,7 +39,7 @@ export default function DashboardPage() {
 
   // Calculate knowledge statistics
   const totalClients = projects?.length || 0;
-  const activeProjects = projects?.filter((p) => p.status === "active").length || 0;
+  const activeProjects = projects?.filter((p: any) => p.status === "active").length || 0;
 
   // Mock knowledge stats (will be real when DB is set up)
   const knowledgeStats = {
@@ -264,7 +264,7 @@ export default function DashboardPage() {
         <CardContent>
           {recentProjects.length > 0 ? (
             <div className="space-y-4">
-              {recentProjects.map((project) => (
+              {recentProjects.map((project: any) => (
                 <Link
                   key={project.id}
                   href={`/projects/${project.id}/knowledge`}
