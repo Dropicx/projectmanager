@@ -32,24 +32,9 @@ import { trpc } from "@/app/providers/trpc-provider";
 import { AddKnowledgeDialog } from "@/components/knowledge/add-knowledge-dialog";
 import { KnowledgeDetailView } from "@/components/knowledge/knowledge-detail-view";
 import { KnowledgeSidebar } from "@/components/knowledge-sidebar";
+import { getContentExcerpt } from "@/lib/html-utils";
 
 export const dynamic = "force-dynamic";
-
-// Helper function to strip HTML tags and get plain text
-function stripHtml(html: string): string {
-  if (!html) return "";
-  // Remove HTML tags and decode HTML entities
-  const tmp = document.createElement("DIV");
-  tmp.innerHTML = html;
-  return tmp.textContent || tmp.innerText || "";
-}
-
-// Helper function to get excerpt from HTML content
-function getContentExcerpt(htmlContent: string, maxLength: number = 150): string {
-  const plainText = stripHtml(htmlContent);
-  if (plainText.length <= maxLength) return plainText;
-  return `${plainText.substring(0, maxLength).trim()}...`;
-}
 
 export default function KnowledgePage() {
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>();
@@ -360,7 +345,9 @@ export default function KnowledgePage() {
                           <div className="flex items-start justify-between">
                             <div>
                               <h3 className="font-semibold">{item.title}</h3>
-                              <p className="text-sm text-muted-foreground mt-1">{item.content}</p>
+                              <p className="text-sm text-muted-foreground mt-1">
+                                {getContentExcerpt(item.content || "", 150)}
+                              </p>
                             </div>
                             <Badge
                               variant={getTypeColor(item.type || "guide")}
@@ -472,7 +459,7 @@ export default function KnowledgePage() {
                             </Badge>
                           </div>
                           <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                            {item.content}
+                            {getContentExcerpt(item.content || "", 120)}
                           </p>
                           <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
                             <span>{item.views || 0} views</span>
