@@ -1,9 +1,9 @@
 # Product Requirements Document (PRD)
 
-## Consailt - AI-Powered Consulting Intelligence Platform
+## Consailt - AI-Powered Consultant Knowledge Base Platform
 
-**Version**: 1.0  
-**Date**: September 2025  
+**Version**: 2.0  
+**Date**: January 2025  
 **Author**: Product Team  
 **Repository**: [github.com/Dropicx/projectmanager](https://github.com/Dropicx/projectmanager)  
 **Status**: 🟡 In Development (MVP Phase)
@@ -12,149 +12,165 @@
 
 ## 📋 Executive Summary
 
-Consailt is an enterprise-grade consulting project management platform that leverages multi-model AI orchestration to deliver intelligent insights, automated risk assessment, and knowledge management capabilities. Built with zero-data-retention architecture for sensitive client data, it provides consultants with a unified platform for project execution, team collaboration, and strategic decision-making.
+Consailt is an AI-powered knowledge management platform designed specifically for individual consultants and small consulting teams. It transforms how consultants capture, organize, and leverage their expertise through intelligent AI assistance, semantic search, and automated insights generation. Built with privacy-first architecture, it serves as a personal knowledge base that grows smarter with each interaction.
 
 ### Current State
 - ✅ Repository initialized with monorepo structure
-- ✅ Tech stack defined (Next.js 15.5, React 19, Hono, Drizzle)
-- ✅ Basic architecture documented
-- 🟡 Core components in development
-- ⏳ AI integration pending (AWS Bedrock)
-- ⏳ Railway deployment configuration in progress
+- ✅ Tech stack defined (Next.js 15, React 19, tRPC, Drizzle ORM)
+- ✅ Database schema designed for knowledge management
+- ✅ AI orchestrator implemented with multi-model support
+- ✅ Worker service for background processing
+- ✅ Railway deployment configuration complete
+- 🟡 Web UI components in development
+- 🟡 Knowledge base features in progress
+- ⏳ RSS feed integration implemented
+- ⏳ Advanced search and categorization pending
 
 ### Vision Statement
-*"To revolutionize consulting operations by providing an AI-native platform that transforms how consultants manage projects, generate insights, and deliver value to clients - while maintaining absolute data security and compliance."*
+*"To empower individual consultants with an AI-native knowledge base that captures, organizes, and amplifies their expertise - making institutional knowledge accessible, searchable, and actionable through intelligent automation."*
 
 ---
 
 ## 🎯 Product Objectives
 
 ### Primary Goals
-1. **Reduce project delivery time by 40%** through AI-powered automation
-2. **Improve decision accuracy by 60%** with intelligent risk assessment
-3. **Cut operational costs by 30%** via optimized resource allocation
-4. **Achieve 100% GDPR compliance** with zero-data-retention architecture
+1. **Increase knowledge retrieval speed by 80%** through semantic search and AI
+2. **Improve insight generation by 70%** with automated pattern recognition
+3. **Reduce knowledge silos by 90%** through centralized, searchable repository
+4. **Achieve 100% data privacy** with local-first architecture and zero-retention AI
 
 ### Success Metrics
 | Metric | Target | Current | Timeline |
 |--------|--------|---------|----------|
-| Monthly Active Users | 10,000 | 0 | 12 months |
-| AI Queries/Day | 100,000 | 0 | 6 months |
-| Average Response Time | <100ms | N/A | MVP |
-| User Satisfaction (NPS) | >70 | N/A | 3 months |
-| Cost per AI Query | <€0.001 | N/A | Launch |
+| Knowledge Entries | 1,000+ | 0 | 6 months |
+| Search Accuracy | >85% | N/A | MVP |
+| AI Insights Generated | 50+/week | 0 | 3 months |
+| User Engagement | 5+ sessions/week | N/A | 2 months |
+| Cost per AI Query | <$0.001 | N/A | Launch |
 | System Uptime | 99.9% | N/A | Production |
 
 ---
 
 ## 👥 User Personas
 
-### Primary: Senior Consultant (Sarah)
-- **Role**: Managing Consultant at Big 4 firm
+### Primary: Independent Consultant (Sarah)
+- **Role**: Freelance consultant specializing in digital transformation
 - **Pain Points**: 
-  - Juggling 5-7 projects simultaneously
-  - Spending 40% time on reporting
-  - Difficulty tracking cross-project insights
+  - Scattered knowledge across multiple tools and documents
+  - Difficulty finding previous solutions and insights
+  - Time-consuming research for similar client problems
+  - Lack of systematic knowledge organization
 - **Needs**: 
-  - Quick project status overview
-  - AI-generated executive summaries
-  - Risk alerts and mitigation suggestions
+  - Centralized knowledge repository
+  - AI-powered search and insights
+  - Quick access to past solutions and templates
+  - Automated knowledge categorization
 - **Tech Savvy**: High
 
-### Secondary: Project Manager (Michael)
-- **Role**: Project Lead at mid-size consultancy
+### Secondary: Small Team Lead (Michael)
+- **Role**: Lead consultant managing 2-3 junior consultants
 - **Pain Points**: 
-  - Manual resource allocation
-  - Delayed risk identification
-  - Inconsistent team updates
+  - Knowledge sharing bottlenecks
+  - Inconsistent documentation practices
+  - Difficulty tracking team expertise
+  - Manual knowledge transfer processes
 - **Needs**: 
-  - Real-time team collaboration
-  - Automated task distribution
-  - Progress tracking dashboards
-- **Tech Savvy**: Medium
+  - Team knowledge sharing platform
+  - Standardized documentation templates
+  - AI-assisted knowledge discovery
+  - Progress tracking and insights
+- **Tech Savvy**: Medium-High
 
-### Tertiary: C-Level Executive (Jennifer)
-- **Role**: Partner/Director
+### Tertiary: Knowledge Worker (Jennifer)
+- **Role**: Consultant focused on research and analysis
 - **Pain Points**: 
-  - Lack of portfolio visibility
-  - Delayed decision-making
-  - ROI measurement challenges
+  - Information overload from multiple sources
+  - Difficulty synthesizing insights from various data
+  - Time-consuming manual research
+  - Lack of automated trend analysis
 - **Needs**: 
-  - High-level KPI dashboards
-  - Predictive analytics
-  - Cost/benefit analysis
-- **Tech Savvy**: Low-Medium
+  - Intelligent content aggregation
+  - AI-powered analysis and synthesis
+  - Automated insight generation
+  - Trend monitoring and alerts
+- **Tech Savvy**: Medium
 
 ---
 
 ## 🚀 Core Features
 
-### 1. AI-Powered Project Intelligence
+### 1. AI-Powered Knowledge Base
 **Status**: 🟡 In Development
 
-#### Multi-Model Orchestration
+#### Multi-Model AI Orchestration
 ```typescript
-// Current Implementation Plan
+// Current Implementation
 const modelMatrix = {
   'quick_summary': 'amazon.nova-lite',      // $0.06/1M tokens
-  'project_analysis': 'amazon.nova-pro',    // $0.80/1M tokens  
-  'risk_assessment': 'claude-3.7-sonnet',   // $3.00/1M tokens
+  'knowledge_analysis': 'amazon.nova-pro',  // $0.80/1M tokens  
+  'insight_generation': 'claude-3.7-sonnet', // $3.00/1M tokens
   'technical_docs': 'mistral-large-2',      // $2.00/1M tokens
-  'realtime': 'llama-3.2-3b'               // $0.10/1M tokens
+  'realtime_search': 'llama-3.2-3b'        // $0.10/1M tokens
 }
 ```
 
 **Features:**
 - ✅ Intelligent model selection based on task complexity
 - ✅ Cost optimization algorithm
-- 🟡 Streaming responses for better UX
-- ⏳ Custom prompt templates
-- ⏳ Context window management
+- ✅ AI-powered content analysis and summarization
+- 🟡 Semantic search with vector embeddings
+- 🟡 Automated knowledge categorization
+- ⏳ Custom prompt templates for different knowledge types
+- ⏳ Context-aware recommendations
 
-### 2. Project Management Suite
+### 2. Knowledge Capture & Organization
 **Status**: 🟡 Foundation Built
 
 **Features:**
-- ✅ Project CRUD operations
-- ✅ Task management with dependencies
-- 🟡 Gantt chart visualization
-- 🟡 Resource allocation matrix
-- ⏳ Milestone tracking
-- ⏳ Budget management
-- ⏳ Timeline optimization
+- ✅ Multiple content types (notes, documents, links, voice memos)
+- ✅ Flexible categorization system with hierarchical categories
+- ✅ Tag-based organization with smart suggestions
+- ✅ Client sanitization for privacy
+- 🟡 Document upload and processing
+- 🟡 RSS feed integration for industry news
+- ⏳ Email integration for knowledge capture
+- ⏳ Voice-to-text transcription
 
-### 3. Knowledge Management (RAG)
-**Status**: ⏳ Planned
-
-**Features:**
-- Document upload and processing
-- Vector embeddings with pgvector
-- Semantic search across projects
-- Auto-tagging and categorization
-- Best practices repository
-- Lessons learned database
-
-### 4. Real-time Collaboration
-**Status**: ⏳ Planned
+### 3. Intelligent Search & Discovery
+**Status**: 🟡 In Development
 
 **Features:**
-- Live project updates
-- Team messaging
-- Shared workspaces
-- Comment threads
-- @mentions and notifications
-- Activity feeds
+- ✅ Full-text search across all content
+- ✅ Vector-based semantic search
+- ✅ AI-powered search suggestions
+- 🟡 Advanced filtering and faceted search
+- 🟡 Search history and analytics
+- ⏳ Natural language query processing
+- ⏳ Related content recommendations
 
-### 5. Analytics & Reporting
+### 4. AI Insights & Analytics
 **Status**: 🟡 Basic Implementation
 
 **Features:**
-- ✅ KPI dashboards
-- 🟡 Custom report builder
-- ⏳ Automated weekly/monthly reports
-- ⏳ Predictive analytics
-- ⏳ Resource utilization charts
-- ⏳ Financial tracking
+- ✅ Automated insight generation
+- ✅ Pattern recognition across knowledge base
+- ✅ Trend analysis and recommendations
+- 🟡 Knowledge gap identification
+- 🟡 Usage analytics and optimization
+- ⏳ Predictive insights based on historical data
+- ⏳ Custom insight templates
+
+### 5. Content Management & Templates
+**Status**: 🟡 Foundation Built
+
+**Features:**
+- ✅ Knowledge templates for different use cases
+- ✅ Reusable content structures
+- ✅ Template sharing and collaboration
+- 🟡 Version control and change tracking
+- 🟡 Content lifecycle management
+- ⏳ Automated content validation
+- ⏳ Template marketplace
 
 ---
 
@@ -164,27 +180,34 @@ const modelMatrix = {
 ```json
 {
   "frontend": {
-    "framework": "Next.js 15.5",
+    "framework": "Next.js 15",
     "ui": "React 19 + Tailwind CSS v4",
     "components": "shadcn/ui",
-    "state": "@tanstack/react-query v5 + zustand"
+    "state": "@tanstack/react-query v5 + zustand",
+    "auth": "Clerk"
   },
   "backend": {
-    "api": "Hono 4.6 + tRPC",
-    "orm": "Drizzle 0.38",
-    "database": "PostgreSQL (Neon)",
-    "cache": "Redis"
+    "api": "tRPC with Next.js App Router",
+    "orm": "Drizzle ORM 0.44",
+    "database": "PostgreSQL (Railway)",
+    "cache": "Redis (Railway)"
   },
   "ai": {
     "platform": "AWS Bedrock",
-    "models": ["Claude 3.7", "Nova Pro", "Mistral Large"],
-    "region": "eu-central-1"
+    "models": ["Claude 3.7 Sonnet", "Nova Pro", "Nova Lite", "Mistral Large", "Llama 3.2"],
+    "region": "us-east-1",
+    "orchestration": "Custom AI Orchestrator"
+  },
+  "worker": {
+    "runtime": "Node.js with BullMQ",
+    "jobs": "AI processing, RSS sync, insights generation",
+    "scheduling": "Cron jobs for automated tasks"
   },
   "infrastructure": {
     "hosting": "Railway.app",
-    "monitoring": "Sentry + Langfuse",
+    "monitoring": "Built-in health checks",
     "auth": "Clerk",
-    "files": "Uploadthing"
+    "files": "Uploadthing (planned)"
   }
 }
 ```
@@ -192,24 +215,42 @@ const modelMatrix = {
 ### Database Schema (Current)
 ```typescript
 // packages/database/schema.ts
-- organizations
-- projects  
-- tasks
-- users
-- knowledge_base
-- ai_interactions
-- audit_logs
+- organizations (multi-tenant root)
+- users (consultants)
+- engagements (client projects)
+- knowledge_base (core knowledge repository)
+- knowledge_categories (hierarchical organization)
+- knowledge_templates (reusable structures)
+- tags (flexible tagging system)
+- knowledge_insights (AI-generated insights)
+- ai_interactions (usage tracking)
+- news_articles (RSS feed content)
+- search_history (search analytics)
+- files (document attachments)
 ```
 
 ### API Architecture
 ```
 /api/
   /trpc/          # Type-safe API
-    /projects/    # Project endpoints
-    /ai/          # AI orchestration
-    /analytics/   # Reporting
-  /webhooks/      # Clerk, Stripe
+    /knowledge/   # Knowledge base operations
+    /ai/          # AI orchestration and insights
+    /projects/    # Engagement management
+    /analytics/   # Usage and performance metrics
   /health/        # Health checks
+```
+
+### Worker Service Architecture
+```
+/worker/
+  /src/
+    - index.ts (main worker process)
+    - health.ts (health monitoring)
+  /jobs/
+    - ai-insights (AI processing queue)
+    - risk-assessment (risk analysis queue)
+    - rss-sync (content aggregation)
+    - knowledge-processing (content analysis)
 ```
 
 ---
@@ -238,59 +279,61 @@ const modelMatrix = {
 
 ## 📈 Development Roadmap
 
-### Phase 1: MVP (Weeks 1-4) ✅
-- Repository setup
-- Tech stack selection
-- Basic project structure
-- Core UI components
-- Authentication flow
-- Basic project CRUD
+### Phase 1: Foundation (Weeks 1-4) ✅
+- Repository setup with monorepo structure
+- Tech stack selection (Next.js 15, tRPC, Drizzle ORM)
+- Database schema design for knowledge management
+- Basic authentication with Clerk
+- Core UI components with shadcn/ui
 
-### Phase 2: AI Integration (Weeks 5-8) 🟡
-- AWS Bedrock setup
-- Model orchestrator
-- Streaming responses
-- Cost tracking
-- Basic insights generation
+### Phase 2: AI Integration (Weeks 5-8) ✅
+- AWS Bedrock setup and configuration
+- Multi-model AI orchestrator implementation
+- Cost optimization and usage tracking
+- Worker service for background processing
+- Basic AI insights generation
 
-### Phase 3: Core Features (Weeks 9-12) ⏳
-- Advanced project management
-- Knowledge base with RAG
-- Real-time collaboration
-- Analytics dashboards
-- Report generation
+### Phase 3: Knowledge Base Core (Weeks 9-12) 🟡
+- Knowledge capture and organization system
+- Hierarchical categorization system
+- Tag-based organization
+- Basic search functionality
+- RSS feed integration for content aggregation
+- Knowledge templates system
 
-### Phase 4: Enterprise Features (Weeks 13-16) ⏳
-- Advanced security features
+### Phase 4: Advanced Features (Weeks 13-16) ⏳
+- Semantic search with vector embeddings
+- Advanced AI insights and pattern recognition
+- Document upload and processing
+- Team collaboration features
+- Analytics and usage tracking
+- Mobile-responsive design
+
+### Phase 5: Intelligence & Scale (Weeks 17-20) ⏳
+- Natural language query processing
+- Predictive insights and recommendations
 - API for integrations
-- White-label options
-- Advanced analytics
-- Mobile app (React Native)
-
-### Phase 5: Scale & Optimize (Weeks 17-20) ⏳
 - Performance optimization
-- Horizontal scaling
-- Global deployment
-- Enterprise onboarding
-- Compliance certifications
+- Advanced security features
+- Enterprise features
 
 ---
 
 ## 💰 Business Model
 
 ### Pricing Tiers
-| Tier | Price | Users | AI Queries | Features |
-|------|-------|-------|------------|----------|
-| Starter | €99/mo | 5 | 1,000/mo | Basic features |
-| Professional | €499/mo | 20 | 10,000/mo | + Advanced AI |
-| Enterprise | €2,499/mo | Unlimited | 100,000/mo | + Custom models |
-| Custom | Contact | Unlimited | Unlimited | On-premise option |
+| Tier | Price | Users | AI Queries | Knowledge Entries | Features |
+|------|-------|-------|------------|-------------------|----------|
+| Solo | $29/mo | 1 | 1,000/mo | 5,000 | Basic knowledge base |
+| Professional | $79/mo | 3 | 5,000/mo | 25,000 | + Advanced AI insights |
+| Team | $199/mo | 10 | 15,000/mo | 100,000 | + Team collaboration |
+| Enterprise | $499/mo | Unlimited | 50,000/mo | Unlimited | + Custom models & API |
 
 ### Cost Structure
-- Infrastructure: ~€500/month (Railway + Neon)
-- AI Costs: ~€0.001 per query average
-- Third-party Services: ~€200/month
-- Total per 1000 MAU: ~€2,200/month
+- Infrastructure: ~$200/month (Railway + PostgreSQL + Redis)
+- AI Costs: ~$0.001 per query average
+- Third-party Services: ~$100/month (Clerk, monitoring)
+- Total per 1000 MAU: ~$1,200/month
 
 ---
 
@@ -334,23 +377,32 @@ const modelMatrix = {
 ## 🛠️ Implementation Status
 
 ### Completed ✅
-- Repository structure
-- Tech stack selection
-- Basic documentation
-- Development environment
+- Repository structure with monorepo architecture
+- Tech stack selection and configuration
+- Database schema design and implementation
+- AI orchestrator with multi-model support
+- Worker service for background processing
+- Railway deployment configuration
+- Basic authentication with Clerk
+- RSS feed integration for content aggregation
+- Knowledge base schema and relationships
+- Pre-commit hooks and code quality tools
 
 ### In Progress 🟡
-- Core UI components
-- Database schema
-- API structure
-- Authentication setup
+- Web UI components and pages
+- Knowledge capture and organization features
+- Search functionality implementation
+- AI insights generation
+- Knowledge templates system
+- Analytics and usage tracking
 
 ### Pending ⏳
-- AI integration
-- Knowledge base
-- Real-time features
-- Analytics
-- Deployment
+- Semantic search with vector embeddings
+- Document upload and processing
+- Advanced AI features and custom prompts
+- Team collaboration features
+- Mobile app development
+- Enterprise features and API
 
 ---
 

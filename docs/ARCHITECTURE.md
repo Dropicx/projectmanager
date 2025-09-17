@@ -2,16 +2,16 @@
 
 ## Overview
 
-Consailt is built as a modern, scalable consulting project management platform using a microservices architecture with AI-powered intelligence. The system is designed for high performance, type safety, and enterprise-grade security.
+Consailt is built as a modern, AI-powered knowledge management platform for individual consultants and small teams. The system uses a monorepo architecture with Next.js 15, tRPC, and Drizzle ORM, designed for high performance, type safety, and privacy-first data handling.
 
 ## 🎯 Architecture Principles
 
 - **Type Safety**: End-to-end TypeScript with tRPC
-- **Performance**: Optimized for speed with caching and CDN
+- **Performance**: Optimized for speed with caching and efficient queries
 - **Scalability**: Horizontal scaling with stateless services
-- **Security**: Zero-data-retention AI with enterprise compliance
+- **Privacy**: Zero-data-retention AI with client sanitization
 - **Developer Experience**: Monorepo with shared packages
-- **Observability**: Comprehensive monitoring and logging
+- **Knowledge-First**: Designed around knowledge capture and discovery
 
 ## 🏛️ High-Level Architecture
 
@@ -194,18 +194,24 @@ projectmanager/
 -- Core Tables
 organizations          -- Multi-tenant organizations
 ├── users             -- User accounts and profiles
-├── projects          -- Project management
-│   ├── tasks         -- Task management
-│   └── knowledge_base -- Project knowledge
+├── engagements       -- Client projects/engagements
+├── knowledge_base    -- Core knowledge repository
+│   ├── knowledge_categories -- Hierarchical organization
+│   ├── knowledge_templates  -- Reusable structures
+│   └── knowledge_tags       -- Flexible tagging
 ├── ai_interactions   -- AI usage tracking
-└── audit_logs        -- Security and compliance
+├── news_articles     -- RSS feed content
+├── search_history    -- Search analytics
+└── files            -- Document attachments
 
 -- Relationships
 organizations (1) ←→ (N) users
-organizations (1) ←→ (N) projects
-projects (1) ←→ (N) tasks
-projects (1) ←→ (N) knowledge_base
+organizations (1) ←→ (N) engagements
+organizations (1) ←→ (N) knowledge_base
+knowledge_base (N) ←→ (N) knowledge_categories
+knowledge_base (N) ←→ (N) tags
 users (1) ←→ (N) ai_interactions
+users (1) ←→ (N) search_history
 ```
 
 ### Data Patterns

@@ -2,7 +2,7 @@
 
 ## Overview
 
-This guide covers integrating **AWS Bedrock** with Consailt for AI-powered project insights, risk assessment, and intelligent automation. We use multiple models optimized for different tasks with cost-effective routing.
+This guide covers integrating **AWS Bedrock** with Consailt for AI-powered knowledge management, intelligent insights generation, and automated content analysis. We use multiple models optimized for different knowledge tasks with cost-effective routing and intelligent model selection.
 
 ## 🏗️ Architecture
 
@@ -10,16 +10,16 @@ This guide covers integrating **AWS Bedrock** with Consailt for AI-powered proje
 ```typescript
 const modelMatrix = {
   'quick_summary': 'amazon.nova-lite',      // $0.06/1M tokens
-  'project_analysis': 'amazon.nova-pro',    // $0.80/1M tokens  
-  'risk_assessment': 'claude-3.7-sonnet',   // $3.00/1M tokens
+  'knowledge_analysis': 'amazon.nova-pro',  // $0.80/1M tokens  
+  'insight_generation': 'claude-3.7-sonnet', // $3.00/1M tokens
   'technical_docs': 'mistral-large-2',      // $2.00/1M tokens
-  'realtime': 'llama-3.2-3b'               // $0.10/1M tokens
+  'realtime_search': 'llama-3.2-3b'        // $0.10/1M tokens
 }
 ```
 
 ### Service Flow
 ```
-User Request → AI Orchestrator → Model Selection → Bedrock API → Response Processing → Cost Tracking
+Knowledge Request → AI Orchestrator → Model Selection → Bedrock API → Response Processing → Cost Tracking → Knowledge Storage
 ```
 
 ## 🚀 Setup and Configuration

@@ -2,7 +2,7 @@
 
 ## Overview
 
-This guide covers setting up the Consailt development environment with all necessary tools, dependencies, and configurations for local development.
+This guide covers setting up the Consailt knowledge management platform development environment with all necessary tools, dependencies, and configurations for local development of the AI-powered knowledge base system.
 
 ## 📋 Prerequisites
 

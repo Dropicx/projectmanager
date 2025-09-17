@@ -2,7 +2,7 @@
 
 ## Overview
 
-Consailt provides a comprehensive REST API built with **tRPC** for type-safe, end-to-end communication between the frontend and backend. The API is designed with modern patterns including automatic type inference, request/response validation, and real-time capabilities.
+Consailt provides a comprehensive API built with **tRPC** for type-safe, end-to-end communication between the frontend and backend. The API is designed for knowledge management with modern patterns including automatic type inference, request/response validation, and AI-powered insights.
 
 ## 🏗️ Architecture
 
@@ -10,10 +10,10 @@ Consailt provides a comprehensive REST API built with **tRPC** for type-safe, en
 ```
 /api/
 ├── /trpc/          # Type-safe API endpoints
-│   ├── /projects/  # Project management
-│   ├── /ai/        # AI orchestration
-│   └── /analytics/ # Reporting & insights
-├── /webhooks/      # External integrations
+│   ├── /knowledge/ # Knowledge base operations
+│   ├── /ai/        # AI orchestration and insights
+│   ├── /projects/  # Engagement management
+│   └── /analytics/ # Usage and performance metrics
 └── /health/        # Health checks
 ```
 
@@ -58,99 +58,127 @@ const client = trpc.createClient({
 
 ## 📋 Core Endpoints
 
-### Projects API
+### Knowledge Base API
 
-#### Get All Projects
+#### Get All Knowledge Entries
 ```typescript
 // Query
-const projects = trpc.projects.getAll.useQuery()
+const knowledge = trpc.knowledge.getAll.useQuery({
+  limit: 20,
+  offset: 0,
+  category: "solutions"
+})
 
 // Response
 {
   "data": [
     {
-      "id": "proj_123",
-      "name": "Digital Transformation",
-      "status": "active",
-      "client": "Acme Corp",
-      "startDate": "2024-01-15",
-      "endDate": "2024-06-15",
-      "budget": 150000,
-      "progress": 65,
-      "team": [
-        {
-          "id": "user_456",
-          "name": "Sarah Johnson",
-          "role": "Senior Consultant"
-        }
-      ]
+      "id": "kb_123",
+      "title": "AWS Migration Best Practices",
+      "content": "Comprehensive guide for migrating to AWS...",
+      "summary": "Key considerations for AWS migration projects",
+      "knowledgeType": "solution",
+      "entryType": "document",
+      "visibility": "team",
+      "tags": ["aws", "migration", "cloud"],
+      "technologies": ["AWS", "Docker", "Kubernetes"],
+      "createdAt": "2024-01-15T10:30:00Z",
+      "updatedAt": "2024-01-20T14:22:00Z"
     }
-  ]
+  ],
+  "total": 150,
+  "hasMore": true
 }
 ```
 
-#### Create Project
+#### Create Knowledge Entry
 ```typescript
 // Mutation
-const createProject = trpc.projects.create.useMutation()
+const createKnowledge = trpc.knowledge.create.useMutation()
 
 // Usage
-createProject.mutate({
-  name: "New Project",
-  client: "Client Name",
-  startDate: "2024-02-01",
-  endDate: "2024-08-01",
-  budget: 200000,
-  description: "Project description"
+createKnowledge.mutate({
+  title: "Docker Containerization Guide",
+  content: "Step-by-step guide for containerizing applications...",
+  knowledgeType: "solution",
+  entryType: "document",
+  visibility: "team",
+  tags: ["docker", "containers", "devops"],
+  technologies: ["Docker", "Docker Compose"],
+  engagementId: "eng_123" // Optional
 })
 
 // Response
 {
   "data": {
-    "id": "proj_124",
-    "name": "New Project",
-    "status": "active",
+    "id": "kb_124",
+    "title": "Docker Containerization Guide",
+    "knowledgeType": "solution",
     "createdAt": "2024-01-20T10:30:00Z"
   }
 }
 ```
 
-#### Update Project
+#### Search Knowledge
+```typescript
+// Query
+const searchResults = trpc.knowledge.search.useQuery({
+  query: "AWS migration",
+  filters: {
+    knowledgeType: "solution",
+    tags: ["aws", "cloud"],
+    dateRange: {
+      from: "2024-01-01",
+      to: "2024-12-31"
+    }
+  },
+  limit: 10
+})
+
+// Response
+{
+  "data": [
+    {
+      "id": "kb_123",
+      "title": "AWS Migration Best Practices",
+      "summary": "Key considerations for AWS migration projects",
+      "relevanceScore": 0.95,
+      "tags": ["aws", "migration", "cloud"],
+      "createdAt": "2024-01-15T10:30:00Z"
+    }
+  ],
+  "total": 5,
+  "query": "AWS migration"
+}
+```
+
+#### Update Knowledge Entry
 ```typescript
 // Mutation
-const updateProject = trpc.projects.update.useMutation()
+const updateKnowledge = trpc.knowledge.update.useMutation()
 
 // Usage
-updateProject.mutate({
-  id: "proj_123",
+updateKnowledge.mutate({
+  id: "kb_123",
   data: {
-    name: "Updated Project Name",
-    status: "completed",
-    progress: 100
+    title: "Updated AWS Migration Guide",
+    content: "Updated content with latest best practices...",
+    tags: ["aws", "migration", "cloud", "updated"]
   }
 })
 ```
 
-#### Delete Project
-```typescript
-// Mutation
-const deleteProject = trpc.projects.delete.useMutation()
-
-// Usage
-deleteProject.mutate({ id: "proj_123" })
-```
-
 ### AI API
 
-#### Generate Project Insights
+#### Generate Knowledge Insights
 ```typescript
 // Mutation
 const generateInsights = trpc.ai.generateInsights.useMutation()
 
 // Usage
 const insights = await generateInsights.mutate({
-  projectId: "proj_123",
-  context: "Recent project updates and team feedback"
+  knowledgeId: "kb_123",
+  context: "Recent AWS migration project with specific challenges"
 })
 
 // Response
@@ -158,90 +186,134 @@ const insights = await generateInsights.mutate({
   "data": {
     "insights": [
       {
-        "type": "risk_assessment",
-        "title": "Budget Overrun Risk",
-        "description": "Project is 15% over budget due to scope creep",
-        "severity": "medium",
+        "type": "pattern",
+        "title": "Common AWS Migration Challenges",
+        "description": "Based on your knowledge base, the most frequent issues are...",
+        "confidence": 0.87,
+        "relatedKnowledge": ["kb_124", "kb_125"],
         "recommendations": [
-          "Review scope with client",
-          "Implement change control process"
+          "Create a migration checklist template",
+          "Document common failure points"
         ]
       }
     ],
     "model": "claude-3.7-sonnet",
-    "costCents": 25,
+    "costCents": 15,
     "generatedAt": "2024-01-20T10:30:00Z"
   }
 }
 ```
 
-#### Assess Project Risk
+#### Analyze Knowledge Patterns
 ```typescript
 // Mutation
-const assessRisk = trpc.ai.assessRisk.useMutation()
+const analyzePatterns = trpc.ai.analyzePatterns.useMutation()
 
 // Usage
-const riskAssessment = await assessRisk.mutate({
-  projectId: "proj_123",
-  riskFactors: [
-    "budget_variance",
-    "timeline_delays",
-    "resource_availability"
-  ]
+const patterns = await analyzePatterns.mutate({
+  knowledgeIds: ["kb_123", "kb_124", "kb_125"],
+  analysisType: "trends"
 })
+
+// Response
+{
+  "data": {
+    "patterns": [
+      {
+        "type": "trend",
+        "title": "Increasing Cloud Adoption",
+        "description": "Your knowledge base shows a 40% increase in cloud-related solutions over the past 6 months",
+        "confidence": 0.92,
+        "timeframe": "6 months",
+        "relatedTags": ["aws", "azure", "cloud", "migration"]
+      }
+    ],
+    "model": "nova-pro",
+    "costCents": 8,
+    "generatedAt": "2024-01-20T10:30:00Z"
+  }
+}
 ```
 
-#### Chat with AI Assistant
+#### Chat with Knowledge Assistant
 ```typescript
 // Mutation with streaming
 const chatWithAI = trpc.ai.chat.useMutation()
 
 // Usage
 const chat = await chatWithAI.mutate({
-  message: "What are the key risks for this project?",
-  projectId: "proj_123",
-  context: "project_data"
+  message: "What are the best practices for AWS migration?",
+  context: "knowledge_base",
+  includeRelated: true
 })
+
+// Response
+{
+  "data": {
+    "response": "Based on your knowledge base, here are the key AWS migration best practices...",
+    "relatedKnowledge": [
+      {
+        "id": "kb_123",
+        "title": "AWS Migration Best Practices",
+        "relevanceScore": 0.95
+      }
+    ],
+    "model": "claude-3.7-sonnet",
+    "costCents": 12
+  }
+}
 ```
 
 ### Analytics API
 
-#### Get Project KPIs
+#### Get Knowledge Base Metrics
 ```typescript
 // Query
-const kpis = trpc.analytics.getProjectKPIs.useQuery({
-  projectId: "proj_123",
+const metrics = trpc.analytics.getKnowledgeMetrics.useQuery({
   timeframe: "monthly"
 })
 
 // Response
 {
   "data": {
-    "budgetUtilization": 78.5,
-    "timelineProgress": 65.2,
-    "teamEfficiency": 92.1,
-    "riskScore": 3.2,
-    "clientSatisfaction": 4.5
+    "totalEntries": 150,
+    "newEntriesThisMonth": 25,
+    "mostActiveTags": ["aws", "docker", "kubernetes"],
+    "searchQueries": 450,
+    "aiInsightsGenerated": 12,
+    "averageResponseTime": 1.2,
+    "topCategories": [
+      { "name": "Solutions", "count": 75 },
+      { "name": "Issues", "count": 30 },
+      { "name": "Patterns", "count": 25 }
+    ]
   }
 }
 ```
 
-#### Get Portfolio Overview
+#### Get AI Usage Analytics
 ```typescript
 // Query
-const portfolio = trpc.analytics.getPortfolioOverview.useQuery({
-  timeframe: "quarterly"
+const aiUsage = trpc.analytics.getAIUsage.useQuery({
+  timeframe: "monthly"
 })
 
 // Response
 {
   "data": {
-    "totalProjects": 15,
-    "activeProjects": 8,
-    "completedProjects": 7,
-    "totalRevenue": 2500000,
-    "averageProjectDuration": 4.2,
-    "topPerformingTeam": "Strategy Team"
+    "totalQueries": 150,
+    "totalCostCents": 2500,
+    "averageCostPerQuery": 16.67,
+    "modelUsage": [
+      { "model": "nova-lite", "queries": 80, "costCents": 480 },
+      { "model": "claude-3.7-sonnet", "queries": 45, "costCents": 1350 },
+      { "model": "nova-pro", "queries": 25, "costCents": 670 }
+    ],
+    "queryTypes": [
+      { "type": "insights", "count": 60 },
+      { "type": "search", "count": 50 },
+      { "type": "analysis", "count": 40 }
+    ]
   }
 }
 ```

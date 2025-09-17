@@ -1,13 +1,270 @@
 import { AIOrchestrator } from "@consulting-platform/ai";
-import { engagements, knowledge_base } from "@consulting-platform/database";
+import {
+  engagements,
+  knowledge_base,
+  knowledge_categories,
+  knowledge_to_categories,
+} from "@consulting-platform/database";
 import { TRPCError } from "@trpc/server";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, isNull, like, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
 
 const aiOrchestrator = new AIOrchestrator();
 
 export const knowledgeRouter = router({
+  /**
+   * List all general knowledge items (not tied to specific engagements)
+   */
+  list: protectedProcedure
+    .input(
+      z.object({
+        categoryId: z.string().optional(),
+        search: z.string().optional(),
+        type: z
+          .enum(["methodology", "framework", "template", "case-study", "guide", "checklist", "all"])
+          .optional()
+          .default("all"),
+        limit: z.number().min(1).max(100).default(50),
+        offset: z.number().min(0).default(0),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      try {
+        const conditions = [isNull(knowledge_base.engagement_id)];
+
+        if (input.search) {
+          const searchCondition = or(
+            like(knowledge_base.title, `%${input.search}%`),
+            like(knowledge_base.content, `%${input.search}%`)
+          );
+          if (searchCondition) {
+            conditions.push(searchCondition);
+          }
+        }
+
+        if (input.type && input.type !== "all") {
+          conditions.push(
+            eq(
+              knowledge_base.knowledge_type,
+              input.type as
+                | "solution"
+                | "issue"
+                | "decision"
+                | "pattern"
+                | "template"
+                | "reference"
+                | "insight"
+                | "lesson_learned"
+            )
+          );
+        }
+
+        const items = await ctx.db
+          .select({
+            id: knowledge_base.id,
+            title: knowledge_base.title,
+            content: knowledge_base.content,
+            type: knowledge_base.knowledge_type,
+            tags: knowledge_base.tags,
+            isPublic: knowledge_base.is_public,
+            createdAt: knowledge_base.created_at,
+            updatedAt: knowledge_base.updated_at,
+            createdBy: knowledge_base.created_by,
+            views: sql<number>`COALESCE(${knowledge_base.metadata}->>'views', '0')::int`,
+          })
+          .from(knowledge_base)
+          .where(and(...conditions))
+          .orderBy(desc(knowledge_base.created_at))
+          .limit(input.limit)
+          .offset(input.offset);
+
+        if (input.categoryId) {
+          const categoryItems = await ctx.db
+            .select({ knowledgeId: knowledge_to_categories.knowledge_id })
+            .from(knowledge_to_categories)
+            .where(eq(knowledge_to_categories.category_id, input.categoryId));
+
+          const categoryItemIds = categoryItems.map((item) => item.knowledgeId);
+          return items.filter((item) => categoryItemIds.includes(item.id));
+        }
+
+        return items;
+      } catch (error) {
+        console.error("Error listing knowledge items:", error);
+        return [];
+      }
+    }),
+
+  /**
+   * Get all categories
+   */
+  getCategories: protectedProcedure.query(async ({ ctx }) => {
+    try {
+      const categories = await ctx.db
+        .select()
+        .from(knowledge_categories)
+        .orderBy(knowledge_categories.name);
+      return categories;
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      return [];
+    }
+  }),
+
+  /**
+   * Create a general knowledge item
+   */
+  createGeneral: protectedProcedure
+    .input(
+      z.object({
+        title: z.string().min(1).max(255),
+        content: z.string().min(1),
+        type: z.enum(["methodology", "framework", "template", "case-study", "guide", "checklist"]),
+        tags: z.array(z.string()).optional(),
+        categoryIds: z.array(z.string()).optional(),
+        isPublic: z.boolean().default(true),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const embedding = await generateEmbedding(input.content);
+
+      const [entry] = await ctx.db
+        .insert(knowledge_base)
+        .values({
+          organization_id: ctx.user.organizationId || "",
+          title: input.title,
+          content: input.content,
+          embedding: embedding,
+          tags: input.tags || [],
+          knowledge_type: mapToKnowledgeType(input.type),
+          is_public: input.isPublic,
+          created_by: ctx.user.id,
+          metadata: { views: 0 },
+        })
+        .returning();
+
+      if (input.categoryIds && input.categoryIds.length > 0) {
+        await ctx.db.insert(knowledge_to_categories).values(
+          input.categoryIds.map((categoryId) => ({
+            knowledge_id: entry.id,
+            category_id: categoryId,
+          }))
+        );
+      }
+
+      return entry;
+    }),
+
+  /**
+   * Update a general knowledge item
+   */
+  updateGeneral: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().uuid(),
+        title: z.string().optional(),
+        content: z.string().optional(),
+        type: z
+          .enum(["methodology", "framework", "template", "case-study", "guide", "checklist"])
+          .optional(),
+        tags: z.array(z.string()).optional(),
+        categoryIds: z.array(z.string()).optional(),
+        isPublic: z.boolean().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const updates: Partial<{
+        updated_at: Date;
+        title: string;
+        tags: string[] | null;
+        knowledge_type:
+          | "solution"
+          | "issue"
+          | "decision"
+          | "pattern"
+          | "template"
+          | "reference"
+          | "insight"
+          | "lesson_learned";
+        is_public: boolean;
+        content: string;
+        embedding: number[];
+      }> = {
+        updated_at: new Date(),
+      };
+
+      if (input.title) updates.title = input.title;
+      if (input.tags) updates.tags = input.tags;
+      if (input.type) updates.knowledge_type = mapToKnowledgeType(input.type);
+      if (input.isPublic !== undefined) updates.is_public = input.isPublic;
+
+      if (input.content) {
+        updates.content = input.content;
+        updates.embedding = await generateEmbedding(input.content);
+      }
+
+      const [updated] = await ctx.db
+        .update(knowledge_base)
+        .set(updates)
+        .where(eq(knowledge_base.id, input.id))
+        .returning();
+
+      if (input.categoryIds) {
+        await ctx.db
+          .delete(knowledge_to_categories)
+          .where(eq(knowledge_to_categories.knowledge_id, input.id));
+        if (input.categoryIds.length > 0) {
+          await ctx.db.insert(knowledge_to_categories).values(
+            input.categoryIds.map((categoryId) => ({
+              knowledge_id: input.id,
+              category_id: categoryId,
+            }))
+          );
+        }
+      }
+
+      return updated;
+    }),
+
+  /**
+   * Delete a knowledge item
+   */
+  delete: protectedProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db
+        .delete(knowledge_to_categories)
+        .where(eq(knowledge_to_categories.knowledge_id, input.id));
+      const [deleted] = await ctx.db
+        .delete(knowledge_base)
+        .where(eq(knowledge_base.id, input.id))
+        .returning();
+      return deleted;
+    }),
+
+  /**
+   * Increment view count
+   */
+  incrementViews: protectedProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      const [item] = await ctx.db
+        .select()
+        .from(knowledge_base)
+        .where(eq(knowledge_base.id, input.id));
+
+      if (item) {
+        const metadata = item.metadata as { views?: number } | null;
+        const currentViews = metadata?.views || 0;
+        await ctx.db
+          .update(knowledge_base)
+          .set({
+            metadata: { ...(metadata || {}), views: currentViews + 1 },
+          })
+          .where(eq(knowledge_base.id, input.id));
+      }
+    }),
   /**
    * Add a knowledge entry (note, meeting, decision, etc.)
    */
@@ -50,7 +307,15 @@ export const knowledgeRouter = router({
           content: input.content,
           embedding: embedding,
           tags: input.tags || [],
-          knowledge_type: input.type as "solution" | "issue" | "decision" | "pattern" | "template" | "reference" | "insight" | "lesson_learned",
+          knowledge_type: input.type as
+            | "solution"
+            | "issue"
+            | "decision"
+            | "pattern"
+            | "template"
+            | "reference"
+            | "insight"
+            | "lesson_learned",
           created_by: ctx.user.id,
         })
         .returning();
@@ -357,6 +622,39 @@ Format in markdown with clear headings and sections.`,
       }
     }),
 });
+
+// Helper function to map frontend types to database types
+function mapToKnowledgeType(
+  type: string
+):
+  | "solution"
+  | "issue"
+  | "decision"
+  | "pattern"
+  | "template"
+  | "reference"
+  | "insight"
+  | "lesson_learned" {
+  const typeMap: Record<
+    string,
+    | "solution"
+    | "issue"
+    | "decision"
+    | "pattern"
+    | "template"
+    | "reference"
+    | "insight"
+    | "lesson_learned"
+  > = {
+    methodology: "pattern",
+    framework: "pattern",
+    template: "template",
+    "case-study": "reference",
+    guide: "reference",
+    checklist: "template",
+  };
+  return typeMap[type] || "reference";
+}
 
 // Helper function to generate embeddings
 async function generateEmbedding(_text: string): Promise<number[]> {

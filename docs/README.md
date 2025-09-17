@@ -1,6 +1,6 @@
 # 📚 Consailt Documentation
 
-Welcome to the comprehensive documentation for Consailt - an AI-powered consulting intelligence platform. This documentation covers everything from product requirements to technical implementation details.
+Welcome to the comprehensive documentation for Consailt - an AI-powered consultant knowledge base platform. This documentation covers everything from product requirements to technical implementation details for building and maintaining your personal knowledge management system.
 
 ## 🎯 Quick Start
 
@@ -80,26 +80,26 @@ Welcome to the comprehensive documentation for Consailt - an AI-powered consulti
 ### 🤖 AI-Powered Intelligence
 - **Multi-Model Orchestration**: Intelligent model selection based on task complexity
 - **Cost Optimization**: Smart routing to minimize AI costs while maintaining quality
-- **Real-time Insights**: Streaming AI responses for better user experience
-- **Risk Assessment**: Automated project risk analysis and mitigation strategies
+- **Automated Insights**: AI-generated insights and pattern recognition
+- **Semantic Search**: Vector-based search across your knowledge base
 
-### 📊 Project Management
-- **Comprehensive CRUD**: Full project lifecycle management
-- **Task Management**: Advanced task tracking with dependencies
-- **Team Collaboration**: Real-time collaboration features
-- **Knowledge Base**: RAG-powered knowledge management
+### 📚 Knowledge Management
+- **Centralized Repository**: All your knowledge in one searchable place
+- **Flexible Organization**: Hierarchical categories and tag-based system
+- **Content Types**: Notes, documents, links, voice memos, and more
+- **Templates**: Reusable structures for common knowledge patterns
 
-### 🔐 Enterprise Security
+### 🔐 Privacy & Security
 - **Zero-Data Retention**: AI models don't store sensitive data
-- **GDPR Compliance**: EU data residency and privacy protection
-- **Role-Based Access**: Granular permission management
-- **Audit Logging**: Complete activity tracking
+- **Client Sanitization**: Safe sharing across different client contexts
+- **Encrypted Storage**: All data encrypted at rest and in transit
+- **Audit Logging**: Complete activity tracking and analytics
 
-### 📈 Analytics & Reporting
-- **Real-time KPIs**: Live project and portfolio metrics
-- **Custom Reports**: Flexible reporting and dashboard creation
-- **AI Usage Tracking**: Cost and usage analytics
-- **Performance Monitoring**: System health and performance metrics
+### 📈 Analytics & Insights
+- **Usage Analytics**: Track your knowledge base growth and usage
+- **AI Insights**: Automated pattern recognition and recommendations
+- **Search Analytics**: Understand what you're looking for most
+- **Performance Monitoring**: System health and response times
 
 ## 🏗️ Technology Stack
 
@@ -173,7 +173,8 @@ pnpm dev:all
 │                 │    │                 │    │                 │
 │ • React 19      │    │ • BullMQ Jobs   │    │ • AWS Bedrock   │
 │ • Tailwind CSS  │    │ • Cron Jobs     │    │ • Clerk Auth    │
-│ • shadcn/ui     │    │ • AI Processing │    │ • Railway       │
+│ • shadcn/ui     │    │ • AI Processing │    │ • RSS Feeds     │
+│ • tRPC Client   │    │ • RSS Sync      │    │ • Railway       │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
          │                       │                       │
          └───────────────────────┼───────────────────────┘
@@ -183,7 +184,8 @@ pnpm dev:all
                     │                 │
                     │ • PostgreSQL    │
                     │ • Redis         │
-                    │ • Vector DB     │
+                    │ • Knowledge DB  │
+                    │ • Vector Store  │
                     └─────────────────┘
 ```
 

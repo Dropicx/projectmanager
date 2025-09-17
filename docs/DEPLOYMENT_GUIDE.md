@@ -2,7 +2,7 @@
 
 ## Overview
 
-This guide covers deploying Consailt to production using **Railway** with **Next.js 15**, **Drizzle ORM**, and **tRPC**. The deployment includes both web and worker services with PostgreSQL and Redis databases.
+This guide covers deploying Consailt to production using **Railway** with **Next.js 15**, **Drizzle ORM**, and **tRPC**. The deployment includes both web and worker services with PostgreSQL and Redis databases, optimized for knowledge management and AI-powered insights.
 
 ## 🏗️ Architecture Overview
 
@@ -11,14 +11,21 @@ Railway Project
 ├── Web Service (Next.js 15)
 │   ├── Port: 3000
 │   ├── Health: /api/health
-│   └── Domain: https://your-app.railway.app
+│   ├── Domain: https://your-app.railway.app
+│   └── Features: Knowledge base, AI insights, search
 ├── Worker Service (Background Jobs)
-│   ├── No port
-│   └── Processes: BullMQ jobs
+│   ├── No port (background processing)
+│   ├── Processes: BullMQ jobs, Cron jobs
+│   ├── Jobs: AI processing, RSS sync, insights generation
+│   └── Health: /health endpoint
 ├── PostgreSQL Database
-│   └── Connection: DATABASE_URL
+│   ├── Connection: DATABASE_URL
+│   ├── Schema: Knowledge base, users, engagements
+│   └── Features: Full-text search, vector embeddings
 └── Redis Database
-    └── Connection: REDIS_URL
+    ├── Connection: REDIS_URL
+    ├── Usage: Job queues, caching, sessions
+    └── Features: BullMQ, rate limiting
 ```
 
 ## 📋 Prerequisites
@@ -133,7 +140,7 @@ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_xxx
 CLERK_SECRET_KEY=sk_live_xxx
 
 # AWS Bedrock (for AI features)
-AWS_REGION=eu-central-1
+AWS_REGION=us-east-1
 AWS_ACCESS_KEY_ID=xxx
 AWS_SECRET_ACCESS_KEY=xxx
 
@@ -141,8 +148,16 @@ AWS_SECRET_ACCESS_KEY=xxx
 NODE_ENV=production
 NEXT_TELEMETRY_DISABLED=1
 ENABLE_AI_INSIGHTS=true
-ENABLE_REALTIME_COLLAB=true
 AI_COST_LIMIT_CENTS=50000
+
+# Worker Service Settings
+WORKER_ENABLED=true
+RSS_FEED_URL=https://rss.the-morpheus.news/rss/high_rating
+
+# Knowledge Base Settings
+KNOWLEDGE_BASE_ENABLED=true
+SEARCH_ENABLED=true
+AI_INSIGHTS_ENABLED=true
 ```
 
 #### Set Environment Variables

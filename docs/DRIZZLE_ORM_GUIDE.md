@@ -2,7 +2,7 @@
 
 ## Overview
 
-This guide covers configuring and using **Drizzle ORM** with **PostgreSQL** for Consailt's database layer. Drizzle provides type-safe database operations with excellent performance and developer experience.
+This guide covers configuring and using **Drizzle ORM** with **PostgreSQL** for Consailt's knowledge management platform. Drizzle provides type-safe database operations with excellent performance and developer experience, optimized for knowledge base operations and AI-powered insights.
 
 ## 🏗️ Architecture
 
@@ -41,9 +41,9 @@ pnpm add drizzle-kit
 ```json
 {
   "scripts": {
-    "db:generate": "drizzle-kit generate:pg",
+    "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:push": "drizzle-kit push:pg",
+    "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:drop": "drizzle-kit drop",
     "db:check": "drizzle-kit check"
@@ -107,126 +107,200 @@ export { db }
 #### Core Tables
 ```typescript
 // packages/database/schema.ts
-import { pgTable, text, timestamp, uuid, integer, jsonb, boolean, decimal } from 'drizzle-orm/pg-core'
+import { pgTable, text, timestamp, uuid, integer, jsonb, boolean, real, index } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
 
-// Organizations table
+// Organizations table (multi-tenant root)
 export const organizations = pgTable('organizations', {
   id: uuid('id').primaryKey().defaultRandom(),
   name: text('name').notNull(),
-  slug: text('slug').notNull().unique(),
-  logo: text('logo'),
-  settings: jsonb('settings').$type<OrganizationSettings>(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  type: text('type', { enum: ['individual', 'team', 'firm'] }).default('individual'),
+  subscription_tier: text('tier', { enum: ['free', 'pro', 'enterprise'] }).default('free'),
+  settings: jsonb('settings').default({}),
+  
+  // AI Budget tracking
+  monthly_budget_cents: integer('monthly_budget_cents').default(10000),
+  current_month_usage_cents: integer('current_month_usage_cents').default(0),
+  usage_reset_date: timestamp('usage_reset_date').defaultNow(),
+  daily_limit_cents: integer('daily_limit_cents').default(1000),
+  current_day_usage_cents: integer('current_day_usage_cents').default(0),
+  
+  created_at: timestamp('created_at').defaultNow(),
+  updated_at: timestamp('updated_at').defaultNow(),
 })
 
 // Users table
 export const users = pgTable('users', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  clerkId: text('clerk_id').notNull().unique(),
-  email: text('email').notNull().unique(),
-  firstName: text('first_name'),
-  lastName: text('last_name'),
-  avatar: text('avatar'),
-  role: text('role', { enum: ['admin', 'manager', 'consultant', 'viewer'] }).notNull(),
-  organizationId: uuid('organization_id').references(() => organizations.id),
-  isActive: boolean('is_active').default(true).notNull(),
-  lastLoginAt: timestamp('last_login_at'),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  id: text('id').primaryKey(), // Clerk user ID
+  organization_id: uuid('organization_id').references(() => organizations.id).notNull(),
+  first_name: text('first_name'),
+  last_name: text('last_name'),
+  role: text('role', {
+    enum: ['admin', 'lead_consultant', 'consultant', 'analyst', 'viewer'],
+  }).default('consultant'),
+  expertise: jsonb('expertise').default([]),
+  avatar_url: text('avatar_url'),
+  created_at: timestamp('created_at').defaultNow(),
+  updated_at: timestamp('updated_at').defaultNow(),
 })
 
-// Projects table
-export const projects = pgTable('projects', {
+// Engagements table (client projects)
+export const engagements = pgTable('engagements', {
   id: uuid('id').primaryKey().defaultRandom(),
+  organization_id: uuid('organization_id').references(() => organizations.id).notNull(),
   name: text('name').notNull(),
   description: text('description'),
-  status: text('status', { 
-    enum: ['planning', 'active', 'on_hold', 'completed', 'cancelled'] 
-  }).notNull().default('planning'),
-  client: text('client').notNull(),
-  startDate: timestamp('start_date'),
-  endDate: timestamp('end_date'),
-  budget: decimal('budget', { precision: 12, scale: 2 }),
-  progress: integer('progress').default(0).notNull(),
-  organizationId: uuid('organization_id').references(() => organizations.id).notNull(),
-  projectManagerId: uuid('project_manager_id').references(() => users.id),
-  metadata: jsonb('metadata').$type<ProjectMetadata>(),
-  aiInsights: jsonb('ai_insights').$type<AIInsights>(),
-  riskAssessment: jsonb('risk_assessment').$type<RiskAssessment>(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  engagement_type: text('engagement_type', {
+    enum: ['assessment', 'implementation', 'advisory', 'audit', 'training', 'support', 'other'],
+  }).default('advisory'),
+  status: text('status', {
+    enum: ['prospect', 'active', 'on-hold', 'completed', 'archived'],
+  }).default('active'),
+  client_name: text('client_name').notNull(),
+  start_date: timestamp('start_date'),
+  end_date: timestamp('end_date'),
+  budget_cents: integer('budget_cents'),
+  created_at: timestamp('created_at').defaultNow(),
+  updated_at: timestamp('updated_at').defaultNow(),
 })
 
-// Tasks table
-export const tasks = pgTable('tasks', {
+// Knowledge Base - Core repository
+export const knowledge_base = pgTable('knowledge_base', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  organization_id: uuid('organization_id').references(() => organizations.id).notNull(),
+  engagement_id: uuid('engagement_id').references(() => engagements.id),
+  
+  // Content
+  title: text('title').notNull(),
+  content: text('content').notNull(),
+  summary: text('summary'),
+  
+  // Classification
+  knowledge_type: text('knowledge_type', {
+    enum: ['solution', 'issue', 'decision', 'pattern', 'template', 'reference', 'insight', 'lesson_learned'],
+  }).default('solution'),
+  entry_type: text('entry_type', {
+    enum: ['note', 'meeting', 'email', 'document', 'code', 'diagram', 'chat', 'voice_memo'],
+  }).default('note'),
+  
+  // Visibility & Sharing
+  visibility: text('visibility', {
+    enum: ['private', 'team', 'organization', 'public'],
+  }).default('team'),
+  client_sanitized: boolean('client_sanitized').default(false),
+  
+  // Search & Discovery
+  embedding: jsonb('embedding'),
+  search_vector: text('search_vector'),
+  
+  // Metadata
+  tags: jsonb('tags').default([]),
+  technologies: jsonb('technologies').default([]),
+  related_knowledge_ids: jsonb('related_knowledge_ids').default([]),
+  
+  // Source tracking
+  source_type: text('source_type', {
+    enum: ['manual', 'email', 'slack', 'meeting', 'document', 'ai_generated', 'web_clip'],
+  }).default('manual'),
+  source_url: text('source_url'),
+  
+  // Lifecycle
+  is_template: boolean('is_template').default(false),
+  is_archived: boolean('is_archived').default(false),
+  expires_at: timestamp('expires_at'),
+  
+  // Analytics
+  view_count: integer('view_count').default(0),
+  usefulness_score: real('usefulness_score').default(0),
+  last_accessed: timestamp('last_accessed'),
+  
+  // Authorship
+  created_by: text('created_by').references(() => users.id).notNull(),
+  updated_by: text('updated_by').references(() => users.id),
+  
+  created_at: timestamp('created_at').defaultNow(),
+  updated_at: timestamp('updated_at').defaultNow(),
+}, (table) => ({
+  // Indexes for performance
+  engagementIdx: index('knowledge_engagement_idx').on(table.engagement_id),
+  typeIdx: index('knowledge_type_idx').on(table.knowledge_type),
+  visibilityIdx: index('knowledge_visibility_idx').on(table.visibility),
+  createdByIdx: index('knowledge_created_by_idx').on(table.created_by),
+}))
+
+// Knowledge Categories
+export const knowledge_categories = pgTable('knowledge_categories', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  organization_id: uuid('organization_id').references(() => organizations.id),
+  name: text('name').notNull(),
+  slug: text('slug').notNull(),
+  description: text('description'),
+  icon: text('icon').default('Folder'),
+  color: text('color').default('#6B7280'),
+  parent_id: uuid('parent_id'),
+  level: integer('level').default(0),
+  position: integer('position').default(0),
+  is_public: boolean('is_public').default(true),
+  is_default: boolean('is_default').default(false),
+  item_count: integer('item_count').default(0),
+  created_by: text('created_by').references(() => users.id),
+  created_at: timestamp('created_at').defaultNow(),
+  updated_at: timestamp('updated_at').defaultNow(),
+})
+
+// Tags
+export const tags = pgTable('tags', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  organization_id: uuid('organization_id').references(() => organizations.id),
+  name: text('name').notNull(),
+  slug: text('slug').notNull(),
+  category: text('category', {
+    enum: ['technology', 'methodology', 'industry', 'skill', 'tool', 'framework', 'other'],
+  }).default('other'),
+  color: text('color').default('#6B7280'),
+  description: text('description'),
+  parent_id: uuid('parent_id'),
+  usage_count: integer('usage_count').default(0),
+  created_at: timestamp('created_at').defaultNow(),
+  updated_at: timestamp('updated_at').defaultNow(),
+})
+
+// AI Interactions
+export const ai_interactions = pgTable('ai_interactions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  user_id: text('user_id').references(() => users.id).notNull(),
+  organization_id: uuid('organization_id').references(() => organizations.id).notNull(),
+  engagement_id: uuid('engagement_id').references(() => engagements.id),
+  model: text('model').notNull(),
+  action: text('action', {
+    enum: ['generate', 'summarize', 'extract', 'translate', 'analyze', 'embed'],
+  }).notNull(),
+  input_tokens: integer('input_tokens').notNull(),
+  output_tokens: integer('output_tokens').notNull(),
+  cost_cents: integer('cost_cents').notNull(),
+  response: jsonb('response'),
+  created_at: timestamp('created_at').defaultNow(),
+})
+
+// News Articles (RSS feed content)
+export const news_articles = pgTable('news_articles', {
   id: uuid('id').primaryKey().defaultRandom(),
   title: text('title').notNull(),
   description: text('description'),
-  status: text('status', { 
-    enum: ['todo', 'in_progress', 'review', 'completed', 'cancelled'] 
-  }).notNull().default('todo'),
-  priority: text('priority', { 
-    enum: ['low', 'medium', 'high', 'critical'] 
-  }).notNull().default('medium'),
-  projectId: uuid('project_id').references(() => projects.id).notNull(),
-  assignedToId: uuid('assigned_to_id').references(() => users.id),
-  dueDate: timestamp('due_date'),
-  completedAt: timestamp('completed_at'),
-  estimatedHours: decimal('estimated_hours', { precision: 8, scale: 2 }),
-  actualHours: decimal('actual_hours', { precision: 8, scale: 2 }),
-  dependencies: jsonb('dependencies').$type<string[]>(),
-  metadata: jsonb('metadata').$type<TaskMetadata>(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
-})
-
-// Knowledge base table
-export const knowledgeBase = pgTable('knowledge_base', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  title: text('title').notNull(),
-  content: text('content').notNull(),
-  type: text('type', { 
-    enum: ['document', 'lesson_learned', 'best_practice', 'template'] 
-  }).notNull(),
-  tags: jsonb('tags').$type<string[]>(),
-  projectId: uuid('project_id').references(() => projects.id),
-  organizationId: uuid('organization_id').references(() => organizations.id).notNull(),
-  createdById: uuid('created_by_id').references(() => users.id).notNull(),
-  isPublic: boolean('is_public').default(false).notNull(),
-  metadata: jsonb('metadata').$type<KnowledgeMetadata>(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
-})
-
-// AI interactions table
-export const aiInteractions = pgTable('ai_interactions', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  projectId: uuid('project_id').references(() => projects.id),
-  userId: uuid('user_id').references(() => users.id).notNull(),
-  model: text('model').notNull(),
-  taskType: text('task_type', { 
-    enum: ['insights', 'risk_assessment', 'summary', 'analysis'] 
-  }).notNull(),
-  inputTokens: integer('input_tokens').notNull(),
-  outputTokens: integer('output_tokens').notNull(),
-  costCents: integer('cost_cents').notNull(),
-  response: jsonb('response').$type<AIResponse>(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-})
-
-// Audit logs table
-export const auditLogs = pgTable('audit_logs', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  action: text('action').notNull(),
-  resourceType: text('resource_type').notNull(),
-  resourceId: text('resource_id').notNull(),
-  userId: uuid('user_id').references(() => users.id).notNull(),
-  organizationId: uuid('organization_id').references(() => organizations.id).notNull(),
-  changes: jsonb('changes').$type<Record<string, any>>(),
-  metadata: jsonb('metadata').$type<AuditMetadata>(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
+  content: text('content'),
+  link: text('link').notNull().unique(),
+  image_url: text('image_url'),
+  thumbnail_url: text('thumbnail_url'),
+  author: text('author'),
+  categories: jsonb('categories').default([]),
+  tags: jsonb('tags').default([]),
+  source: text('source').notNull(),
+  guid: text('guid'),
+  published_at: timestamp('published_at').notNull(),
+  fetched_at: timestamp('fetched_at').defaultNow(),
+  metadata: jsonb('metadata').default({}),
+  created_at: timestamp('created_at').defaultNow(),
+  updated_at: timestamp('updated_at').defaultNow(),
 })
 ```
 
@@ -445,93 +519,122 @@ CREATE INDEX "projects_created_at_idx" ON "projects" ("created_at");
 
 ### Basic Queries
 ```typescript
-// packages/database/queries/projects.ts
+// packages/database/queries/knowledge.ts
 import { db } from '../index'
-import { projects, users, organizations } from '../schema'
-import { eq, and, desc, asc, like, gte, lte } from 'drizzle-orm'
+import { knowledge_base, users, organizations, engagements, tags } from '../schema'
+import { eq, and, desc, asc, like, gte, lte, ilike, sql } from 'drizzle-orm'
 
-export class ProjectQueries {
-  // Get all projects for an organization
-  static async getProjectsByOrganization(organizationId: string) {
+export class KnowledgeQueries {
+  // Get all knowledge entries for an organization
+  static async getKnowledgeByOrganization(organizationId: string, limit = 20, offset = 0) {
     return await db
       .select({
-        id: projects.id,
-        name: projects.name,
-        status: projects.status,
-        client: projects.client,
-        progress: projects.progress,
-        startDate: projects.startDate,
-        endDate: projects.endDate,
-        budget: projects.budget,
-        projectManager: {
+        id: knowledge_base.id,
+        title: knowledge_base.title,
+        content: knowledge_base.content,
+        summary: knowledge_base.summary,
+        knowledge_type: knowledge_base.knowledge_type,
+        entry_type: knowledge_base.entry_type,
+        visibility: knowledge_base.visibility,
+        tags: knowledge_base.tags,
+        technologies: knowledge_base.technologies,
+        view_count: knowledge_base.view_count,
+        usefulness_score: knowledge_base.usefulness_score,
+        created_at: knowledge_base.created_at,
+        updated_at: knowledge_base.updated_at,
+        created_by: {
           id: users.id,
-          firstName: users.firstName,
-          lastName: users.lastName,
-          email: users.email,
+          first_name: users.first_name,
+          last_name: users.last_name,
         }
       })
-      .from(projects)
-      .leftJoin(users, eq(projects.projectManagerId, users.id))
-      .where(eq(projects.organizationId, organizationId))
-      .orderBy(desc(projects.createdAt))
+      .from(knowledge_base)
+      .leftJoin(users, eq(knowledge_base.created_by, users.id))
+      .where(eq(knowledge_base.organization_id, organizationId))
+      .orderBy(desc(knowledge_base.created_at))
+      .limit(limit)
+      .offset(offset)
   }
 
-  // Get project with full details
-  static async getProjectById(projectId: string) {
+  // Get knowledge entry with full details
+  static async getKnowledgeById(knowledgeId: string) {
     const result = await db
       .select()
-      .from(projects)
-      .where(eq(projects.id, projectId))
+      .from(knowledge_base)
+      .where(eq(knowledge_base.id, knowledgeId))
       .limit(1)
 
     return result[0]
   }
 
-  // Search projects
-  static async searchProjects(organizationId: string, searchTerm: string) {
+  // Search knowledge entries
+  static async searchKnowledge(organizationId: string, searchTerm: string, filters = {}) {
+    const conditions = [
+      eq(knowledge_base.organization_id, organizationId),
+      ilike(knowledge_base.title, `%${searchTerm}%`)
+    ]
+
+    if (filters.knowledge_type) {
+      conditions.push(eq(knowledge_base.knowledge_type, filters.knowledge_type))
+    }
+
+    if (filters.visibility) {
+      conditions.push(eq(knowledge_base.visibility, filters.visibility))
+    }
+
     return await db
       .select()
-      .from(projects)
-      .where(
-        and(
-          eq(projects.organizationId, organizationId),
-          like(projects.name, `%${searchTerm}%`)
-        )
-      )
-      .orderBy(desc(projects.createdAt))
+      .from(knowledge_base)
+      .where(and(...conditions))
+      .orderBy(desc(knowledge_base.created_at))
   }
 
-  // Get projects by status
-  static async getProjectsByStatus(organizationId: string, status: string) {
+  // Get knowledge by engagement
+  static async getKnowledgeByEngagement(engagementId: string) {
     return await db
       .select()
-      .from(projects)
-      .where(
-        and(
-          eq(projects.organizationId, organizationId),
-          eq(projects.status, status)
-        )
-      )
-      .orderBy(asc(projects.name))
+      .from(knowledge_base)
+      .where(eq(knowledge_base.engagement_id, engagementId))
+      .orderBy(desc(knowledge_base.created_at))
   }
 
-  // Get projects within date range
-  static async getProjectsInDateRange(
-    organizationId: string,
-    startDate: Date,
-    endDate: Date
-  ) {
+  // Get knowledge by tags
+  static async getKnowledgeByTags(organizationId: string, tagNames: string[]) {
     return await db
       .select()
-      .from(projects)
+      .from(knowledge_base)
       .where(
         and(
-          eq(projects.organizationId, organizationId),
-          gte(projects.startDate, startDate),
-          lte(projects.endDate, endDate)
+          eq(knowledge_base.organization_id, organizationId),
+          sql`${knowledge_base.tags} && ${JSON.stringify(tagNames)}`
         )
       )
-      .orderBy(asc(projects.startDate))
+      .orderBy(desc(knowledge_base.created_at))
+  }
+
+  // Get most useful knowledge entries
+  static async getMostUsefulKnowledge(organizationId: string, limit = 10) {
+    return await db
+      .select()
+      .from(knowledge_base)
+      .where(eq(knowledge_base.organization_id, organizationId))
+      .orderBy(desc(knowledge_base.usefulness_score))
+      .limit(limit)
+  }
+
+  // Get recently accessed knowledge
+  static async getRecentlyAccessedKnowledge(organizationId: string, limit = 10) {
+    return await db
+      .select()
+      .from(knowledge_base)
+      .where(
+        and(
+          eq(knowledge_base.organization_id, organizationId),
+          sql`${knowledge_base.last_accessed} IS NOT NULL`
+        )
+      )
+      .orderBy(desc(knowledge_base.last_accessed))
+      .limit(limit)
   }
 }
 ```
