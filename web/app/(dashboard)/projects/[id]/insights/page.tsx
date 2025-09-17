@@ -17,11 +17,8 @@ export default function ProjectInsightsPage() {
   // Fetch project
   const { data: project } = api.projects.getById.useQuery({ id: projectId })
 
-  // Fetch knowledge entries for context
-  const { data: knowledgeEntries } = api.knowledge.getByProject.useQuery({
-    projectId: projectId,
-    limit: 50
-  })
+  // Skip fetching knowledge entries for now to avoid errors
+  const knowledgeEntries = []
 
   // Generate insights query
   const { data: insights, refetch: regenerateInsights, isRefetching } = api.projects.generateInsights.useQuery(
