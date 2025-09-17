@@ -269,7 +269,7 @@ export const knowledgeRouter = router({
           organization_id: ctx.user.organizationId || "",
           title: input.title,
           content: input.content,
-          embedding: embedding,
+          embedding: embedding as any, // Cast to any for JSONB compatibility
           tags: input.tags || [],
           knowledge_type: mapToKnowledgeType(input.type),
           is_public: false, // Always private to organization
@@ -334,7 +334,7 @@ export const knowledgeRouter = router({
 
       if (input.content) {
         updates.content = input.content;
-        updates.embedding = await generateEmbedding(input.content);
+        updates.embedding = (await generateEmbedding(input.content)) as any; // Cast to any for JSONB compatibility
       }
 
       // Ensure user can only update their organization's knowledge
