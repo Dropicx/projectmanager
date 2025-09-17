@@ -52,6 +52,7 @@ export function AddKnowledgeDialog({ open, onOpenChange, onSuccess }: AddKnowled
   const createMutation = trpc.knowledge.createGeneral.useMutation({
     onSuccess: () => {
       utils.knowledge.list.invalidate();
+      utils.knowledge.getCategories.invalidate(); // Refresh category counts
       resetForm();
       onOpenChange(false);
       onSuccess?.();

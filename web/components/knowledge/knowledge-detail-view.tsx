@@ -36,6 +36,7 @@ export function KnowledgeDetailView({ knowledgeId, onBack, onDelete }: Knowledge
   const deleteMutation = trpc.knowledge.deleteGeneral.useMutation({
     onSuccess: () => {
       utils.knowledge.list.invalidate();
+      utils.knowledge.getCategories.invalidate(); // Refresh category counts
       onDelete?.();
       onBack();
     },

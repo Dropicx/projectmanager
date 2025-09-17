@@ -151,16 +151,14 @@ function SortableCategory({
                       {renderCategoryIcon(category.icon, category.color)}
                       <span className="text-sm font-medium">{category.name}</span>
                     </div>
-                    {category.item_count > 0 && (
-                      <span className="text-xs text-muted-foreground mr-2">
-                        {category.item_count}
-                      </span>
-                    )}
+                    <span className="text-xs text-muted-foreground min-w-[20px] text-right">
+                      {category.item_count > 0 ? category.item_count : ""}
+                    </span>
                   </div>
                 </Button>
 
                 {/* Accordion trigger just for expand/collapse */}
-                <AccordionTrigger className="px-2 py-1.5 hover:bg-transparent [&[data-state=open]>svg]:rotate-90" />
+                <AccordionTrigger className="px-2 py-1.5 hover:bg-transparent [&[data-state=open]>svg]:-rotate-90" />
               </div>
 
               <DropdownMenu>
@@ -226,9 +224,9 @@ function SortableCategory({
               {level === 0 && renderCategoryIcon(category.icon, category.color)}
               <span className="text-sm">{category.name}</span>
             </div>
-            {category.item_count > 0 && (
-              <span className="text-xs text-muted-foreground">{category.item_count}</span>
-            )}
+            <span className="text-xs text-muted-foreground min-w-[20px] text-right">
+              {category.item_count > 0 ? category.item_count : ""}
+            </span>
           </div>
         </Button>
 
@@ -708,6 +706,7 @@ export function KnowledgeSidebar({
         category={editingCategory}
         onSuccess={() => {
           utils.knowledge.getCategories.invalidate();
+          utils.knowledge.list.invalidate(); // Also refresh list to update counts
         }}
       />
     </>
