@@ -71,7 +71,8 @@ export const knowledgeRouter = router({
           );
         }
 
-        const items = await ctx.db
+        // Build the query based on whether we need to filter by category
+        let query = ctx.db
           .select({
             id: knowledge_base.id,
             title: knowledge_base.title,
@@ -84,21 +85,24 @@ export const knowledgeRouter = router({
             createdBy: knowledge_base.created_by,
             views: sql<number>`COALESCE(${knowledge_base.metadata}->>'views', '0')::int`,
           })
-          .from(knowledge_base)
-          .where(and(...conditions))
+          .from(knowledge_base);
+
+        // If filtering by category, join with the junction table
+        if (input.categoryId) {
+          query = query
+            .innerJoin(
+              knowledge_to_categories,
+              eq(knowledge_base.id, knowledge_to_categories.knowledge_id)
+            )
+            .where(and(...conditions, eq(knowledge_to_categories.category_id, input.categoryId)));
+        } else {
+          query = query.where(and(...conditions));
+        }
+
+        const items = await query
           .orderBy(desc(knowledge_base.created_at))
           .limit(input.limit)
           .offset(input.offset);
-
-        if (input.categoryId) {
-          const categoryItems = await ctx.db
-            .select({ knowledgeId: knowledge_to_categories.knowledge_id })
-            .from(knowledge_to_categories)
-            .where(eq(knowledge_to_categories.category_id, input.categoryId));
-
-          const categoryItemIds = categoryItems.map((item: any) => item.knowledgeId);
-          return items.filter((item: any) => categoryItemIds.includes(item.id));
-        }
 
         return items;
       } catch (error) {
