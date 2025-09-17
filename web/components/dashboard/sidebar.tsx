@@ -10,6 +10,7 @@ import {
   Hash,
   LayoutDashboard,
   Menu,
+  Newspaper,
   Search,
   Settings,
   Sparkles,
@@ -28,6 +29,7 @@ const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Knowledge Base", href: "/knowledge", icon: Database },
   { name: "Engagements", href: "/projects", icon: Briefcase },
+  { name: "News", href: "/news", icon: Newspaper },
   { name: "AI Insights", href: "/insights", icon: Sparkles },
   { name: "Search", href: "/search", icon: Search },
   { name: "Topics", href: "/topics", icon: Hash },
@@ -46,6 +48,7 @@ export function DashboardSidebar() {
     <>
       {/* Mobile menu button */}
       <button
+        type="button"
         onClick={toggleMobile}
         className="fixed top-4 left-4 z-50 p-2 rounded-md bg-white shadow-md lg:hidden"
       >
@@ -54,13 +57,18 @@ export function DashboardSidebar() {
 
       {/* Mobile overlay */}
       {isMobileOpen && (
-        <div className="fixed inset-0 z-40 bg-black/30 lg:hidden" onClick={toggleMobile} />
+        <button
+          type="button"
+          className="fixed inset-0 z-40 bg-black/30 lg:hidden"
+          onClick={toggleMobile}
+          aria-label="Close menu"
+        />
       )}
 
       {/* Sidebar */}
       <div
         className={cn(
-          "fixed inset-y-0 z-50 flex flex-col bg-gradient-to-b from-indigo-600 to-indigo-700 text-white shadow-xl transition-all duration-300",
+          "h-screen flex flex-col bg-gradient-to-b from-indigo-600 to-indigo-700 text-white shadow-xl transition-all duration-300 fixed lg:relative z-50",
           // Desktop width
           isCollapsed ? "lg:w-20" : "lg:w-72",
           // Mobile/tablet visibility
@@ -82,6 +90,7 @@ export function DashboardSidebar() {
 
           {/* Desktop collapse button */}
           <button
+            type="button"
             onClick={toggleSidebar}
             className="hidden lg:block p-1.5 rounded-md hover:bg-indigo-500/30 transition-colors"
           >
@@ -95,6 +104,7 @@ export function DashboardSidebar() {
 
           {/* Mobile close button */}
           <button
+            type="button"
             onClick={toggleMobile}
             className="lg:hidden p-1.5 rounded-md hover:bg-indigo-500/30"
           >
@@ -167,6 +177,7 @@ export function DashboardSidebar() {
               </div>
             )}
             <button
+              type="button"
               className={cn(
                 "p-2 rounded-lg hover:bg-indigo-500/30 transition-colors",
                 isCollapsed && "lg:hidden"

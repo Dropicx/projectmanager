@@ -8,19 +8,19 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const { isCollapsed } = useSidebar();
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="h-screen flex bg-gray-50">
       <DashboardSidebar />
       <div
         className={cn(
-          "transition-all duration-300",
+          "flex-1 transition-all duration-300 overflow-hidden",
           // Desktop padding
-          isCollapsed ? "lg:pl-20" : "lg:pl-72",
+          isCollapsed ? "lg:ml-20" : "lg:ml-72",
           // Mobile padding
-          "pl-0"
+          "ml-0"
         )}
       >
-        <main className="min-h-screen">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">{children}</div>
+        <main className="h-full overflow-auto">
+          <div className="h-full mx-auto max-w-full px-4 sm:px-6 lg:px-8 py-8">{children}</div>
         </main>
       </div>
     </div>

@@ -17,11 +17,12 @@
  */
 
 import { AIOrchestrator } from "@consulting-platform/ai";
-import { db, engagements } from "@consulting-platform/database";
+import { db, engagements, news_articles } from "@consulting-platform/database";
 import { Queue, Worker } from "bullmq";
 import { CronJob } from "cron";
-import { eq } from "drizzle-orm";
+import { eq, desc, gte } from "drizzle-orm";
 import { Redis } from "ioredis";
+import Parser from "rss-parser";
 import "./health"; // Start health check server
 
 // Redis connection configuration for BullMQ
@@ -220,6 +221,152 @@ const _dailyInsightsJob = new CronJob(
   true,
   "UTC"
 );
+
+// RSS Parser setup
+const parser = new Parser({
+  customFields: {
+    item: [
+      ["media:content", "mediaContent"],
+      ["media:thumbnail", "mediaThumbnail"],
+      ["enclosure", "enclosure"],
+      ["content:encoded", "contentEncoded"],
+    ],
+  },
+});
+
+// RSS Feed Sync Function
+async function fetchAndStoreRSSFeed(feedUrl: string = "https://rss.the-morpheus.news/rss/high_rating") {
+  try {
+    console.log(`Fetching RSS feed from: ${feedUrl}`);
+
+    const feed = await parser.parseURL(feedUrl);
+    const articles = [];
+
+    for (const item of feed.items) {
+      // Extract image URL from various possible sources
+      let imageUrl = null;
+      let thumbnailUrl = null;
+
+      // Check for media content
+      if ((item as any).mediaContent) {
+        const mediaContent = (item as any).mediaContent;
+        if (mediaContent.$ && mediaContent.$.url) {
+          imageUrl = mediaContent.$.url;
+        }
+      }
+
+      // Check for media thumbnail
+      if ((item as any).mediaThumbnail) {
+        const mediaThumbnail = (item as any).mediaThumbnail;
+        if (mediaThumbnail.$ && mediaThumbnail.$.url) {
+          thumbnailUrl = mediaThumbnail.$.url;
+        }
+      }
+
+      // Check for enclosure (common for images)
+      if ((item as any).enclosure && (item as any).enclosure.url) {
+        if (!imageUrl) {
+          imageUrl = (item as any).enclosure.url;
+        }
+      }
+
+      // Extract content
+      const content = (item as any).contentEncoded || item.content || item.contentSnippet || null;
+
+      // Prepare article data
+      const articleData = {
+        title: item.title || "Untitled",
+        description: item.contentSnippet || item.content || null,
+        content: content,
+        link: item.link || "",
+        image_url: imageUrl,
+        thumbnail_url: thumbnailUrl,
+        author: item.creator || null,
+        categories: item.categories || [],
+        tags: [],
+        source: feedUrl,
+        guid: item.guid || item.link || null,
+        published_at: item.pubDate ? new Date(item.pubDate) : new Date(),
+        metadata: {
+          feed_title: feed.title,
+          feed_description: feed.description,
+        },
+      };
+
+      articles.push(articleData);
+    }
+
+    // Insert articles into database, handling duplicates
+    let insertedCount = 0;
+    let skippedCount = 0;
+
+    for (const article of articles) {
+      try {
+        // Check if article already exists by link
+        const existing = await db
+          .select()
+          .from(news_articles)
+          .where(eq(news_articles.link, article.link))
+          .limit(1);
+
+        if (existing.length === 0) {
+          await db.insert(news_articles).values(article);
+          insertedCount++;
+        } else {
+          skippedCount++;
+        }
+      } catch (error) {
+        console.error(`Error inserting article: ${article.title}`, error);
+      }
+    }
+
+    console.log(`RSS feed sync completed. Inserted: ${insertedCount}, Skipped: ${skippedCount}`);
+
+    return {
+      success: true,
+      insertedCount,
+      skippedCount,
+      totalFetched: articles.length,
+    };
+  } catch (error) {
+    console.error("Error fetching RSS feed:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
+// Daily RSS Feed Sync Job
+const _dailyRssSyncJob = new CronJob(
+  "0 8 * * *", // Run at 8 AM daily
+  async () => {
+    console.log("Running daily RSS feed sync...");
+
+    try {
+      const result = await fetchAndStoreRSSFeed();
+      if (result.success) {
+        console.log(`RSS sync completed: Inserted ${result.insertedCount}, Skipped ${result.skippedCount}`);
+      } else {
+        console.error("RSS sync failed:", result.error);
+      }
+    } catch (error) {
+      console.error("Error during RSS sync:", error);
+    }
+  },
+  null,
+  true,
+  "UTC"
+);
+
+// Run RSS sync immediately on startup
+fetchAndStoreRSSFeed().then((result: any) => {
+  if (result.success) {
+    console.log(`Initial RSS sync completed: Inserted ${result.insertedCount}, Skipped ${result.skippedCount}`);
+  } else {
+    console.error("Initial RSS sync failed:", result.error);
+  }
+});
 
 const _weeklyRiskAssessmentJob = new CronJob(
   "0 10 * * 1", // Run at 10 AM every Monday

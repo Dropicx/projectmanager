@@ -694,6 +694,49 @@ export const filesRelations = relations(files, ({ one }) => ({
   }),
 }));
 
+// News Articles - RSS Feed Storage
+export const news_articles = pgTable(
+  "news_articles",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+
+    // Article content
+    title: text("title").notNull(),
+    description: text("description"),
+    content: text("content"),
+    link: text("link").notNull().unique(),
+
+    // Media
+    image_url: text("image_url"),
+    thumbnail_url: text("thumbnail_url"),
+
+    // Metadata
+    author: text("author"),
+    categories: jsonb("categories").default([]),
+    tags: jsonb("tags").default([]),
+
+    // Source information
+    source: text("source").notNull(), // RSS feed source
+    guid: text("guid"), // RSS GUID for deduplication
+
+    // Timestamps
+    published_at: timestamp("published_at").notNull(),
+    fetched_at: timestamp("fetched_at").defaultNow(),
+
+    // Additional data from RSS
+    metadata: jsonb("metadata").default({}),
+
+    created_at: timestamp("created_at").defaultNow(),
+    updated_at: timestamp("updated_at").defaultNow(),
+  },
+  (table) => ({
+    // Indexes for performance
+    publishedIdx: index("news_published_idx").on(table.published_at),
+    linkIdx: index("news_link_idx").on(table.link),
+    sourceIdx: index("news_source_idx").on(table.source),
+  })
+);
+
 // Export for backwards compatibility (will update gradually)
 export const projects = engagements;
 export const project_members = engagement_stakeholders;

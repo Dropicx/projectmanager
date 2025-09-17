@@ -12,6 +12,7 @@ import {
   Tabs,
   TabsList,
   TabsTrigger,
+  cn,
 } from "@consulting-platform/ui";
 import {
   BookOpen,
@@ -27,13 +28,16 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { KnowledgeSidebar } from "@/components/knowledge-sidebar";
+import { useSidebar } from "@/contexts/sidebar-context";
 
 export const dynamic = "force-dynamic";
 
 export default function KnowledgePage() {
+  const { isCollapsed } = useSidebar();
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>();
   const [viewMode, setViewMode] = useState<"grid" | "list" | "timeline">("grid");
   const [searchQuery, setSearchQuery] = useState("");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const knowledgeItems = [
     {
@@ -310,8 +314,14 @@ export default function KnowledgePage() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-4rem)]">
-      <aside className="w-64 border-r">
+    <div className="flex h-screen">
+      <aside
+        className={cn(
+          "border-r flex-shrink-0 transition-all duration-300 bg-background",
+          isSidebarOpen ? "w-64" : "w-0 overflow-hidden",
+          "lg:w-64 lg:overflow-visible"
+        )}
+      >
         <KnowledgeSidebar
           selectedCategory={selectedCategory}
           onCategorySelect={setSelectedCategory}
@@ -319,14 +329,24 @@ export default function KnowledgePage() {
         />
       </aside>
 
-      <main className="flex-1 overflow-auto">
-        <div className="p-6 space-y-6">
+      <main className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 overflow-auto p-6 space-y-6">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight">Knowledge Base</h1>
-              <p className="text-sm text-muted-foreground">
-                {filteredItems.length} items {selectedCategory && "in category"}
-              </p>
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="lg:hidden"
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              >
+                <List className="h-4 w-4" />
+              </Button>
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight">Knowledge Base</h1>
+                <p className="text-sm text-muted-foreground">
+                  {filteredItems.length} items {selectedCategory && "in category"}
+                </p>
+              </div>
             </div>
             <div className="flex items-center gap-2">
               <Button>
