@@ -152,7 +152,7 @@ export default function KnowledgePage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {item.tags && Array.isArray(item.tags) && item.tags.length > 0 && (
+                  {item.tags && Array.isArray(item.tags) && item.tags.length > 0 ? (
                     <div className="flex flex-wrap gap-1">
                       {(item.tags as string[]).slice(0, 3).map((tag) => (
                         <Badge key={tag} variant="outline" className="text-xs">
@@ -160,7 +160,7 @@ export default function KnowledgePage() {
                         </Badge>
                       ))}
                     </div>
-                  )}
+                  ) : null}
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
                     <div className="flex items-center gap-3">
                       <span className="flex items-center">
@@ -240,7 +240,7 @@ export default function KnowledgePage() {
                         <Eye className="h-3 w-3 mr-1" />
                         {item.views || 0} views
                       </span>
-                      {item.tags && Array.isArray(item.tags) && item.tags.length > 0 && (
+                      {item.tags && Array.isArray(item.tags) && item.tags.length > 0 ? (
                         <div className="flex gap-1">
                           {(item.tags as string[]).slice(0, 3).map((tag) => (
                             <Badge key={tag} variant="outline" className="text-xs">
@@ -248,7 +248,7 @@ export default function KnowledgePage() {
                             </Badge>
                           ))}
                         </div>
-                      )}
+                      ) : null}
                     </div>
                   </div>
                 </div>
