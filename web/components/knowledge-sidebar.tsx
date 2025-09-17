@@ -8,7 +8,6 @@ import {
   Button,
   cn,
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
@@ -301,11 +300,7 @@ export function KnowledgeSidebar({
   const { data: categories = [], isLoading } = trpc.knowledge.getCategories.useQuery();
 
   // Update position mutation
-  const updatePositionMutation = trpc.knowledge.updateCategory.useMutation({
-    onSuccess: () => {
-      utils.knowledge.getCategories.invalidate();
-    },
-  });
+  const updatePositionMutation = trpc.knowledge.updateCategory.useMutation();
 
   // Delete mutation
   const deleteMutation = trpc.knowledge.deleteCategory.useMutation({
@@ -350,7 +345,6 @@ export function KnowledgeSidebar({
       case "items-desc":
         processedCategories.sort((a, b) => (b.item_count || 0) - (a.item_count || 0));
         break;
-      case "manual":
       default:
         // Keep original order (by position)
         processedCategories.sort((a, b) => (a.position || 0) - (b.position || 0));
@@ -358,7 +352,7 @@ export function KnowledgeSidebar({
     }
 
     setLocalCategories(processedCategories);
-  }, [categories, sortOption, filterOption]);
+  }, [categories, sortOption, filterOption.showEmpty, filterOption.searchQuery]);
 
   const handleEditCategory = (category: any, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -382,7 +376,7 @@ export function KnowledgeSidebar({
     setActiveId(event.active.id as string);
   };
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
 
     if (over && active.id !== over.id) {
@@ -394,14 +388,18 @@ export function KnowledgeSidebar({
 
       // Update positions in the database only if in manual sort mode
       if (sortOption === "manual") {
-        newCategories.forEach((cat, index) => {
-          if (cat.position !== index) {
-            updatePositionMutation.mutate({
-              id: cat.id,
-              position: index,
-            });
-          }
-        });
+        // Collect position updates
+        const updates = newCategories
+          .map((cat, index) => ({ id: cat.id, position: index }))
+          .filter((update, idx) => newCategories[idx].position !== update.position);
+
+        // Update positions without triggering immediate refetch
+        for (const update of updates) {
+          await updatePositionMutation.mutateAsync(update);
+        }
+
+        // Refetch categories after all updates are done
+        utils.knowledge.getCategories.invalidate();
       }
     }
 
@@ -418,7 +416,7 @@ export function KnowledgeSidebar({
         if (!childMap.has(cat.parent_id)) {
           childMap.set(cat.parent_id, []);
         }
-        childMap.get(cat.parent_id)!.push(cat);
+        childMap.get(cat.parent_id)?.push(cat);
       }
     });
 
