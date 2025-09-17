@@ -11,9 +11,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
     <div className="h-screen flex bg-gray-50">
       <DashboardSidebar />
       <div className="flex-1 transition-all duration-300 overflow-hidden">
-        <main className="h-full overflow-auto">
-          {children}
-        </main>
+        <main className="h-full overflow-auto">{children}</main>
       </div>
     </div>
   );

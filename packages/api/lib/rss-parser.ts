@@ -1,6 +1,6 @@
-import Parser from "rss-parser";
 import { db, news_articles } from "@consulting-platform/database";
-import { eq, desc, and, gte } from "drizzle-orm";
+import { and, desc, eq, gte } from "drizzle-orm";
+import Parser from "rss-parser";
 
 const parser = new Parser({
   customFields: {
@@ -31,7 +31,9 @@ export interface NewsArticle {
   metadata: Record<string, any>;
 }
 
-export async function fetchAndStoreRSSFeed(feedUrl: string = "https://rss.the-morpheus.news/rss/high_rating") {
+export async function fetchAndStoreRSSFeed(
+  feedUrl: string = "https://rss.the-morpheus.news/rss/high_rating"
+) {
   try {
     console.log(`Fetching RSS feed from: ${feedUrl}`);
 
@@ -147,10 +149,7 @@ export async function getRecentNewsArticles(daysBack: number = 7): Promise<NewsA
 }
 
 export async function getAllNewsArticles(): Promise<NewsArticle[]> {
-  const articles = await db
-    .select()
-    .from(news_articles)
-    .orderBy(desc(news_articles.published_at));
+  const articles = await db.select().from(news_articles).orderBy(desc(news_articles.published_at));
 
   return articles as NewsArticle[];
 }

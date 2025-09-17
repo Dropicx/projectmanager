@@ -20,7 +20,7 @@ import { AIOrchestrator } from "@consulting-platform/ai";
 import { db, engagements, news_articles } from "@consulting-platform/database";
 import { Queue, Worker } from "bullmq";
 import { CronJob } from "cron";
-import { eq, desc, gte } from "drizzle-orm";
+import { desc, eq, gte } from "drizzle-orm";
 import { Redis } from "ioredis";
 import Parser from "rss-parser";
 import "./health"; // Start health check server
@@ -235,7 +235,9 @@ const parser = new Parser({
 });
 
 // RSS Feed Sync Function
-async function fetchAndStoreRSSFeed(feedUrl: string = "https://rss.the-morpheus.news/rss/high_rating") {
+async function fetchAndStoreRSSFeed(
+  feedUrl: string = "https://rss.the-morpheus.news/rss/high_rating"
+) {
   try {
     console.log(`Fetching RSS feed from: ${feedUrl}`);
 
@@ -346,7 +348,9 @@ const _dailyRssSyncJob = new CronJob(
     try {
       const result = await fetchAndStoreRSSFeed();
       if (result.success) {
-        console.log(`RSS sync completed: Inserted ${result.insertedCount}, Skipped ${result.skippedCount}`);
+        console.log(
+          `RSS sync completed: Inserted ${result.insertedCount}, Skipped ${result.skippedCount}`
+        );
       } else {
         console.error("RSS sync failed:", result.error);
       }
@@ -362,7 +366,9 @@ const _dailyRssSyncJob = new CronJob(
 // Run RSS sync immediately on startup
 fetchAndStoreRSSFeed().then((result: any) => {
   if (result.success) {
-    console.log(`Initial RSS sync completed: Inserted ${result.insertedCount}, Skipped ${result.skippedCount}`);
+    console.log(
+      `Initial RSS sync completed: Inserted ${result.insertedCount}, Skipped ${result.skippedCount}`
+    );
   } else {
     console.error("Initial RSS sync failed:", result.error);
   }
