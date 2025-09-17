@@ -177,5 +177,72 @@ export const projectsRouter = router({
         model: insights.model,
         costCents: insights.costCents
       }
+    }),
+
+  // Generate AI insights for project
+  generateInsights: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const project = await ctx.db
+        .select()
+        .from(projects)
+        .where(
+          and(
+            eq(projects.id, input.projectId),
+            eq(projects.organization_id, ctx.user.organizationId)
+          )
+        )
+        .limit(1)
+
+      if (!project.length) {
+        throw new Error('Project not found')
+      }
+
+      // Mock AI insights response for now
+      return {
+        executiveSummary: `## Project Analysis for ${project[0].name}\n\nBased on current progress and historical data, this project is tracking well against its objectives. The team has demonstrated strong execution capabilities with consistent delivery milestones being met.`,
+
+        keyFindings: [
+          "Project is currently 65% complete with 70% of budget utilized, indicating good cost efficiency",
+          "Team velocity has increased by 15% over the last sprint",
+          "Stakeholder satisfaction remains high based on recent feedback sessions",
+          "Technical debt is being managed proactively with dedicated refactoring sprints"
+        ],
+
+        recommendations: [
+          {
+            title: "Increase Testing Coverage",
+            description: "Current test coverage is at 72%. Recommend increasing to 85% to reduce bug escape rate.",
+            priority: "high"
+          },
+          {
+            title: "Resource Optimization",
+            description: "Consider adding one senior developer to accelerate critical path items.",
+            priority: "medium"
+          },
+          {
+            title: "Documentation Update",
+            description: "Update technical documentation to reflect recent architectural changes.",
+            priority: "low"
+          }
+        ],
+
+        risks: [
+          {
+            type: "Timeline",
+            level: "medium",
+            description: "Dependency on external API integration may cause 1-week delay",
+            mitigation: "Begin integration testing with mock APIs"
+          },
+          {
+            type: "Technical",
+            level: "low",
+            description: "Legacy system compatibility issues identified",
+            mitigation: "Implement adapter pattern for backward compatibility"
+          }
+        ],
+
+        generatedAt: new Date().toISOString()
+      }
     })
 })
