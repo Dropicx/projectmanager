@@ -112,17 +112,24 @@ export default function NewsPage() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {articles?.map((article) => (
             <Card key={article.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-              {article.image_url && (
-                <div className="relative h-48 w-full">
+              {(article.image_url || article.thumbnail_url) && (
+                <div className="relative h-48 w-full bg-muted">
                   <Image
-                    src={article.image_url}
+                    src={article.image_url || article.thumbnail_url || ""}
                     alt={article.title}
                     fill
                     className="object-cover"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     onError={(e) => {
-                      // Hide image if it fails to load
+                      // Try thumbnail as fallback
                       const target = e.target as HTMLImageElement;
-                      target.style.display = "none";
+                      if (article.thumbnail_url && target.src !== article.thumbnail_url) {
+                        target.src = article.thumbnail_url;
+                      } else {
+                        // Hide image container if both fail
+                        const container = target.parentElement;
+                        if (container) container.style.display = "none";
+                      }
                     }}
                   />
                 </div>
