@@ -310,6 +310,9 @@ importers:
       '@consulting-platform/ai':
         specifier: workspace:*
         version: link:../packages/ai
+      '@consulting-platform/api':
+        specifier: workspace:*
+        version: link:../packages/api
       '@consulting-platform/database':
         specifier: workspace:*
         version: link:../packages/database

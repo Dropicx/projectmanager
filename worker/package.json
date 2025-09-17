@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@consulting-platform/ai": "workspace:*",
+    "@consulting-platform/api": "workspace:*",
     "@consulting-platform/database": "workspace:*",
     "bullmq": "^5.34.0",
     "cron": "^3.1.6",
