@@ -10,15 +10,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   return (
     <div className="h-screen flex bg-gray-50">
       <DashboardSidebar />
-      <div
-        className={cn(
-          "flex-1 transition-all duration-300 overflow-hidden",
-          // Desktop padding
-          isCollapsed ? "lg:ml-20" : "lg:ml-72",
-          // Mobile padding
-          "ml-0"
-        )}
-      >
+      <div className="flex-1 transition-all duration-300 overflow-hidden">
         <main className="h-full overflow-auto">
           {children}
         </main>
