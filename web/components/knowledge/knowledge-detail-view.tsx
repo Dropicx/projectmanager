@@ -237,12 +237,7 @@ export function KnowledgeDetailView({ knowledgeId, onBack, onDelete }: Knowledge
   return (
     <div className="h-full flex flex-col">
       <div className="flex-1 overflow-y-auto">
-        <div
-          className={cn(
-            "mx-auto p-6 transition-all duration-300",
-            isEditMode ? "max-w-7xl" : "max-w-4xl"
-          )}
-        >
+        <div className="max-w-7xl mx-auto p-6">
           {/* Header */}
           <div className="mb-6">
             <div className="flex items-start justify-between mb-4">
@@ -427,7 +422,7 @@ export function KnowledgeDetailView({ knowledgeId, onBack, onDelete }: Knowledge
           )}
 
           {/* Content */}
-          <div className={cn("transition-all duration-300", isEditMode && "")}>
+          <div>
             {isEditMode ? (
               <div className="space-y-2">
                 <Label className="text-lg font-semibold">Content</Label>
