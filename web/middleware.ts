@@ -1,8 +1,52 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 
-const isPublicRoute = createRouteMatcher(["/", "/api/health", "/sign-in(.*)", "/sign-up(.*)"]);
+const isPublicRoute = createRouteMatcher([
+  "/",
+  "/api/health",
+  "/sign-in(.*)",
+  "/sign-up(.*)",
+  "/api/trpc(.*)", // Allow API routes for authenticated requests
+]);
+
+// Rate limit tracking (in-memory for simplicity)
+const requestCounts = new Map<string, { count: number; resetTime: number }>();
 
 export default clerkMiddleware(async (auth, req) => {
+  // Simple rate limiting to prevent loops
+  const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
+  const now = Date.now();
+  const windowMs = 60000; // 1 minute window
+  const maxRequests = 100; // Max 100 requests per minute
+
+  const userKey = `${ip}:${req.url}`;
+  const requestData = requestCounts.get(userKey);
+
+  if (requestData) {
+    if (now < requestData.resetTime) {
+      if (requestData.count >= maxRequests) {
+        console.warn(`Rate limit exceeded for ${userKey}`);
+        return new NextResponse("Too Many Requests", { status: 429 });
+      }
+      requestData.count++;
+    } else {
+      // Reset the window
+      requestCounts.set(userKey, { count: 1, resetTime: now + windowMs });
+    }
+  } else {
+    requestCounts.set(userKey, { count: 1, resetTime: now + windowMs });
+  }
+
+  // Clean up old entries periodically
+  if (Math.random() < 0.01) {
+    // 1% chance to clean up
+    for (const [key, data] of requestCounts.entries()) {
+      if (now > data.resetTime) {
+        requestCounts.delete(key);
+      }
+    }
+  }
+
   // If Clerk is not configured, allow all requests
   if (!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY) {
     return;
@@ -10,11 +54,32 @@ export default clerkMiddleware(async (auth, req) => {
 
   // Protect routes when Clerk is configured
   if (!isPublicRoute(req)) {
-    const { userId } = await auth();
-    if (!userId) {
-      const signInUrl = new URL("/sign-in", req.url);
-      signInUrl.searchParams.set("redirect_url", req.url);
-      return Response.redirect(signInUrl);
+    try {
+      const { userId } = await auth();
+      if (!userId) {
+        const signInUrl = new URL("/sign-in", req.url);
+        signInUrl.searchParams.set("redirect_url", req.url);
+        return Response.redirect(signInUrl);
+      }
+    } catch (error: any) {
+      // Handle Clerk errors gracefully
+      console.error("Clerk middleware error:", error);
+
+      // If it's a rate limit error from Clerk, return a proper response
+      if (error?.status === 429 || error?.message?.includes("rate")) {
+        return new NextResponse(
+          "Authentication service rate limit exceeded. Please try again in a few minutes.",
+          {
+            status: 429,
+            headers: {
+              "Retry-After": "60",
+            },
+          }
+        );
+      }
+
+      // For other errors, redirect to sign-in
+      return Response.redirect(new URL("/sign-in", req.url));
     }
   }
 });

@@ -8,11 +8,11 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  cn,
   Input,
   Tabs,
   TabsList,
   TabsTrigger,
-  cn,
 } from "@consulting-platform/ui";
 import {
   BookOpen,
@@ -314,7 +314,7 @@ export default function KnowledgePage() {
   };
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-full">
       <aside
         className={cn(
           "border-r flex-shrink-0 transition-all duration-300 bg-background",

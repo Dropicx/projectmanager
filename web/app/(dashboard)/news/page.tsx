@@ -20,6 +20,23 @@ export default function NewsPage() {
 
   const { data: articles, isLoading, refetch } = trpc.news.getRecentNews.useQuery({ daysBack });
 
+  // Function to strip HTML tags and clean up content
+  const stripHtml = (html: string): string => {
+    // Remove HTML tags
+    let text = html.replace(/<[^>]*>/g, "");
+    // Decode HTML entities
+    text = text
+      .replace(/&nbsp;/g, " ")
+      .replace(/&amp;/g, "&")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'");
+    // Remove extra whitespace
+    text = text.replace(/\s+/g, " ").trim();
+    return text;
+  };
+
   const { mutate: syncRssFeed, isPending: isSyncing } = trpc.news.syncRssFeed.useMutation({
     onSuccess: () => {
       refetch();
@@ -145,11 +162,11 @@ export default function NewsPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex-grow">
-                {/* Show full content if available, otherwise show description */}
+                {/* Show cleaned content or description */}
                 {(article.content || article.description) && (
-                  <div className="text-sm text-muted-foreground mb-4 space-y-2">
-                    <p className="whitespace-pre-wrap">
-                      {article.content || article.description || ""}
+                  <div className="text-sm text-muted-foreground mb-4">
+                    <p className="line-clamp-4">
+                      {stripHtml(article.content || article.description || "")}
                     </p>
                   </div>
                 )}
