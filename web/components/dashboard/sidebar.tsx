@@ -66,7 +66,7 @@ export function DashboardSidebar() {
       {/* Sidebar */}
       <div
         className={cn(
-          "h-screen flex flex-col bg-gradient-to-b from-indigo-600 to-indigo-700 text-white shadow-xl transition-all duration-300 fixed lg:relative z-50",
+          "h-screen lg:h-full lg:min-h-screen flex flex-col bg-gradient-to-b from-indigo-600 to-indigo-700 text-white shadow-xl transition-all duration-300 fixed lg:sticky lg:top-0 z-50",
           // Desktop width
           isCollapsed ? "lg:w-20" : "lg:w-72",
           // Mobile/tablet visibility

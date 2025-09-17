@@ -235,224 +235,220 @@ export function KnowledgeDetailView({ knowledgeId, onBack, onDelete }: Knowledge
   }
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex-1 overflow-y-auto">
-        <div className="max-w-7xl mx-auto p-6">
-          {/* Header */}
-          <div className="mb-6">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <Button variant="ghost" size="sm" onClick={onBack} className="mr-2">
-                    <ArrowLeft className="h-4 w-4" />
-                  </Button>
-                  <h1 className="text-2xl font-bold">{item.title}</h1>
-                </div>
-                <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                  <div className="flex items-center gap-1">
-                    <Calendar className="h-3 w-3" />
-                    <span>
-                      Created{" "}
-                      {item.created_at
-                        ? format(new Date(item.created_at), "MMM d, yyyy")
-                        : "Unknown"}
-                    </span>
-                  </div>
-                  {item.created_by && (
-                    <div className="flex items-center gap-1">
-                      <User className="h-3 w-3" />
-                      <span>by {item.created_by}</span>
-                    </div>
-                  )}
-                </div>
+    <div className="min-h-full">
+      <div className="max-w-7xl mx-auto p-6">
+        {/* Header */}
+        <div className="mb-6">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <Button variant="ghost" size="sm" onClick={onBack} className="mr-2">
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+                <h1 className="text-2xl font-bold">{item.title}</h1>
               </div>
-              <div className="flex gap-2">
-                {!isEditMode ? (
-                  <Button variant="outline" size="sm" onClick={() => setIsEditMode(true)}>
-                    <Edit className="h-4 w-4 mr-1" />
-                    Edit
-                  </Button>
-                ) : (
-                  <>
-                    <Button
-                      variant="default"
-                      size="sm"
-                      onClick={handleSave}
-                      disabled={updateMutation.isPending}
-                    >
-                      {updateMutation.isPending ? (
-                        <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                      ) : (
-                        <Save className="h-4 w-4 mr-1" />
-                      )}
-                      Save
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={handleCancel}>
-                      <X className="h-4 w-4 mr-1" />
-                      Cancel
-                    </Button>
-                  </>
+              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <Calendar className="h-3 w-3" />
+                  <span>
+                    Created{" "}
+                    {item.created_at ? format(new Date(item.created_at), "MMM d, yyyy") : "Unknown"}
+                  </span>
+                </div>
+                {item.created_by && (
+                  <div className="flex items-center gap-1">
+                    <User className="h-3 w-3" />
+                    <span>by {item.created_by}</span>
+                  </div>
                 )}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleDelete}
-                  disabled={deleteMutation.isPending}
+              </div>
+            </div>
+            <div className="flex gap-2">
+              {!isEditMode ? (
+                <Button variant="outline" size="sm" onClick={() => setIsEditMode(true)}>
+                  <Edit className="h-4 w-4 mr-1" />
+                  Edit
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={handleSave}
+                    disabled={updateMutation.isPending}
+                  >
+                    {updateMutation.isPending ? (
+                      <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                    ) : (
+                      <Save className="h-4 w-4 mr-1" />
+                    )}
+                    Save
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={handleCancel}>
+                    <X className="h-4 w-4 mr-1" />
+                    Cancel
+                  </Button>
+                </>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleDelete}
+                disabled={deleteMutation.isPending}
+              >
+                <Trash2 className="h-4 w-4 mr-1" />
+                Delete
+              </Button>
+            </div>
+          </div>
+
+          {/* Type and Tags */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {item.knowledge_type && (
+              <Badge className={getTypeColor(item.knowledge_type)}>
+                {getTypeLabel(item.knowledge_type)}
+              </Badge>
+            )}
+            {item.tags && Array.isArray(item.tags) && item.tags.length > 0 ? (
+              <>
+                <Separator orientation="vertical" className="h-4" />
+                {(item.tags as string[]).map((tag: string) => (
+                  <Badge key={tag} variant="secondary">
+                    <Hash className="h-3 w-3 mr-1" />
+                    {tag}
+                  </Badge>
+                ))}
+              </>
+            ) : null}
+          </div>
+        </div>
+
+        <Separator className="mb-6" />
+
+        {/* Edit Mode Fields */}
+        {isEditMode && (
+          <div className="space-y-6 mb-6">
+            {/* Title */}
+            <div className="grid gap-2">
+              <Label>Title</Label>
+              <Input
+                value={editedTitle}
+                onChange={(e) => setEditedTitle(e.target.value)}
+                placeholder="Enter title"
+                className="text-lg font-semibold"
+              />
+            </div>
+
+            {/* Type and Category */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label>Type</Label>
+                <Select value={editedType} onValueChange={setEditedType}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="solution">Solution</SelectItem>
+                    <SelectItem value="issue">Issue</SelectItem>
+                    <SelectItem value="decision">Decision</SelectItem>
+                    <SelectItem value="pattern">Pattern</SelectItem>
+                    <SelectItem value="template">Template</SelectItem>
+                    <SelectItem value="reference">Reference</SelectItem>
+                    <SelectItem value="insight">Insight</SelectItem>
+                    <SelectItem value="lesson_learned">Lesson Learned</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label>Category</Label>
+                <Select
+                  value={editedCategoryId || "none"}
+                  onValueChange={(value) =>
+                    setEditedCategoryId(value === "none" ? undefined : value)
+                  }
                 >
-                  <Trash2 className="h-4 w-4 mr-1" />
-                  Delete
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No category</SelectItem>
+                    {categories.map((category) => (
+                      <SelectItem key={category.id} value={category.id}>
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Tags */}
+            <div className="grid gap-2">
+              <Label>Tags</Label>
+              <div className="flex gap-2">
+                <Input
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  placeholder="Add a tag"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      addTag();
+                    }
+                  }}
+                />
+                <Button type="button" onClick={addTag} variant="outline">
+                  <Plus className="h-4 w-4" />
                 </Button>
               </div>
-            </div>
-
-            {/* Type and Tags */}
-            <div className="flex items-center gap-2 flex-wrap">
-              {item.knowledge_type && (
-                <Badge className={getTypeColor(item.knowledge_type)}>
-                  {getTypeLabel(item.knowledge_type)}
-                </Badge>
-              )}
-              {item.tags && Array.isArray(item.tags) && item.tags.length > 0 ? (
-                <>
-                  <Separator orientation="vertical" className="h-4" />
-                  {(item.tags as string[]).map((tag: string) => (
-                    <Badge key={tag} variant="secondary">
-                      <Hash className="h-3 w-3 mr-1" />
+              {editedTags.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {editedTags.map((tag) => (
+                    <Badge key={tag} variant="secondary" className="gap-1">
                       {tag}
+                      <X
+                        className="h-3 w-3 cursor-pointer hover:text-destructive"
+                        onClick={() => removeTag(tag)}
+                      />
                     </Badge>
                   ))}
-                </>
-              ) : null}
+                </div>
+              )}
             </div>
           </div>
+        )}
 
-          <Separator className="mb-6" />
-
-          {/* Edit Mode Fields */}
-          {isEditMode && (
-            <div className="space-y-6 mb-6">
-              {/* Title */}
-              <div className="grid gap-2">
-                <Label>Title</Label>
-                <Input
-                  value={editedTitle}
-                  onChange={(e) => setEditedTitle(e.target.value)}
-                  placeholder="Enter title"
-                  className="text-lg font-semibold"
-                />
-              </div>
-
-              {/* Type and Category */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label>Type</Label>
-                  <Select value={editedType} onValueChange={setEditedType}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="solution">Solution</SelectItem>
-                      <SelectItem value="issue">Issue</SelectItem>
-                      <SelectItem value="decision">Decision</SelectItem>
-                      <SelectItem value="pattern">Pattern</SelectItem>
-                      <SelectItem value="template">Template</SelectItem>
-                      <SelectItem value="reference">Reference</SelectItem>
-                      <SelectItem value="insight">Insight</SelectItem>
-                      <SelectItem value="lesson_learned">Lesson Learned</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid gap-2">
-                  <Label>Category</Label>
-                  <Select
-                    value={editedCategoryId || "none"}
-                    onValueChange={(value) =>
-                      setEditedCategoryId(value === "none" ? undefined : value)
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">No category</SelectItem>
-                      {categories.map((category) => (
-                        <SelectItem key={category.id} value={category.id}>
-                          {category.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {/* Tags */}
-              <div className="grid gap-2">
-                <Label>Tags</Label>
-                <div className="flex gap-2">
-                  <Input
-                    value={tagInput}
-                    onChange={(e) => setTagInput(e.target.value)}
-                    placeholder="Add a tag"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        addTag();
-                      }
-                    }}
-                  />
-                  <Button type="button" onClick={addTag} variant="outline">
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-                {editedTags.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {editedTags.map((tag) => (
-                      <Badge key={tag} variant="secondary" className="gap-1">
-                        {tag}
-                        <X
-                          className="h-3 w-3 cursor-pointer hover:text-destructive"
-                          onClick={() => removeTag(tag)}
-                        />
-                      </Badge>
-                    ))}
-                  </div>
-                )}
-              </div>
+        {/* Content */}
+        <div>
+          {isEditMode ? (
+            <div className="space-y-2">
+              <Label className="text-lg font-semibold">Content</Label>
+              <KnowledgeEditor
+                content={editedContent}
+                onChange={setEditedContent}
+                placeholder="Write your knowledge content..."
+                minHeight="min-h-[600px]"
+                className="max-w-none"
+              />
             </div>
-          )}
-
-          {/* Content */}
-          <div>
-            {isEditMode ? (
-              <div className="space-y-2">
-                <Label className="text-lg font-semibold">Content</Label>
-                <KnowledgeEditor
-                  content={editedContent}
-                  onChange={setEditedContent}
-                  placeholder="Write your knowledge content..."
-                  minHeight="min-h-[600px]"
-                  className="max-w-none"
-                />
-              </div>
-            ) : (
-              <Card>
-                <CardHeader>
-                  <h2 className="text-lg font-semibold">Content</h2>
-                </CardHeader>
-                <CardContent>
-                  <KnowledgeViewer content={item.content} className="max-w-none" />
-                </CardContent>
-              </Card>
-            )}
-          </div>
-
-          {/* Metadata */}
-          {item.updated_at && item.updated_at !== item.created_at && (
-            <div className="mt-4 text-sm text-muted-foreground">
-              Last updated {format(new Date(item.updated_at), "MMM d, yyyy 'at' h:mm a")}
-            </div>
+          ) : (
+            <Card>
+              <CardHeader>
+                <h2 className="text-lg font-semibold">Content</h2>
+              </CardHeader>
+              <CardContent>
+                <KnowledgeViewer content={item.content} className="max-w-none" />
+              </CardContent>
+            </Card>
           )}
         </div>
+
+        {/* Metadata */}
+        {item.updated_at && item.updated_at !== item.created_at && (
+          <div className="mt-4 text-sm text-muted-foreground">
+            Last updated {format(new Date(item.updated_at), "MMM d, yyyy 'at' h:mm a")}
+          </div>
+        )}
       </div>
     </div>
   );
