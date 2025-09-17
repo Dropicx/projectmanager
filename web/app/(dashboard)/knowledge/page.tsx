@@ -314,82 +314,84 @@ export default function KnowledgePage() {
   };
 
   return (
-    <div className="flex h-full">
-      <aside
-        className={cn(
-          "border-r flex-shrink-0 transition-all duration-300 bg-background",
-          isSidebarOpen ? "w-64" : "w-0 overflow-hidden",
-          "lg:w-64 lg:overflow-visible"
-        )}
-      >
-        <KnowledgeSidebar
-          selectedCategory={selectedCategory}
-          onCategorySelect={setSelectedCategory}
-          onSearch={setSearchQuery}
-        />
-      </aside>
+    <div className="h-full p-6">
+      <div className="flex h-full bg-white rounded-lg shadow-sm border">
+        <aside
+          className={cn(
+            "border-r flex-shrink-0 transition-all duration-300 bg-background",
+            isSidebarOpen ? "w-64" : "w-0 overflow-hidden",
+            "lg:w-64 lg:overflow-visible"
+          )}
+        >
+          <KnowledgeSidebar
+            selectedCategory={selectedCategory}
+            onCategorySelect={setSelectedCategory}
+            onSearch={setSearchQuery}
+          />
+        </aside>
 
-      <main className="flex-1 flex flex-col overflow-hidden">
-        <div className="flex-1 overflow-auto p-6 space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="lg:hidden"
-                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              >
-                <List className="h-4 w-4" />
-              </Button>
-              <div>
-                <h1 className="text-2xl font-bold tracking-tight">Knowledge Base</h1>
-                <p className="text-sm text-muted-foreground">
-                  {filteredItems.length} items {selectedCategory && "in category"}
-                </p>
+        <main className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 overflow-auto p-6 space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="lg:hidden"
+                  onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+                <div>
+                  <h1 className="text-2xl font-bold tracking-tight">Knowledge Base</h1>
+                  <p className="text-sm text-muted-foreground">
+                    {filteredItems.length} items {selectedCategory && "in category"}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Knowledge
+                </Button>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Knowledge
-              </Button>
+
+            <div className="flex items-center gap-3">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Search knowledge base..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+
+              <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as any)}>
+                <TabsList>
+                  <TabsTrigger value="grid">
+                    <Grid className="h-4 w-4" />
+                  </TabsTrigger>
+                  <TabsTrigger value="list">
+                    <List className="h-4 w-4" />
+                  </TabsTrigger>
+                  <TabsTrigger value="timeline">
+                    <Clock className="h-4 w-4" />
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+
+            <div>
+              {viewMode === "grid" && renderGridView()}
+              {viewMode === "list" && renderListView()}
+              {viewMode === "timeline" && renderTimelineView()}
             </div>
           </div>
-
-          <div className="flex items-center gap-3">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Search knowledge base..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-
-            <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as any)}>
-              <TabsList>
-                <TabsTrigger value="grid">
-                  <Grid className="h-4 w-4" />
-                </TabsTrigger>
-                <TabsTrigger value="list">
-                  <List className="h-4 w-4" />
-                </TabsTrigger>
-                <TabsTrigger value="timeline">
-                  <Clock className="h-4 w-4" />
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
-
-          <div>
-            {viewMode === "grid" && renderGridView()}
-            {viewMode === "list" && renderListView()}
-            {viewMode === "timeline" && renderTimelineView()}
-          </div>
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }

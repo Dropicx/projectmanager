@@ -165,7 +165,7 @@ export default function NewsPage() {
                 {/* Show cleaned content or description */}
                 {(article.content || article.description) && (
                   <div className="text-sm text-muted-foreground mb-4">
-                    <p className="line-clamp-4">
+                    <p className="line-clamp-[8] min-h-[8rem]">
                       {stripHtml(article.content || article.description || "")}
                     </p>
                   </div>

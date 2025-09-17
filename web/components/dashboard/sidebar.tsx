@@ -160,29 +160,24 @@ export function DashboardSidebar() {
 
         {/* User section at bottom */}
         <div className="border-t border-indigo-500/30 p-4">
-          <div className={cn("flex items-center gap-3", isCollapsed && "lg:justify-center")}>
+          <div className={cn("flex items-center", isCollapsed ? "lg:justify-center" : "gap-3")}>
             <UserButton
               appearance={{
                 elements: {
                   avatarBox: "w-10 h-10",
                 },
               }}
+              showName={!isCollapsed}
+              afterSignOutUrl="/"
             />
             {!isCollapsed && (
-              <div className="flex-1 hidden lg:block">
-                <p className="text-sm font-medium text-white">Account</p>
-                <p className="text-xs text-indigo-200">Manage profile</p>
-              </div>
+              <button
+                type="button"
+                className="ml-auto p-2 rounded-lg hover:bg-indigo-500/30 transition-colors"
+              >
+                <Bell className="h-5 w-5 text-indigo-200" />
+              </button>
             )}
-            <button
-              type="button"
-              className={cn(
-                "p-2 rounded-lg hover:bg-indigo-500/30 transition-colors",
-                isCollapsed && "lg:hidden"
-              )}
-            >
-              <Bell className="h-5 w-5 text-indigo-200" />
-            </button>
           </div>
         </div>
       </div>
