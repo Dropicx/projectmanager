@@ -1,5 +1,5 @@
 import { AIOrchestrator } from "@consulting-platform/ai";
-import { knowledge_base, engagements } from "@consulting-platform/database";
+import { engagements, knowledge_base } from "@consulting-platform/database";
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
@@ -89,8 +89,8 @@ export const knowledgeRouter = router({
 
         // Filter by type in memory if specified
         if (input.type && input.type !== "all") {
-          return entries.filter((entry: any) => {
-            const metadata = entry.metadata as any;
+          return entries.filter((entry) => {
+            const metadata = entry.metadata as Record<string, unknown>;
             return metadata?.type === input.type;
           });
         }
@@ -132,13 +132,16 @@ export const knowledgeRouter = router({
 
         // Perform semantic search using embeddings
         const results = entries
-          .map((entry: any) => {
+          .map((entry) => {
             if (!entry.embedding) return null;
             const similarity = cosineSimilarity(queryEmbedding, entry.embedding as number[]);
             return { ...entry, similarity };
           })
-          .filter((entry: any) => entry !== null && entry.similarity > 0.7)
-          .sort((a: any, b: any) => b?.similarity - a?.similarity)
+          .filter(
+            (entry): entry is typeof entry & { similarity: number } =>
+              entry !== null && "similarity" in entry && entry.similarity > 0.7
+          )
+          .sort((a, b) => b.similarity - a.similarity)
           .slice(0, input.limit);
 
         return results;
@@ -161,7 +164,13 @@ export const knowledgeRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const updates: any = {
+      const updates: Partial<{
+        updated_at: Date;
+        title: string;
+        tags: string[];
+        content: string;
+        embedding: number[];
+      }> = {
         updated_at: new Date(),
       };
 
@@ -219,12 +228,12 @@ export const knowledgeRouter = router({
         // Prepare context for AI
         const context = {
           projectName: engagement.client_name,
-          projectDescription: engagement.description || '',
+          projectDescription: engagement.description || "",
           status: engagement.status,
-          recentUpdates: entries.map((e: any) => ({
+          recentUpdates: entries.map((e) => ({
             title: e.title,
             content: e.content.substring(0, 500),
-            type: (e.metadata as any)?.type,
+            type: (e.metadata as Record<string, unknown>)?.type as string,
             date: e.created_at,
           })),
         };
@@ -239,7 +248,7 @@ Description: ${context.projectDescription}
 Current Status: ${context.status}
 
 Recent Updates:
-${context.recentUpdates.map((u: any) => `- [${u.type}] ${u.title}: ${u.content}`).join("\n")}
+${context.recentUpdates.map((u) => `- [${u.type}] ${u.title}: ${u.content}`).join("\n")}
 
 Please provide:
 1. Current Status Overview (2-3 sentences)
@@ -293,8 +302,8 @@ Format the response in markdown.`,
           .catch(() => []);
 
         // Filter for documentation and decision types
-        const docs = allEntries.filter((entry: any) => {
-          const metadata = entry.metadata as any;
+        const docs = allEntries.filter((entry) => {
+          const metadata = entry.metadata as Record<string, unknown>;
           return metadata?.type === "documentation" || metadata?.type === "decision";
         });
 
@@ -316,10 +325,10 @@ Format the response in markdown.`,
           prompt: `Generate a comprehensive wiki/knowledge base structure for the project:
 
 Project: ${engagement.client_name}
-Description: ${engagement.description || ''}
+Description: ${engagement.description || ""}
 
 Documentation entries:
-${docs.map((d: any) => `- ${d.title}: ${d.content.substring(0, 300)}`).join("\n")}
+${docs.map((d) => `- ${d.title}: ${d.content.substring(0, 300)}`).join("\n")}
 
 Please create a well-structured wiki with:
 1. Project Overview

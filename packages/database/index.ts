@@ -1,12 +1,12 @@
 /**
  * Database Package - PostgreSQL Connection and Schema Management
- * 
+ *
  * This package provides:
  * - PostgreSQL database connection with Railway-specific optimizations
  * - Drizzle ORM integration for type-safe database operations
  * - Database schema definitions for the consulting platform
  * - Connection handling for both internal and external Railway deployments
- * 
+ *
  * Key Features:
  * - IPv6 support for Railway internal networking
  * - SSL configuration for external connections
@@ -23,11 +23,11 @@ const connectionString = process.env.DATABASE_URL;
 
 /**
  * Create a PostgreSQL client with Railway-specific optimizations
- * 
+ *
  * Handles different connection scenarios:
  * - Railway internal networking (IPv6, no SSL)
  * - External connections via proxy (IPv4, SSL required)
- * 
+ *
  * @param url - Database connection string
  * @returns Configured PostgreSQL client
  */
@@ -59,7 +59,9 @@ const queryClient = connectionString ? getPostgresClient(connectionString) : nul
 
 // Create Drizzle ORM instance with schema
 // Uses mock object during build time when database is not available
-export const db = queryClient ? drizzle(queryClient, { schema }) : ({} as any);
+export const db = queryClient
+  ? drizzle(queryClient, { schema })
+  : ({} as ReturnType<typeof drizzle>);
 
 // Export all schema definitions for use throughout the application
 export * from "./schema";

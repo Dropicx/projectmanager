@@ -1,12 +1,12 @@
 /**
  * AI Orchestrator - High-Level AI Task Management
- * 
+ *
  * This class provides intelligent AI task orchestration with:
  * - Automatic model selection based on task requirements
  * - Budget management and usage tracking
  * - Cost optimization across multiple AI providers
  * - User organization-based access control
- * 
+ *
  * The orchestrator acts as the main interface for AI operations,
  * abstracting away the complexity of model selection and usage tracking.
  */
@@ -19,7 +19,7 @@ import { UsageLimiter } from "./usage-limiter";
 
 /**
  * AIOrchestrator - Main class for managing AI operations
- * 
+ *
  * Responsibilities:
  * - Model selection based on task requirements and budget constraints
  * - Usage tracking and budget enforcement
@@ -27,9 +27,9 @@ import { UsageLimiter } from "./usage-limiter";
  * - Cost optimization across different AI models
  */
 export class AIOrchestrator {
-  private bedrockClient: BedrockClient;        // AWS Bedrock client for model invocations
-  private modelConfigs: Map<ModelType, ModelConfig>;  // Available model configurations
-  private usageLimiter: UsageLimiter;          // Budget and usage tracking
+  private bedrockClient: BedrockClient; // AWS Bedrock client for model invocations
+  private modelConfigs: Map<ModelType, ModelConfig>; // Available model configurations
+  private usageLimiter: UsageLimiter; // Budget and usage tracking
 
   constructor() {
     this.bedrockClient = new BedrockClient();
@@ -39,13 +39,13 @@ export class AIOrchestrator {
 
   /**
    * Process an AI task request with intelligent model selection and budget management
-   * 
+   *
    * This is the main entry point for AI operations. It:
    * 1. Selects the optimal model based on task requirements
    * 2. Validates user permissions and budget constraints
    * 3. Executes the AI request
    * 4. Records usage for billing and analytics
-   * 
+   *
    * @param task - The AI task to process
    * @returns Promise<AIResponse> - The AI model's response with metadata
    * @throws Error if budget exceeded or user not found
@@ -102,19 +102,19 @@ export class AIOrchestrator {
 
   /**
    * Select the optimal AI model for a given task
-   * 
+   *
    * This method implements intelligent model selection based on:
    * - Task type and complexity requirements
    * - Budget constraints and cost optimization
    * - Context length requirements
    * - Model capabilities and performance characteristics
-   * 
+   *
    * @param task - The AI task requiring model selection
    * @returns ModelConfig - The optimal model configuration
    * @throws Error if no suitable model is found
    */
   private selectOptimalModel(task: AITask): ModelConfig {
-    const { complexity, urgency, accuracyRequired, contextLength, budgetConstraint } = task;
+    const { contextLength, budgetConstraint } = task;
 
     // Step 1: Filter models that meet basic requirements
     // - Context length must be sufficient

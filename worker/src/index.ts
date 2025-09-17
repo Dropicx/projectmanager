@@ -1,3 +1,21 @@
+/**
+ * Worker Service - Background Job Processing and AI Operations
+ * 
+ * This service handles all background processing for the consulting platform:
+ * - AI-powered project insights generation
+ * - Risk assessment and analysis
+ * - Scheduled job processing with cron
+ * - Queue management with BullMQ and Redis
+ * - Health monitoring and graceful shutdown
+ * 
+ * Key Features:
+ * - Redis-based job queues for scalability
+ * - AI orchestrator integration for intelligent processing
+ * - Scheduled jobs for automated insights
+ * - Error handling and retry mechanisms
+ * - Health check endpoints for monitoring
+ */
+
 import { AIOrchestrator } from "@consulting-platform/ai";
 import { db, engagements } from "@consulting-platform/database";
 import { Queue, Worker } from "bullmq";

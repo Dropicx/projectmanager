@@ -1,3 +1,19 @@
+/**
+ * Home Page - Landing Page and Authentication Gateway
+ * 
+ * This is the main landing page that serves as the entry point for the application.
+ * It provides:
+ * 
+ * - Marketing content showcasing platform features
+ * - Authentication buttons for sign-in and sign-up
+ * - Automatic redirection for authenticated users
+ * - Feature highlights and value propositions
+ * 
+ * The page uses Clerk for authentication and automatically redirects
+ * authenticated users to the dashboard to avoid showing the landing page
+ * to users who are already logged in.
+ */
+
 "use client";
 
 import { SignInButton, SignUpButton, useUser } from "@clerk/nextjs";
@@ -5,10 +21,19 @@ import { Button } from "@consulting-platform/ui";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
+/**
+ * Home Page Component
+ * 
+ * Renders the landing page with marketing content and authentication options.
+ * Automatically redirects authenticated users to the dashboard.
+ * 
+ * @returns JSX element representing the landing page
+ */
 export default function HomePage() {
   const { isSignedIn, user } = useUser();
   const router = useRouter();
 
+  // Redirect authenticated users to dashboard
   useEffect(() => {
     if (isSignedIn) {
       router.push("/dashboard");
@@ -18,6 +43,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="container mx-auto px-4 py-16">
+        {/* Hero Section */}
         <div className="text-center">
           <h1 className="text-6xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-6">
             Consailt
@@ -27,6 +53,7 @@ export default function HomePage() {
             and collaborate with intelligent recommendations.
           </p>
 
+          {/* Authentication Buttons */}
           <div className="flex gap-4 justify-center">
             <SignInButton mode="modal">
               <Button size="lg">Sign In</Button>
@@ -39,6 +66,7 @@ export default function HomePage() {
           </div>
         </div>
 
+        {/* Feature Highlights */}
         <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="bg-white p-8 rounded-xl shadow-lg">
             <h3 className="text-2xl font-semibold mb-4">AI-Powered Insights</h3>

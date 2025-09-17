@@ -22,7 +22,11 @@ interface TaskListProps {
 
 export function TaskList({ projectId }: TaskListProps) {
   const [isCreating, setIsCreating] = useState(false);
-  const [editingTask, setEditingTask] = useState<any>(null);
+  const [editingTask, setEditingTask] = useState<{
+    id: string;
+    title?: string;
+    description?: string;
+  } | null>(null);
   const [filters, setFilters] = useState({
     status: "all" as "todo" | "in-progress" | "review" | "completed" | "all",
     assigneeId: undefined as string | undefined,
@@ -105,7 +109,9 @@ export function TaskList({ projectId }: TaskListProps) {
           </Card>
           <Card>
             <CardContent className="p-4">
-              <div className="text-2xl font-bold text-blue-600">{stats.byStatus["in-progress"]}</div>
+              <div className="text-2xl font-bold text-blue-600">
+                {stats.byStatus["in-progress"]}
+              </div>
               <p className="text-sm text-gray-600">In Progress</p>
             </CardContent>
           </Card>
@@ -171,11 +177,12 @@ export function TaskList({ projectId }: TaskListProps) {
 
       {/* Task List */}
       <div className="space-y-3">
-        {tasks?.map((task: any) => (
+        {tasks?.map((task) => (
           <Card key={task.id} className="hover:shadow-md transition-shadow">
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
                 <button
+                  type="button"
                   onClick={() =>
                     updateStatus.mutate({
                       id: task.id,
@@ -237,11 +244,12 @@ export function TaskList({ projectId }: TaskListProps) {
                       </Badge>
 
                       <div className="relative group">
-                        <button className="p-1 hover:bg-gray-100 rounded">
+                        <button type="button" className="p-1 hover:bg-gray-100 rounded">
                           <MoreVertical className="h-4 w-4" />
                         </button>
                         <div className="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border hidden group-hover:block z-10">
                           <button
+                            type="button"
                             onClick={() => setEditingTask(task)}
                             className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
                           >
@@ -249,6 +257,7 @@ export function TaskList({ projectId }: TaskListProps) {
                             Edit
                           </button>
                           <button
+                            type="button"
                             onClick={() => {
                               if (confirm("Are you sure you want to delete this task?")) {
                                 deleteTask.mutate(task.id);
@@ -266,9 +275,9 @@ export function TaskList({ projectId }: TaskListProps) {
 
                   {task.tags && task.tags.length > 0 && (
                     <div className="flex gap-2 mt-2">
-                      {(task.tags as string[]).map((tag, index) => (
+                      {(task.tags as string[]).map((tag) => (
                         <span
-                          key={index}
+                          key={tag}
                           className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded"
                         >
                           {tag}
