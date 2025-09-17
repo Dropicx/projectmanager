@@ -20,7 +20,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
         )}
       >
         <main className="h-full overflow-auto">
-          <div className="h-full mx-auto max-w-full px-4 sm:px-6 lg:px-8 py-8">{children}</div>
+          {children}
         </main>
       </div>
     </div>
