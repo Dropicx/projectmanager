@@ -17,12 +17,12 @@
  */
 
 import { AIOrchestrator } from "@consulting-platform/ai";
-import { db, engagements, news_articles } from "@consulting-platform/database";
+import { syncAllRssFeeds } from "@consulting-platform/api/lib/rss-parser";
+import { db, engagements } from "@consulting-platform/database";
 import { Queue, Worker } from "bullmq";
 import { CronJob } from "cron";
-import { desc, eq, gte } from "drizzle-orm";
+import { eq, gte } from "drizzle-orm";
 import { Redis } from "ioredis";
-import Parser from "rss-parser";
 import "./health"; // Start health check server
 
 // Redis connection configuration for BullMQ

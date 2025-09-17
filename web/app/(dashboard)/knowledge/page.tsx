@@ -177,7 +177,7 @@ export default function KnowledgePage() {
                   </CardHeader>
                   <CardContent>
                     <div className="text-xs text-muted-foreground">
-                      {category.item_count || 0} items
+                      {String(category.item_count || 0)} items
                     </div>
                   </CardContent>
                 </Card>
@@ -310,7 +310,7 @@ export default function KnowledgePage() {
                           </Badge>
                         </div>
                         <div className="text-xs text-muted-foreground mt-2">
-                          {category.item_count || 0} items
+                          {String(category.item_count || 0)} items
                         </div>
                       </div>
                     </div>
