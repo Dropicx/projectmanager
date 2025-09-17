@@ -117,13 +117,135 @@ export const knowledgeRouter = router({
         .select()
         .from(knowledge_categories)
         .where(eq(knowledge_categories.organization_id, ctx.user.organizationId || ""))
-        .orderBy(knowledge_categories.name);
+        .orderBy(knowledge_categories.position, knowledge_categories.name);
       return categories;
     } catch (error) {
       console.error("Error fetching categories:", error);
       return [];
     }
   }),
+
+  /**
+   * Create a new category
+   */
+  createCategory: protectedProcedure
+    .input(
+      z.object({
+        name: z.string().min(1).max(100),
+        description: z.string().optional(),
+        icon: z.string().optional(),
+        color: z.string().optional(),
+        parent_id: z.string().uuid().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      if (!ctx.user.organizationId) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Organization context required",
+        });
+      }
+
+      // Generate slug from name
+      const slug = input.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
+
+      const [category] = await ctx.db
+        .insert(knowledge_categories)
+        .values({
+          organization_id: ctx.user.organizationId,
+          name: input.name,
+          slug,
+          description: input.description,
+          icon: input.icon || "Folder",
+          color: input.color || "#6B7280",
+          parent_id: input.parent_id,
+          level: input.parent_id ? 1 : 0,
+          position: 0,
+          is_public: false,
+          created_by: ctx.user.id,
+        })
+        .returning();
+
+      return category;
+    }),
+
+  /**
+   * Update a category
+   */
+  updateCategory: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().uuid(),
+        name: z.string().min(1).max(100).optional(),
+        description: z.string().optional(),
+        icon: z.string().optional(),
+        color: z.string().optional(),
+        parent_id: z.string().uuid().nullable().optional(),
+        position: z.number().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const updates: any = {
+        updated_at: new Date(),
+      };
+
+      if (input.name) {
+        updates.name = input.name;
+        updates.slug = input.name
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-|-$/g, "");
+      }
+      if (input.description !== undefined) updates.description = input.description;
+      if (input.icon) updates.icon = input.icon;
+      if (input.color) updates.color = input.color;
+      if (input.parent_id !== undefined) {
+        updates.parent_id = input.parent_id;
+        updates.level = input.parent_id ? 1 : 0;
+      }
+      if (input.position !== undefined) updates.position = input.position;
+
+      const [category] = await ctx.db
+        .update(knowledge_categories)
+        .set(updates)
+        .where(
+          and(
+            eq(knowledge_categories.id, input.id),
+            eq(knowledge_categories.organization_id, ctx.user.organizationId || "")
+          )
+        )
+        .returning();
+
+      return category;
+    }),
+
+  /**
+   * Delete a category
+   */
+  deleteCategory: protectedProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      // First, remove all associations with knowledge items
+      await ctx.db
+        .delete(knowledge_to_categories)
+        .where(eq(knowledge_to_categories.category_id, input.id));
+
+      // Then delete the category
+      const [deleted] = await ctx.db
+        .delete(knowledge_categories)
+        .where(
+          and(
+            eq(knowledge_categories.id, input.id),
+            eq(knowledge_categories.organization_id, ctx.user.organizationId || "")
+          )
+        )
+        .returning();
+
+      return deleted;
+    }),
 
   /**
    * Create a general knowledge item

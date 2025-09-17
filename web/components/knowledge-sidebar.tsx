@@ -12,168 +12,186 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
+  cn,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
   ScrollArea,
   Separator,
 } from "@consulting-platform/ui";
 import {
+  BookOpen,
   Calendar,
+  ChevronRight,
+  Edit,
   FileText,
   Filter,
   Folder,
   Hash,
+  Loader2,
+  MoreHorizontal,
   Plus,
   Search,
   Settings,
   SortAsc,
+  Trash2,
+  Users,
 } from "lucide-react";
 import type React from "react";
 import { useState } from "react";
-
-interface Category {
-  id: string;
-  name: string;
-  slug: string;
-  icon?: string;
-  color?: string;
-  children?: Category[];
-  itemCount?: number;
-}
+import { trpc } from "@/app/providers/trpc-provider";
+import { CategoryDialog } from "./knowledge/category-dialog";
 
 interface KnowledgeSidebarProps {
-  categories?: Category[];
   selectedCategory?: string;
-  onCategorySelect?: (categoryId: string) => void;
+  onCategorySelect?: (categoryId: string | undefined) => void;
   onSearch?: (query: string) => void;
-  onAddCategory?: () => void;
 }
-
-const mockCategories: Category[] = [
-  {
-    id: "1",
-    name: "Technical Documentation",
-    slug: "technical-docs",
-    icon: "FileText",
-    color: "#3B82F6",
-    itemCount: 24,
-    children: [
-      {
-        id: "1-1",
-        name: "Architecture",
-        slug: "architecture",
-        itemCount: 8,
-      },
-      {
-        id: "1-2",
-        name: "API References",
-        slug: "api-references",
-        itemCount: 12,
-      },
-      {
-        id: "1-3",
-        name: "Security",
-        slug: "security",
-        itemCount: 4,
-      },
-    ],
-  },
-  {
-    id: "2",
-    name: "Best Practices",
-    slug: "best-practices",
-    icon: "Hash",
-    color: "#10B981",
-    itemCount: 18,
-    children: [
-      {
-        id: "2-1",
-        name: "Code Reviews",
-        slug: "code-reviews",
-        itemCount: 6,
-      },
-      {
-        id: "2-2",
-        name: "Performance",
-        slug: "performance",
-        itemCount: 7,
-      },
-      {
-        id: "2-3",
-        name: "Testing",
-        slug: "testing",
-        itemCount: 5,
-      },
-    ],
-  },
-  {
-    id: "3",
-    name: "Client Resources",
-    slug: "client-resources",
-    icon: "Folder",
-    color: "#8B5CF6",
-    itemCount: 15,
-  },
-  {
-    id: "4",
-    name: "Meeting Notes",
-    slug: "meeting-notes",
-    icon: "Calendar",
-    color: "#F59E0B",
-    itemCount: 32,
-  },
-];
 
 const iconMap: { [key: string]: React.ComponentType<any> } = {
   FileText,
   Hash,
   Folder,
   Calendar,
+  BookOpen,
+  Users,
+  Settings,
+  ChevronRight,
 };
 
 export function KnowledgeSidebar({
-  categories = mockCategories,
   selectedCategory,
   onCategorySelect,
   onSearch,
-  onAddCategory,
 }: KnowledgeSidebarProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<any>(null);
 
-  const renderCategoryIcon = (iconName?: string, color?: string) => {
-    const Icon = iconName ? iconMap[iconName] : Folder;
-    return <Icon className="h-4 w-4 mr-2" style={{ color }} />;
+  const utils = trpc.useUtils();
+
+  // Fetch categories from API
+  const { data: categories = [], isLoading } = trpc.knowledge.getCategories.useQuery();
+
+  // Delete mutation
+  const deleteMutation = trpc.knowledge.deleteCategory.useMutation({
+    onSuccess: () => {
+      utils.knowledge.getCategories.invalidate();
+      utils.knowledge.list.invalidate();
+      if (selectedCategory === deleteMutation.variables?.id) {
+        onCategorySelect?.(undefined);
+      }
+    },
+  });
+
+  const renderCategoryIcon = (iconName?: string | null, color?: string | null) => {
+    const Icon = iconName && iconMap[iconName] ? iconMap[iconName] : Folder;
+    return <Icon className="h-4 w-4 mr-2 flex-shrink-0" style={{ color: color || undefined }} />;
   };
 
-  const renderCategory = (category: Category, level = 0) => {
-    const hasChildren = category.children && category.children.length > 0;
+  const handleEditCategory = (category: any, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingCategory(category);
+    setCategoryDialogOpen(true);
+  };
+
+  const handleDeleteCategory = (categoryId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (confirm("Are you sure you want to delete this category?")) {
+      deleteMutation.mutate({ id: categoryId });
+    }
+  };
+
+  const handleAddCategory = () => {
+    setEditingCategory(null);
+    setCategoryDialogOpen(true);
+  };
+
+  // Build category tree structure
+  const buildCategoryTree = () => {
+    const rootCategories = categories.filter((cat) => !cat.parent_id);
+    const childMap = new Map<string, typeof categories>();
+
+    categories.forEach((cat) => {
+      if (cat.parent_id) {
+        if (!childMap.has(cat.parent_id)) {
+          childMap.set(cat.parent_id, []);
+        }
+        childMap.get(cat.parent_id)!.push(cat);
+      }
+    });
+
+    return { rootCategories, childMap };
+  };
+
+  const { rootCategories, childMap } = buildCategoryTree();
+
+  const renderCategory = (category: any, level = 0) => {
+    const children = childMap.get(category.id) || [];
+    const hasChildren = children.length > 0;
+    const isSelected = selectedCategory === category.id;
 
     if (hasChildren) {
       return (
         <AccordionItem key={category.id} value={category.id} className="border-none">
-          <AccordionTrigger
-            className={`hover:bg-accent hover:text-accent-foreground px-2 py-1.5 rounded-md ${
-              selectedCategory === category.id ? "bg-accent" : ""
-            }`}
-            onClick={(e) => {
-              if (!hasChildren) {
-                e.preventDefault();
-                onCategorySelect?.(category.id);
-              }
-            }}
-          >
-            <div className="flex items-center justify-between w-full">
-              <div className="flex items-center">
-                {renderCategoryIcon(category.icon, category.color)}
-                <span className="text-sm font-medium">{category.name}</span>
-              </div>
-              {category.itemCount && (
-                <span className="text-xs text-muted-foreground mr-2">{category.itemCount}</span>
+          <div className="relative group">
+            <AccordionTrigger
+              className={cn(
+                "hover:bg-accent hover:text-accent-foreground px-2 py-1.5 rounded-md pr-8",
+                isSelected && "bg-accent"
               )}
-            </div>
-          </AccordionTrigger>
+              onClick={(e) => {
+                if (!hasChildren) {
+                  e.preventDefault();
+                  onCategorySelect?.(category.id);
+                }
+              }}
+            >
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center">
+                  {renderCategoryIcon(category.icon, category.color)}
+                  <span className="text-sm font-medium">{category.name}</span>
+                </div>
+                {category.item_count > 0 && (
+                  <span className="text-xs text-muted-foreground mr-2">{category.item_count}</span>
+                )}
+              </div>
+            </AccordionTrigger>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-1 top-1 h-6 w-6 opacity-0 group-hover:opacity-100"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <MoreHorizontal className="h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={(e: React.MouseEvent) => handleEditCategory(category, e)}
+                >
+                  <Edit className="mr-2 h-4 w-4" />
+                  Edit
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="text-destructive"
+                  onClick={(e: React.MouseEvent) => handleDeleteCategory(category.id, e)}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
           <AccordionContent className="pb-1">
             <div className="ml-4">
-              {category.children?.map((child) => renderCategory(child, level + 1))}
+              {children.map((child: any) => renderCategory(child, level + 1))}
             </div>
           </AccordionContent>
         </AccordionItem>
@@ -181,102 +199,171 @@ export function KnowledgeSidebar({
     }
 
     return (
-      <Button
-        key={category.id}
-        variant="ghost"
-        size="sm"
-        className={`w-full justify-start px-2 py-1.5 h-auto font-normal ${
-          selectedCategory === category.id ? "bg-accent" : ""
-        }`}
-        onClick={() => onCategorySelect?.(category.id)}
-      >
-        <div className="flex items-center justify-between w-full">
-          <div className="flex items-center">
-            {level === 0 && renderCategoryIcon(category.icon, category.color)}
-            <span className="text-sm">{category.name}</span>
-          </div>
-          {category.itemCount && (
-            <span className="text-xs text-muted-foreground">{category.itemCount}</span>
+      <div key={category.id} className="relative group">
+        <Button
+          variant="ghost"
+          size="sm"
+          className={cn(
+            "w-full justify-start px-2 py-1.5 h-auto font-normal pr-8",
+            isSelected && "bg-accent"
           )}
-        </div>
-      </Button>
+          onClick={() => onCategorySelect?.(category.id)}
+        >
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center">
+              {level === 0 && renderCategoryIcon(category.icon, category.color)}
+              <span className="text-sm">{category.name}</span>
+            </div>
+            {category.item_count > 0 && (
+              <span className="text-xs text-muted-foreground">{category.item_count}</span>
+            )}
+          </div>
+        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-1 top-0.5 h-6 w-6 opacity-0 group-hover:opacity-100"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <MoreHorizontal className="h-3 w-3" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={(e: React.MouseEvent) => handleEditCategory(category, e)}>
+              <Edit className="mr-2 h-4 w-4" />
+              Edit
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="text-destructive"
+              onClick={(e: React.MouseEvent) => handleDeleteCategory(category.id, e)}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     );
   };
 
   return (
-    <div className="h-full flex flex-col bg-background border-r">
-      <div className="p-4 space-y-2">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Knowledge Base</h2>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setSearchOpen(true)}
-            className="h-8 w-8"
-          >
-            <Search className="h-4 w-4" />
+    <>
+      <div className="h-full flex flex-col bg-background border-r">
+        <div className="p-4 space-y-2">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold">Knowledge Base</h2>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setSearchOpen(true)}
+              className="h-8 w-8"
+            >
+              <Search className="h-4 w-4" />
+            </Button>
+          </div>
+
+          <div className="flex gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="flex-1 justify-start h-8 px-2"
+              onClick={handleAddCategory}
+            >
+              <Plus className="h-3 w-3 mr-1" />
+              Category
+            </Button>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <Filter className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <SortAsc className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+
+        <Separator />
+
+        <ScrollArea className="flex-1 px-2 py-2">
+          {isLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : categories.length === 0 ? (
+            <div className="text-center py-8 px-4">
+              <Folder className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+              <p className="text-sm text-muted-foreground mb-3">No categories yet</p>
+              <Button size="sm" variant="outline" onClick={handleAddCategory}>
+                <Plus className="h-4 w-4 mr-1" />
+                Add Category
+              </Button>
+            </div>
+          ) : (
+            <>
+              <Button
+                variant={!selectedCategory ? "secondary" : "ghost"}
+                size="sm"
+                className="w-full justify-start px-2 py-1.5 h-auto font-normal mb-2"
+                onClick={() => onCategorySelect?.(undefined)}
+              >
+                <Folder className="h-4 w-4 mr-2" />
+                <span className="text-sm">All Knowledge</span>
+              </Button>
+              <Accordion type="multiple" className="w-full">
+                {rootCategories.map((category) => renderCategory(category))}
+              </Accordion>
+            </>
+          )}
+        </ScrollArea>
+
+        <Separator />
+
+        <div className="p-4">
+          <Button variant="ghost" size="sm" className="w-full justify-start" onClick={() => {}}>
+            <Settings className="h-4 w-4 mr-2" />
+            Settings
           </Button>
         </div>
 
-        <div className="flex gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="flex-1 justify-start h-8 px-2"
-            onClick={() => onAddCategory?.()}
-          >
-            <Plus className="h-3 w-3 mr-1" />
-            Category
-          </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <Filter className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <SortAsc className="h-4 w-4" />
-          </Button>
-        </div>
+        <CommandDialog open={searchOpen} onOpenChange={setSearchOpen}>
+          <CommandInput
+            placeholder="Search knowledge base..."
+            value={searchQuery}
+            onValueChange={setSearchQuery}
+          />
+          <CommandList>
+            <CommandEmpty>No results found.</CommandEmpty>
+            <CommandGroup heading="Categories">
+              {categories.map((category) => (
+                <CommandItem
+                  key={category.id}
+                  onSelect={() => {
+                    onCategorySelect?.(category.id);
+                    setSearchOpen(false);
+                  }}
+                >
+                  {renderCategoryIcon(category.icon, category.color)}
+                  {category.name}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </CommandDialog>
       </div>
 
-      <Separator />
-
-      <ScrollArea className="flex-1 px-2 py-2">
-        <Accordion type="multiple" className="w-full">
-          {categories.map((category) => renderCategory(category))}
-        </Accordion>
-      </ScrollArea>
-
-      <Separator />
-
-      <div className="p-4">
-        <Button variant="ghost" size="sm" className="w-full justify-start" onClick={() => {}}>
-          <Settings className="h-4 w-4 mr-2" />
-          Settings
-        </Button>
-      </div>
-
-      <CommandDialog open={searchOpen} onOpenChange={setSearchOpen}>
-        <CommandInput
-          placeholder="Search knowledge base..."
-          value={searchQuery}
-          onValueChange={setSearchQuery}
-        />
-        <CommandList>
-          <CommandEmpty>No results found.</CommandEmpty>
-          <CommandGroup heading="Recent">
-            <CommandItem>Architecture Overview</CommandItem>
-            <CommandItem>API Authentication Guide</CommandItem>
-            <CommandItem>Performance Best Practices</CommandItem>
-          </CommandGroup>
-          <CommandGroup heading="Categories">
-            {categories.map((category) => (
-              <CommandItem key={category.id}>
-                {renderCategoryIcon(category.icon, category.color)}
-                {category.name}
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        </CommandList>
-      </CommandDialog>
-    </div>
+      <CategoryDialog
+        open={categoryDialogOpen}
+        onOpenChange={(open) => {
+          setCategoryDialogOpen(open);
+          if (!open) setEditingCategory(null);
+        }}
+        category={editingCategory}
+        onSuccess={() => {
+          utils.knowledge.getCategories.invalidate();
+        }}
+      />
+    </>
   );
 }
