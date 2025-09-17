@@ -28,7 +28,7 @@ const UserButton = dynamic(() => import("@clerk/nextjs").then((mod) => mod.UserB
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Knowledge Base", href: "/knowledge", icon: Database },
-  { name: "Engagements", href: "/projects", icon: Briefcase },
+  { name: "Projects", href: "/projects", icon: Briefcase },
   { name: "News", href: "/news", icon: Newspaper },
   { name: "AI Insights", href: "/insights", icon: Sparkles },
   { name: "Analytics", href: "/analytics", icon: BarChart3 },

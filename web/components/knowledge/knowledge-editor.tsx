@@ -39,6 +39,9 @@ export function KnowledgeEditor({
       StarterKit.configure({
         heading: {
           levels: [1, 2, 3],
+          HTMLAttributes: {
+            class: "font-bold",
+          },
         },
         code: {
           HTMLAttributes: {
@@ -127,16 +130,26 @@ export function KnowledgeEditor({
     editorProps: {
       attributes: {
         class: cn(
-          "prose prose-sm dark:prose-invert max-w-none focus:outline-none",
-          "prose-headings:font-semibold",
-          "prose-h1:text-2xl prose-h1:mb-4 prose-h1:mt-6",
-          "prose-h2:text-xl prose-h2:mb-3 prose-h2:mt-5",
-          "prose-h3:text-lg prose-h3:mb-2 prose-h3:mt-4",
-          "prose-p:my-2 prose-p:leading-relaxed",
-          "prose-ul:my-2 prose-ol:my-2",
+          "prose prose-base dark:prose-invert max-w-none focus:outline-none",
+          // Headings with proper sizes and weights
+          "prose-headings:font-bold prose-headings:tracking-tight",
+          "prose-h1:text-3xl prose-h1:font-bold prose-h1:mb-4 prose-h1:mt-6",
+          "prose-h2:text-2xl prose-h2:font-semibold prose-h2:mb-3 prose-h2:mt-5",
+          "prose-h3:text-xl prose-h3:font-semibold prose-h3:mb-2 prose-h3:mt-4",
+          // Text spacing
+          "prose-p:my-3 prose-p:leading-7",
+          // Lists
+          "prose-ul:my-3 prose-ol:my-3",
           "prose-li:my-1",
+          // Code blocks
           "prose-code:before:content-none prose-code:after:content-none",
+          // Tables
           "prose-table:my-4",
+          "prose-th:font-semibold",
+          // Links
+          "prose-a:font-medium",
+          // Strong emphasis
+          "prose-strong:font-bold",
           minHeight,
           "p-4",
           className

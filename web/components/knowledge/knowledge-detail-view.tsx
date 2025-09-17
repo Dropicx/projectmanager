@@ -6,15 +6,33 @@ import {
   Card,
   CardContent,
   CardHeader,
+  Input,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Separator,
   Skeleton,
 } from "@consulting-platform/ui";
+import { cn } from "@consulting-platform/ui/lib/utils";
 import { format } from "date-fns";
-import { ArrowLeft, Calendar, Edit, Hash, Trash2, User } from "lucide-react";
+import {
+  ArrowLeft,
+  Calendar,
+  Edit,
+  Hash,
+  Loader2,
+  Plus,
+  Save,
+  Trash2,
+  User,
+  X,
+} from "lucide-react";
 import { useState } from "react";
 import { trpc } from "@/app/providers/trpc-provider";
-import { EditKnowledgeDialog } from "./edit-knowledge-dialog";
-import { KnowledgeViewer } from "./knowledge-editor";
+import { KnowledgeEditor, KnowledgeViewer } from "./knowledge-editor";
 
 interface KnowledgeDetailViewProps {
   knowledgeId: string;
@@ -23,15 +41,57 @@ interface KnowledgeDetailViewProps {
 }
 
 export function KnowledgeDetailView({ knowledgeId, onBack, onDelete }: KnowledgeDetailViewProps) {
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editedTitle, setEditedTitle] = useState("");
+  const [editedContent, setEditedContent] = useState("");
+  const [editedType, setEditedType] = useState<string>("");
+  const [editedTags, setEditedTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState("");
+  const [editedCategoryId, setEditedCategoryId] = useState<string | undefined>();
 
   const utils = trpc.useUtils();
 
   // Fetch knowledge item details
   const { data: item, isLoading } = trpc.knowledge.getById.useQuery(
     { id: knowledgeId },
-    { enabled: !!knowledgeId }
+    {
+      enabled: !!knowledgeId,
+      onSuccess: (data) => {
+        if (data) {
+          setEditedTitle(data.title || "");
+          setEditedContent(data.content || "");
+          setEditedType(data.knowledge_type || "reference");
+          setEditedTags(data.tags || []);
+        }
+      },
+    }
   );
+
+  // Fetch categories
+  const { data: categories = [] } = trpc.knowledge.getCategories.useQuery();
+
+  // Fetch current categories for this knowledge item
+  const { data: knowledgeCategories } = trpc.knowledge.getKnowledgeCategories.useQuery(
+    { knowledgeId },
+    {
+      enabled: !!knowledgeId && isEditMode,
+      onSuccess: (data) => {
+        if (data && data.length > 0) {
+          setEditedCategoryId(data[0].id);
+        }
+      },
+    }
+  );
+
+  // Update mutation
+  const updateMutation = trpc.knowledge.updateGeneral.useMutation({
+    onSuccess: () => {
+      utils.knowledge.getById.invalidate({ id: knowledgeId });
+      utils.knowledge.list.invalidate();
+      utils.knowledge.getCategories.invalidate();
+      setIsEditMode(false);
+    },
+  });
 
   // Delete mutation
   const deleteMutation = trpc.knowledge.deleteGeneral.useMutation({
@@ -47,6 +107,57 @@ export function KnowledgeDetailView({ knowledgeId, onBack, onDelete }: Knowledge
     if (confirm("Are you sure you want to delete this knowledge item?")) {
       deleteMutation.mutate({ id: knowledgeId });
     }
+  };
+
+  const handleSave = () => {
+    if (!editedTitle.trim() || !editedContent.trim()) return;
+
+    const frontendType = mapBackendTypeToFrontend(editedType);
+
+    updateMutation.mutate({
+      id: knowledgeId,
+      title: editedTitle.trim(),
+      content: editedContent.trim(),
+      type: frontendType,
+      categoryIds: editedCategoryId ? [editedCategoryId] : undefined,
+      tags: editedTags.length > 0 ? editedTags : undefined,
+    });
+  };
+
+  const handleCancel = () => {
+    // Reset to original values
+    if (item) {
+      setEditedTitle(item.title || "");
+      setEditedContent(item.content || "");
+      setEditedType(item.knowledge_type || "reference");
+      setEditedTags(item.tags || []);
+    }
+    setIsEditMode(false);
+  };
+
+  const addTag = () => {
+    if (tagInput.trim() && !editedTags.includes(tagInput.trim())) {
+      setEditedTags([...editedTags, tagInput.trim()]);
+      setTagInput("");
+    }
+  };
+
+  const removeTag = (tag: string) => {
+    setEditedTags(editedTags.filter((t) => t !== tag));
+  };
+
+  const mapBackendTypeToFrontend = (backendType: string) => {
+    const typeMap: Record<string, string> = {
+      solution: "framework",
+      issue: "framework",
+      decision: "checklist",
+      pattern: "methodology",
+      template: "template",
+      reference: "guide",
+      insight: "case-study",
+      lesson_learned: "case-study",
+    };
+    return typeMap[backendType] || "guide";
   };
 
   const getTypeLabel = (type: string) => {
@@ -109,9 +220,14 @@ export function KnowledgeDetailView({ knowledgeId, onBack, onDelete }: Knowledge
   }
 
   return (
-    <>
-      <div className="h-full overflow-y-auto">
-        <div className="max-w-4xl mx-auto p-6">
+    <div className="h-full flex flex-col">
+      <div className="flex-1 overflow-y-auto">
+        <div
+          className={cn(
+            "mx-auto p-6 transition-all duration-300",
+            isEditMode ? "max-w-7xl" : "max-w-4xl"
+          )}
+        >
           {/* Header */}
           <div className="mb-6">
             <div className="flex items-start justify-between mb-4">
@@ -141,10 +257,32 @@ export function KnowledgeDetailView({ knowledgeId, onBack, onDelete }: Knowledge
                 </div>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => setEditDialogOpen(true)}>
-                  <Edit className="h-4 w-4 mr-1" />
-                  Edit
-                </Button>
+                {!isEditMode ? (
+                  <Button variant="outline" size="sm" onClick={() => setIsEditMode(true)}>
+                    <Edit className="h-4 w-4 mr-1" />
+                    Edit
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={handleSave}
+                      disabled={updateMutation.isPending}
+                    >
+                      {updateMutation.isPending ? (
+                        <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                      ) : (
+                        <Save className="h-4 w-4 mr-1" />
+                      )}
+                      Save
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={handleCancel}>
+                      <X className="h-4 w-4 mr-1" />
+                      Cancel
+                    </Button>
+                  </>
+                )}
                 <Button
                   variant="outline"
                   size="sm"
@@ -180,15 +318,123 @@ export function KnowledgeDetailView({ knowledgeId, onBack, onDelete }: Knowledge
 
           <Separator className="mb-6" />
 
+          {/* Edit Mode Fields */}
+          {isEditMode && (
+            <div className="space-y-6 mb-6">
+              {/* Title */}
+              <div className="grid gap-2">
+                <Label>Title</Label>
+                <Input
+                  value={editedTitle}
+                  onChange={(e) => setEditedTitle(e.target.value)}
+                  placeholder="Enter title"
+                  className="text-lg font-semibold"
+                />
+              </div>
+
+              {/* Type and Category */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label>Type</Label>
+                  <Select value={editedType} onValueChange={setEditedType}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="solution">Solution</SelectItem>
+                      <SelectItem value="issue">Issue</SelectItem>
+                      <SelectItem value="decision">Decision</SelectItem>
+                      <SelectItem value="pattern">Pattern</SelectItem>
+                      <SelectItem value="template">Template</SelectItem>
+                      <SelectItem value="reference">Reference</SelectItem>
+                      <SelectItem value="insight">Insight</SelectItem>
+                      <SelectItem value="lesson_learned">Lesson Learned</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label>Category</Label>
+                  <Select
+                    value={editedCategoryId || "none"}
+                    onValueChange={(value) =>
+                      setEditedCategoryId(value === "none" ? undefined : value)
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">No category</SelectItem>
+                      {categories.map((category: any) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Tags */}
+              <div className="grid gap-2">
+                <Label>Tags</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={tagInput}
+                    onChange={(e) => setTagInput(e.target.value)}
+                    placeholder="Add a tag"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        addTag();
+                      }
+                    }}
+                  />
+                  <Button type="button" onClick={addTag} variant="outline">
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+                {editedTags.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {editedTags.map((tag) => (
+                      <Badge key={tag} variant="secondary" className="gap-1">
+                        {tag}
+                        <X
+                          className="h-3 w-3 cursor-pointer hover:text-destructive"
+                          onClick={() => removeTag(tag)}
+                        />
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Content */}
-          <Card>
-            <CardHeader>
-              <h2 className="text-lg font-semibold">Content</h2>
-            </CardHeader>
-            <CardContent>
-              <KnowledgeViewer content={item.content} />
-            </CardContent>
-          </Card>
+          <div className={cn("transition-all duration-300", isEditMode && "")}>
+            {isEditMode ? (
+              <div className="space-y-2">
+                <Label className="text-lg font-semibold">Content</Label>
+                <KnowledgeEditor
+                  content={editedContent}
+                  onChange={setEditedContent}
+                  placeholder="Write your knowledge content..."
+                  minHeight="min-h-[600px]"
+                  className="max-w-none"
+                />
+              </div>
+            ) : (
+              <Card>
+                <CardHeader>
+                  <h2 className="text-lg font-semibold">Content</h2>
+                </CardHeader>
+                <CardContent>
+                  <KnowledgeViewer content={item.content} className="max-w-none" />
+                </CardContent>
+              </Card>
+            )}
+          </div>
 
           {/* Metadata */}
           {item.updated_at && item.updated_at !== item.created_at && (
@@ -198,19 +444,6 @@ export function KnowledgeDetailView({ knowledgeId, onBack, onDelete }: Knowledge
           )}
         </div>
       </div>
-
-      {/* Edit Dialog */}
-      {editDialogOpen && (
-        <EditKnowledgeDialog
-          open={editDialogOpen}
-          onOpenChange={setEditDialogOpen}
-          knowledge={item}
-          onSuccess={() => {
-            utils.knowledge.getById.invalidate({ id: knowledgeId });
-            utils.knowledge.list.invalidate();
-          }}
-        />
-      )}
-    </>
+    </div>
   );
 }
