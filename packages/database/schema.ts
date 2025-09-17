@@ -178,7 +178,7 @@ export const knowledge_base = pgTable(
     search_vector: text("search_vector"), // For full-text search (will use GIN index)
 
     // Metadata
-    tags: jsonb("tags").default([]),
+    tags: text("tags").array(),
     technologies: jsonb("technologies").default([]),
     related_knowledge_ids: jsonb("related_knowledge_ids").default([]),
 
