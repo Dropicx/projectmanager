@@ -223,6 +223,47 @@ export const knowledgeRouter = router({
     }),
 
   /**
+   * Get a knowledge item by ID
+   */
+  getById: protectedProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .query(async ({ ctx, input }) => {
+      const item = await ctx.db
+        .select()
+        .from(knowledge_base)
+        .where(
+          and(
+            eq(knowledge_base.id, input.id),
+            eq(knowledge_base.organization_id, ctx.user.organizationId || "")
+          )
+        )
+        .limit(1);
+
+      return item[0] || null;
+    }),
+
+  /**
+   * Get categories for a knowledge item
+   */
+  getKnowledgeCategories: protectedProcedure
+    .input(z.object({ knowledgeId: z.string().uuid() }))
+    .query(async ({ ctx, input }) => {
+      const categories = await ctx.db
+        .select({
+          id: knowledge_categories.id,
+          name: knowledge_categories.name,
+        })
+        .from(knowledge_to_categories)
+        .innerJoin(
+          knowledge_categories,
+          eq(knowledge_to_categories.category_id, knowledge_categories.id)
+        )
+        .where(eq(knowledge_to_categories.knowledge_id, input.knowledgeId));
+
+      return categories;
+    }),
+
+  /**
    * Delete a category
    */
   deleteCategory: protectedProcedure

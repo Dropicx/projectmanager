@@ -30,6 +30,7 @@ import {
 import { useEffect, useState } from "react";
 import { trpc } from "@/app/providers/trpc-provider";
 import { AddKnowledgeDialog } from "@/components/knowledge/add-knowledge-dialog";
+import { KnowledgeDetailView } from "@/components/knowledge/knowledge-detail-view";
 import { KnowledgeSidebar } from "@/components/knowledge-sidebar";
 import { useSidebar } from "@/contexts/sidebar-context";
 
@@ -42,6 +43,7 @@ export default function KnowledgePage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [selectedKnowledgeId, setSelectedKnowledgeId] = useState<string | null>(null);
 
   // Debounce search query
   useEffect(() => {
@@ -194,7 +196,11 @@ export default function KnowledgePage() {
                 const Icon = getTypeIcon(item.type || "guide");
                 const displayType = mapBackendType(item.type || "guide");
                 return (
-                  <Card key={item.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+                  <Card
+                    key={item.id}
+                    className="hover:shadow-lg transition-shadow cursor-pointer"
+                    onClick={() => setSelectedKnowledgeId(item.id)}
+                  >
                     <CardHeader>
                       <div className="flex items-start justify-between mb-2">
                         <Icon className="h-5 w-5 text-primary" />
@@ -325,7 +331,11 @@ export default function KnowledgePage() {
                 const Icon = getTypeIcon(item.type || "guide");
                 const displayType = mapBackendType(item.type || "guide");
                 return (
-                  <Card key={item.id} className="hover:shadow-md transition-shadow cursor-pointer">
+                  <Card
+                    key={item.id}
+                    className="hover:shadow-md transition-shadow cursor-pointer"
+                    onClick={() => setSelectedKnowledgeId(item.id)}
+                  >
                     <CardContent className="p-4">
                       <div className="flex items-start gap-4">
                         <Icon className="h-5 w-5 text-primary mt-1" />
@@ -429,7 +439,11 @@ export default function KnowledgePage() {
                 const Icon = getTypeIcon(item.type || "guide");
                 const displayType = mapBackendType(item.type || "guide");
                 return (
-                  <Card key={item.id} className="hover:shadow-md transition-shadow cursor-pointer">
+                  <Card
+                    key={item.id}
+                    className="hover:shadow-md transition-shadow cursor-pointer"
+                    onClick={() => setSelectedKnowledgeId(item.id)}
+                  >
                     <CardContent className="p-3">
                       <div className="flex items-start gap-3">
                         <Icon className="h-4 w-4 text-primary mt-0.5" />
@@ -478,54 +492,66 @@ export default function KnowledgePage() {
 
         <main className="flex-1 flex flex-col">
           <div className="flex-1 p-6 space-y-6">
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="lg:hidden"
-                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              >
-                <List className="h-4 w-4" />
-              </Button>
+            {!selectedKnowledgeId && (
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="lg:hidden"
+                  onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                >
+                  <List className="h-4 w-4" />
+                </Button>
 
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="text"
-                  placeholder="Search knowledge base..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
+                <div className="relative flex-1 max-w-md">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="text"
+                    placeholder="Search knowledge base..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+
+                <Tabs
+                  value={viewMode}
+                  onValueChange={(v) => setViewMode(v as "grid" | "list" | "timeline")}
+                >
+                  <TabsList>
+                    <TabsTrigger value="grid">
+                      <Grid className="h-4 w-4" />
+                    </TabsTrigger>
+                    <TabsTrigger value="list">
+                      <List className="h-4 w-4" />
+                    </TabsTrigger>
+                    <TabsTrigger value="timeline">
+                      <Clock className="h-4 w-4" />
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+
+                <Button onClick={() => setAddDialogOpen(true)}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Knowledge
+                </Button>
               </div>
-
-              <Tabs
-                value={viewMode}
-                onValueChange={(v) => setViewMode(v as "grid" | "list" | "timeline")}
-              >
-                <TabsList>
-                  <TabsTrigger value="grid">
-                    <Grid className="h-4 w-4" />
-                  </TabsTrigger>
-                  <TabsTrigger value="list">
-                    <List className="h-4 w-4" />
-                  </TabsTrigger>
-                  <TabsTrigger value="timeline">
-                    <Clock className="h-4 w-4" />
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
-
-              <Button onClick={() => setAddDialogOpen(true)}>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Knowledge
-              </Button>
-            </div>
+            )}
 
             <div>
-              {viewMode === "grid" && renderGridView()}
-              {viewMode === "list" && renderListView()}
-              {viewMode === "timeline" && renderTimelineView()}
+              {selectedKnowledgeId ? (
+                <KnowledgeDetailView
+                  knowledgeId={selectedKnowledgeId}
+                  onBack={() => setSelectedKnowledgeId(null)}
+                  onDelete={() => setSelectedKnowledgeId(null)}
+                />
+              ) : (
+                <>
+                  {viewMode === "grid" && renderGridView()}
+                  {viewMode === "list" && renderListView()}
+                  {viewMode === "timeline" && renderTimelineView()}
+                </>
+              )}
             </div>
           </div>
         </main>
