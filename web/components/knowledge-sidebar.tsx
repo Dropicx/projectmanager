@@ -152,13 +152,13 @@ function SortableCategory({
                   </div>
                 </Button>
 
+                {/* Accordion trigger just for expand/collapse */}
+                <AccordionTrigger className="px-2 py-1.5 hover:bg-transparent [&[data-state=open]>svg]:-rotate-90" />
+
                 {/* Item counter */}
                 <span className="text-xs text-muted-foreground min-w-[24px] text-center px-1">
                   {category.item_count > 0 ? category.item_count : ""}
                 </span>
-
-                {/* Accordion trigger just for expand/collapse */}
-                <AccordionTrigger className="px-2 py-1.5 hover:bg-transparent [&[data-state=open]>svg]:-rotate-90" />
               </div>
 
               <DropdownMenu>
