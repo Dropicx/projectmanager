@@ -208,11 +208,15 @@ export async function getAllNewsArticles(feedCategory?: FeedCategory): Promise<N
 // Sync all configured RSS feeds
 export async function syncAllRssFeeds() {
   const results = [];
+  const categories = Object.keys(RSS_FEED_CATEGORIES) as FeedCategory[];
+  console.log(`Starting sync of ${categories.length} RSS feeds: ${categories.join(", ")}`);
 
-  for (const category of Object.keys(RSS_FEED_CATEGORIES) as FeedCategory[]) {
+  for (const category of categories) {
+    console.log(`Syncing feed category: ${category}`);
     const result = await fetchAndStoreRSSFeed(category);
     results.push({ category, ...result });
   }
 
+  console.log(`Completed sync of ${results.length} RSS feeds`);
   return results;
 }

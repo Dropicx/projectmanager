@@ -43,10 +43,20 @@ const server = createServer((req, res) => {
   }
 });
 
-// Start the health check server
-server.listen(PORT, () => {
-  console.log(`Health check server listening on port ${PORT}`);
-});
+// Start the health check server with error handling
+server
+  .listen(PORT, () => {
+    console.log(`Health check server listening on port ${PORT}`);
+  })
+  .on("error", (err: any) => {
+    if (err.code === "EADDRINUSE") {
+      console.log(`Port ${PORT} is already in use, health check server not started`);
+      // Don't crash the worker, just disable health checks
+      server.close();
+    } else {
+      console.error("Health check server error:", err);
+    }
+  });
 
 // Export the server for potential external access
 export { server };
