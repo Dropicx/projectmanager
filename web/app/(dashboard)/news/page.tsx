@@ -31,8 +31,8 @@ const categoryLabels: Record<NewsCategory, string> = {
 };
 
 export default function NewsPage() {
-  const [daysBack, setDaysBack] = useState(7);
-  const [selectedCategory, setSelectedCategory] = useState<NewsCategory>("all");
+  const [daysBack, setDaysBack] = useState(1);
+  const [selectedCategory, setSelectedCategory] = useState<NewsCategory>("general");
 
   const {
     data: articles,
