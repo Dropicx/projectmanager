@@ -32,8 +32,6 @@ export function ClerkProvider({ children }: { children: React.ReactNode }) {
           card: "shadow-none",
         },
       }}
-      // Add retry configuration
-      clerkJSVariant="headless"
       // Polling interval for session checks (increase to reduce requests)
       polling={false}
       // Additional configuration to prevent excessive requests

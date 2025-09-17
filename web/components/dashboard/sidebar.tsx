@@ -31,8 +31,6 @@ const navigation = [
   { name: "Engagements", href: "/projects", icon: Briefcase },
   { name: "News", href: "/news", icon: Newspaper },
   { name: "AI Insights", href: "/insights", icon: Sparkles },
-  { name: "Search", href: "/search", icon: Search },
-  { name: "Topics", href: "/topics", icon: Hash },
   { name: "Analytics", href: "/analytics", icon: BarChart3 },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
