@@ -199,7 +199,8 @@ export const knowledge_base = pgTable(
     last_accessed: timestamp("last_accessed"),
 
     // Additional fields
-    is_public: boolean("is_public").default(true),
+    // All knowledge is private to the organization - no public sharing
+    is_public: boolean("is_public").default(false).notNull(),
     metadata: jsonb("metadata").default({}),
 
     // Authorship
@@ -244,8 +245,8 @@ export const knowledge_templates = pgTable("knowledge_templates", {
   structure: jsonb("structure").notNull(), // Fields, sections, prompts
   example_content: text("example_content"),
 
-  // Sharing
-  is_public: boolean("is_public").default(false),
+  // All templates are private to the organization
+  is_public: boolean("is_public").default(false).notNull(),
   is_verified: boolean("is_verified").default(false), // Admin-approved
 
   // Analytics
@@ -286,8 +287,8 @@ export const knowledge_categories = pgTable(
     // Ordering
     position: integer("position").default(0), // For manual ordering
 
-    // Permissions
-    is_public: boolean("is_public").default(true), // Visible to all org members
+    // Permissions - all categories are private to the organization
+    is_public: boolean("is_public").default(false).notNull(), // Always private to org
     is_default: boolean("is_default").default(false), // System default categories
 
     // Analytics

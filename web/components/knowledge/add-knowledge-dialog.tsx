@@ -31,13 +31,11 @@ export function AddKnowledgeDialog({ open, onOpenChange, onSuccess }: AddKnowled
   >("guide");
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
-  const [isPublic, setIsPublic] = useState(true);
 
   const titleId = useId();
   const typeId = useId();
   const contentId = useId();
   const tagsId = useId();
-  const publicId = useId();
 
   const utils = trpc.useUtils();
   const createMutation = trpc.knowledge.createGeneral.useMutation({
@@ -55,7 +53,6 @@ export function AddKnowledgeDialog({ open, onOpenChange, onSuccess }: AddKnowled
     setType("guide");
     setTags([]);
     setTagInput("");
-    setIsPublic(true);
   };
 
   const handleSubmit = () => {
@@ -66,7 +63,6 @@ export function AddKnowledgeDialog({ open, onOpenChange, onSuccess }: AddKnowled
       content: content.trim(),
       type,
       tags,
-      isPublic,
     });
   };
 
@@ -170,19 +166,6 @@ export function AddKnowledgeDialog({ open, onOpenChange, onSuccess }: AddKnowled
                 ))}
               </div>
             )}
-          </div>
-
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id={publicId}
-              checked={isPublic}
-              onChange={(e) => setIsPublic(e.target.checked)}
-              className="h-4 w-4 rounded border-gray-300"
-            />
-            <Label htmlFor={publicId} className="text-sm font-normal">
-              Make this knowledge item public
-            </Label>
           </div>
         </div>
 

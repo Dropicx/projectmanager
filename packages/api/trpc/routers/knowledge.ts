@@ -31,7 +31,18 @@ export const knowledgeRouter = router({
     )
     .query(async ({ ctx, input }) => {
       try {
-        const conditions = [isNull(knowledge_base.engagement_id)];
+        // Ensure we only return knowledge for the user's organization
+        if (!ctx.user.organizationId) {
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "Organization context required",
+          });
+        }
+
+        const conditions = [
+          isNull(knowledge_base.engagement_id),
+          eq(knowledge_base.organization_id, ctx.user.organizationId),
+        ];
 
         if (input.search) {
           const searchCondition = or(
@@ -101,9 +112,11 @@ export const knowledgeRouter = router({
    */
   getCategories: protectedProcedure.query(async ({ ctx }) => {
     try {
+      // Only return categories for the user's organization
       const categories = await ctx.db
         .select()
         .from(knowledge_categories)
+        .where(eq(knowledge_categories.organization_id, ctx.user.organizationId || ""))
         .orderBy(knowledge_categories.name);
       return categories;
     } catch (error) {
@@ -123,7 +136,6 @@ export const knowledgeRouter = router({
         type: z.enum(["methodology", "framework", "template", "case-study", "guide", "checklist"]),
         tags: z.array(z.string()).optional(),
         categoryIds: z.array(z.string()).optional(),
-        isPublic: z.boolean().default(true),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -138,7 +150,7 @@ export const knowledgeRouter = router({
           embedding: embedding,
           tags: input.tags || [],
           knowledge_type: mapToKnowledgeType(input.type),
-          is_public: input.isPublic,
+          is_public: false, // Always private to organization
           created_by: ctx.user.id,
           metadata: { views: 0 },
         })
@@ -170,7 +182,6 @@ export const knowledgeRouter = router({
           .optional(),
         tags: z.array(z.string()).optional(),
         categoryIds: z.array(z.string()).optional(),
-        isPublic: z.boolean().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -197,17 +208,23 @@ export const knowledgeRouter = router({
       if (input.title) updates.title = input.title;
       if (input.tags) updates.tags = input.tags;
       if (input.type) updates.knowledge_type = mapToKnowledgeType(input.type);
-      if (input.isPublic !== undefined) updates.is_public = input.isPublic;
+      // is_public is always false - no public knowledge
 
       if (input.content) {
         updates.content = input.content;
         updates.embedding = await generateEmbedding(input.content);
       }
 
+      // Ensure user can only update their organization's knowledge
       const [updated] = await ctx.db
         .update(knowledge_base)
         .set(updates)
-        .where(eq(knowledge_base.id, input.id))
+        .where(
+          and(
+            eq(knowledge_base.id, input.id),
+            eq(knowledge_base.organization_id, ctx.user.organizationId || "")
+          )
+        )
         .returning();
 
       if (input.categoryIds) {
@@ -442,10 +459,16 @@ export const knowledgeRouter = router({
         updates.embedding = await generateEmbedding(input.content);
       }
 
+      // Ensure user can only update their organization's knowledge
       const [updated] = await ctx.db
         .update(knowledge_base)
         .set(updates)
-        .where(eq(knowledge_base.id, input.id))
+        .where(
+          and(
+            eq(knowledge_base.id, input.id),
+            eq(knowledge_base.organization_id, ctx.user.organizationId || "")
+          )
+        )
         .returning();
 
       return updated;
