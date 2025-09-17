@@ -1,6 +1,6 @@
-'use client'
+"use client";
 
-import { ClerkProvider as BaseClerkProvider } from '@clerk/nextjs'
+import { ClerkProvider as BaseClerkProvider } from "@clerk/nextjs";
 
 export function ClerkProvider({ children }: { children: React.ReactNode }) {
   return (
@@ -12,5 +12,5 @@ export function ClerkProvider({ children }: { children: React.ReactNode }) {
     >
       {children}
     </BaseClerkProvider>
-  )
+  );
 }

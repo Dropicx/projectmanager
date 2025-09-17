@@ -1,7 +1,16 @@
-'use client'
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from '@consulting-platform/ui'
-import { BarChart3, TrendingUp, Users, DollarSign, Clock, CheckCircle, AlertCircle, Activity } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from "@consulting-platform/ui";
+import {
+  Activity,
+  AlertCircle,
+  BarChart3,
+  CheckCircle,
+  Clock,
+  DollarSign,
+  TrendingUp,
+  Users,
+} from "lucide-react";
 
 export default function AnalyticsPage() {
   // Mock data - replace with actual data from API
@@ -17,15 +26,15 @@ export default function AnalyticsPage() {
     taskCompletionRate: 78,
     overdueTasks: 8,
     upcomingDeadlines: 15,
-    clientSatisfaction: 4.6
-  }
+    clientSatisfaction: 4.6,
+  };
 
   const recentActivity = [
-    { project: 'Digital Transformation', change: '+12%', trend: 'up' },
-    { project: 'Cloud Migration', change: '+8%', trend: 'up' },
-    { project: 'Security Audit', change: '-3%', trend: 'down' },
-    { project: 'AI Integration', change: '+21%', trend: 'up' },
-  ]
+    { project: "Digital Transformation", change: "+12%", trend: "up" },
+    { project: "Cloud Migration", change: "+8%", trend: "up" },
+    { project: "Security Audit", change: "-3%", trend: "down" },
+    { project: "AI Integration", change: "+21%", trend: "up" },
+  ];
 
   return (
     <div className="space-y-8">
@@ -60,7 +69,8 @@ export default function AnalyticsPage() {
               {Math.round((metrics.utilizedBudget / metrics.totalBudget) * 100)}%
             </div>
             <p className="text-xs text-gray-500 mt-1">
-              ${(metrics.utilizedBudget / 1000).toFixed(0)}k of ${(metrics.totalBudget / 1000).toFixed(0)}k
+              ${(metrics.utilizedBudget / 1000).toFixed(0)}k of $
+              {(metrics.totalBudget / 1000).toFixed(0)}k
             </p>
           </CardContent>
         </Card>
@@ -87,9 +97,7 @@ export default function AnalyticsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{metrics.taskCompletionRate}%</div>
-            <p className="text-xs text-gray-500 mt-1">
-              {metrics.overdueTasks} overdue tasks
-            </p>
+            <p className="text-xs text-gray-500 mt-1">{metrics.overdueTasks} overdue tasks</p>
           </CardContent>
         </Card>
       </div>
@@ -109,12 +117,14 @@ export default function AnalyticsPage() {
                 <div key={index} className="flex items-center justify-between">
                   <span className="text-sm font-medium">{activity.project}</span>
                   <div className="flex items-center gap-2">
-                    <span className={`text-sm font-semibold ${
-                      activity.trend === 'up' ? 'text-green-600' : 'text-red-600'
-                    }`}>
+                    <span
+                      className={`text-sm font-semibold ${
+                        activity.trend === "up" ? "text-green-600" : "text-red-600"
+                      }`}
+                    >
                       {activity.change}
                     </span>
-                    {activity.trend === 'up' ? (
+                    {activity.trend === "up" ? (
                       <TrendingUp className="h-4 w-4 text-green-600" />
                     ) : (
                       <TrendingUp className="h-4 w-4 text-red-600 rotate-180" />
@@ -141,7 +151,7 @@ export default function AnalyticsPage() {
                   <span className="font-medium">45%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-indigo-600 h-2 rounded-full" style={{ width: '45%' }}></div>
+                  <div className="bg-indigo-600 h-2 rounded-full" style={{ width: "45%" }}></div>
                 </div>
               </div>
               <div>
@@ -150,7 +160,7 @@ export default function AnalyticsPage() {
                   <span className="font-medium">25%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-purple-600 h-2 rounded-full" style={{ width: '25%' }}></div>
+                  <div className="bg-purple-600 h-2 rounded-full" style={{ width: "25%" }}></div>
                 </div>
               </div>
               <div>
@@ -159,7 +169,7 @@ export default function AnalyticsPage() {
                   <span className="font-medium">20%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-blue-600 h-2 rounded-full" style={{ width: '20%' }}></div>
+                  <div className="bg-blue-600 h-2 rounded-full" style={{ width: "20%" }}></div>
                 </div>
               </div>
               <div>
@@ -168,7 +178,7 @@ export default function AnalyticsPage() {
                   <span className="font-medium">10%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-green-600 h-2 rounded-full" style={{ width: '10%' }}></div>
+                  <div className="bg-green-600 h-2 rounded-full" style={{ width: "10%" }}></div>
                 </div>
               </div>
             </div>
@@ -218,5 +228,5 @@ export default function AnalyticsPage() {
         </Card>
       </div>
     </div>
-  )
+  );
 }

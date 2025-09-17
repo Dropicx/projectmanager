@@ -1,71 +1,89 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, Badge } from '@consulting-platform/ui'
-import { Brain, TrendingUp, AlertTriangle, Lightbulb } from 'lucide-react'
+import {
+  Badge,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@consulting-platform/ui";
+import { AlertTriangle, Brain, Lightbulb, TrendingUp } from "lucide-react";
 
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
 export default function InsightsPage() {
   const insights = [
     {
-      id: '1',
-      title: 'Project Timeline Risk',
-      type: 'risk',
-      description: 'High risk identified in timeline dependencies for Digital Transformation project',
+      id: "1",
+      title: "Project Timeline Risk",
+      type: "risk",
+      description:
+        "High risk identified in timeline dependencies for Digital Transformation project",
       confidence: 85,
-      impact: 'high',
-      recommendation: 'Consider adding buffer time for critical path activities',
-      generatedAt: '2024-01-15T10:30:00Z'
+      impact: "high",
+      recommendation: "Consider adding buffer time for critical path activities",
+      generatedAt: "2024-01-15T10:30:00Z",
     },
     {
-      id: '2',
-      title: 'Resource Optimization',
-      type: 'optimization',
-      description: 'Resource allocation can be improved by 15% through better task distribution',
+      id: "2",
+      title: "Resource Optimization",
+      type: "optimization",
+      description: "Resource allocation can be improved by 15% through better task distribution",
       confidence: 92,
-      impact: 'medium',
-      recommendation: 'Reallocate 2 team members from low-priority to high-priority tasks',
-      generatedAt: '2024-01-15T09:15:00Z'
+      impact: "medium",
+      recommendation: "Reallocate 2 team members from low-priority to high-priority tasks",
+      generatedAt: "2024-01-15T09:15:00Z",
     },
     {
-      id: '3',
-      title: 'Budget Variance Alert',
-      type: 'alert',
-      description: 'Current spending is 8% above projected budget for Q1',
+      id: "3",
+      title: "Budget Variance Alert",
+      type: "alert",
+      description: "Current spending is 8% above projected budget for Q1",
       confidence: 78,
-      impact: 'high',
-      recommendation: 'Review and adjust scope or increase budget allocation',
-      generatedAt: '2024-01-15T08:45:00Z'
+      impact: "high",
+      recommendation: "Review and adjust scope or increase budget allocation",
+      generatedAt: "2024-01-15T08:45:00Z",
     },
     {
-      id: '4',
-      title: 'Team Performance Insight',
-      type: 'performance',
-      description: 'Team velocity has increased by 12% over the past month',
+      id: "4",
+      title: "Team Performance Insight",
+      type: "performance",
+      description: "Team velocity has increased by 12% over the past month",
       confidence: 88,
-      impact: 'positive',
-      recommendation: 'Maintain current practices and consider scaling successful patterns',
-      generatedAt: '2024-01-14T16:20:00Z'
-    }
-  ]
+      impact: "positive",
+      recommendation: "Maintain current practices and consider scaling successful patterns",
+      generatedAt: "2024-01-14T16:20:00Z",
+    },
+  ];
 
   const getInsightIcon = (type: string) => {
     switch (type) {
-      case 'risk': return AlertTriangle
-      case 'optimization': return TrendingUp
-      case 'alert': return AlertTriangle
-      case 'performance': return Lightbulb
-      default: return Brain
+      case "risk":
+        return AlertTriangle;
+      case "optimization":
+        return TrendingUp;
+      case "alert":
+        return AlertTriangle;
+      case "performance":
+        return Lightbulb;
+      default:
+        return Brain;
     }
-  }
+  };
 
   const getInsightColor = (type: string) => {
     switch (type) {
-      case 'risk': return 'destructive'
-      case 'optimization': return 'success'
-      case 'alert': return 'warning'
-      case 'performance': return 'info'
-      default: return 'default'
+      case "risk":
+        return "destructive";
+      case "optimization":
+        return "success";
+      case "alert":
+        return "warning";
+      case "performance":
+        return "info";
+      default:
+        return "default";
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -78,7 +96,7 @@ export default function InsightsPage() {
 
       <div className="grid gap-6">
         {insights.map((insight) => {
-          const Icon = getInsightIcon(insight.type)
+          const Icon = getInsightIcon(insight.type);
           return (
             <Card key={insight.id} className="hover:shadow-lg transition-shadow">
               <CardHeader>
@@ -87,18 +105,12 @@ export default function InsightsPage() {
                     <Icon className="h-6 w-6 text-blue-600" />
                     <div>
                       <CardTitle className="text-xl">{insight.title}</CardTitle>
-                      <CardDescription className="mt-1">
-                        {insight.description}
-                      </CardDescription>
+                      <CardDescription className="mt-1">{insight.description}</CardDescription>
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Badge variant={getInsightColor(insight.type)}>
-                      {insight.type}
-                    </Badge>
-                    <Badge variant="outline">
-                      {insight.confidence}% confidence
-                    </Badge>
+                    <Badge variant={getInsightColor(insight.type)}>{insight.type}</Badge>
+                    <Badge variant="outline">{insight.confidence}% confidence</Badge>
                   </div>
                 </div>
               </CardHeader>
@@ -115,9 +127,9 @@ export default function InsightsPage() {
                 </div>
               </CardContent>
             </Card>
-          )
+          );
         })}
       </div>
     </div>
-  )
+  );
 }

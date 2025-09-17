@@ -1,3 +1,3 @@
-export { appRouter, type AppRouter } from './trpc/root'
-export { router, publicProcedure, protectedProcedure } from './trpc/trpc'
-export type { Context } from './trpc/trpc'
+export { type AppRouter, appRouter } from "./trpc/root";
+export type { Context } from "./trpc/trpc";
+export { protectedProcedure, publicProcedure, router } from "./trpc/trpc";

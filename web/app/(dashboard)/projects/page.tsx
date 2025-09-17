@@ -1,47 +1,61 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button, Badge } from '@consulting-platform/ui'
-import { Plus, Calendar, DollarSign, Users, Loader2, AlertCircle } from 'lucide-react'
-import { trpc } from '@/app/providers/trpc-provider'
-import Link from 'next/link'
-import { CreateProjectDialog } from './create-project-dialog'
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@consulting-platform/ui";
+import { AlertCircle, Calendar, DollarSign, Loader2, Plus, Users } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
+import { trpc } from "@/app/providers/trpc-provider";
+import { CreateProjectDialog } from "./create-project-dialog";
 
 export default function ProjectsPage() {
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
-  const { data: projects, isLoading, error } = trpc.projects.getAll.useQuery()
+  const { data: projects, isLoading, error } = trpc.projects.getAll.useQuery();
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'success'
-      case 'planning': return 'warning'
-      case 'on-hold': return 'secondary'
-      case 'completed': return 'default'
-      case 'cancelled': return 'destructive'
-      default: return 'default'
+      case "active":
+        return "success";
+      case "planning":
+        return "warning";
+      case "on-hold":
+        return "secondary";
+      case "completed":
+        return "default";
+      case "cancelled":
+        return "destructive";
+      default:
+        return "default";
     }
-  }
+  };
 
   const formatDate = (date: Date | string | null) => {
-    if (!date) return 'Not set'
-    return new Date(date).toLocaleDateString()
-  }
+    if (!date) return "Not set";
+    return new Date(date).toLocaleDateString();
+  };
 
   const getTimelineString = (timeline: any) => {
-    if (!timeline || typeof timeline !== 'object') return 'No timeline set'
-    const start = timeline.start || timeline.startDate
-    const end = timeline.end || timeline.endDate
-    if (!start || !end) return 'Timeline incomplete'
-    return `${formatDate(start)} - ${formatDate(end)}`
-  }
+    if (!timeline || typeof timeline !== "object") return "No timeline set";
+    const start = timeline.start || timeline.startDate;
+    const end = timeline.end || timeline.endDate;
+    if (!start || !end) return "Timeline incomplete";
+    return `${formatDate(start)} - ${formatDate(end)}`;
+  };
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-96">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -51,7 +65,7 @@ export default function ProjectsPage() {
         <p className="text-lg text-muted-foreground">Failed to load projects</p>
         <p className="text-sm text-destructive">{error.message}</p>
       </div>
-    )
+    );
   }
 
   return (
@@ -74,9 +88,7 @@ export default function ProjectsPage() {
           <CardContent className="space-y-3">
             <div className="text-5xl">📁</div>
             <h3 className="text-xl font-semibold">No projects yet</h3>
-            <p className="text-muted-foreground">
-              Create your first project to get started
-            </p>
+            <p className="text-muted-foreground">Create your first project to get started</p>
             <Button onClick={() => setIsCreateDialogOpen(true)} className="mt-4">
               <Plus className="mr-2 h-4 w-4" />
               Create Project
@@ -90,18 +102,18 @@ export default function ProjectsPage() {
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <CardTitle className="text-xl line-clamp-1">{project.name}</CardTitle>
-                  <Badge variant={getStatusColor(project.status || 'planning')}>
-                    {project.status || 'planning'}
+                  <Badge variant={getStatusColor(project.status || "planning")}>
+                    {project.status || "planning"}
                   </Badge>
                 </div>
                 <CardDescription className="line-clamp-2">
-                  {project.description || 'No description provided'}
+                  {project.description || "No description provided"}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center text-sm text-muted-foreground">
                   <DollarSign className="mr-2 h-4 w-4" />
-                  {project.budget ? `$${project.budget.toLocaleString()}` : 'No budget set'}
+                  {project.budget ? `$${project.budget.toLocaleString()}` : "No budget set"}
                 </div>
                 <div className="flex items-center text-sm text-muted-foreground">
                   <Calendar className="mr-2 h-4 w-4" />
@@ -129,10 +141,7 @@ export default function ProjectsPage() {
         </div>
       )}
 
-      <CreateProjectDialog
-        open={isCreateDialogOpen}
-        onOpenChange={setIsCreateDialogOpen}
-      />
+      <CreateProjectDialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen} />
     </div>
-  )
+  );
 }

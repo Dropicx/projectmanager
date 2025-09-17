@@ -1,68 +1,90 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle, Button, Badge } from '@consulting-platform/ui'
-import { Plus, Filter, Calendar, Clock, AlertCircle, CheckCircle, MoreVertical, Edit2, Trash2 } from 'lucide-react'
-import { trpc as api } from '@/app/providers/trpc-provider'
-import { TaskForm } from './task-form'
-import { TaskFilters } from './task-filters'
+import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from "@consulting-platform/ui";
+import {
+  AlertCircle,
+  Calendar,
+  CheckCircle,
+  Clock,
+  Edit2,
+  MoreVertical,
+  Plus,
+  Trash2,
+} from "lucide-react";
+import { useState } from "react";
+import { trpc as api } from "@/app/providers/trpc-provider";
+import { TaskFilters } from "./task-filters";
+import { TaskForm } from "./task-form";
 
 interface TaskListProps {
-  projectId: string
+  projectId: string;
 }
 
 export function TaskList({ projectId }: TaskListProps) {
-  const [isCreating, setIsCreating] = useState(false)
-  const [editingTask, setEditingTask] = useState<any>(null)
+  const [isCreating, setIsCreating] = useState(false);
+  const [editingTask, setEditingTask] = useState<any>(null);
   const [filters, setFilters] = useState({
-    status: 'all' as 'todo' | 'in-progress' | 'review' | 'completed' | 'all',
+    status: "all" as "todo" | "in-progress" | "review" | "completed" | "all",
     assigneeId: undefined as string | undefined,
-    sortBy: 'createdAt' as 'dueDate' | 'priority' | 'createdAt' | 'title',
-    sortOrder: 'desc' as 'asc' | 'desc'
-  })
+    sortBy: "createdAt" as "dueDate" | "priority" | "createdAt" | "title",
+    sortOrder: "desc" as "asc" | "desc",
+  });
 
   const { data: tasks, refetch } = api.tasks.getByProject.useQuery({
     projectId,
-    ...filters
-  })
+    ...filters,
+  });
 
-  const { data: stats } = api.tasks.getStats.useQuery(projectId)
+  const { data: stats } = api.tasks.getStats.useQuery(projectId);
 
   const updateStatus = api.tasks.updateStatus.useMutation({
-    onSuccess: () => refetch()
-  })
+    onSuccess: () => refetch(),
+  });
 
   const deleteTask = api.tasks.delete.useMutation({
-    onSuccess: () => refetch()
-  })
+    onSuccess: () => refetch(),
+  });
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'urgent': return 'bg-red-100 text-red-800'
-      case 'high': return 'bg-orange-100 text-orange-800'
-      case 'medium': return 'bg-yellow-100 text-yellow-800'
-      case 'low': return 'bg-green-100 text-green-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case "urgent":
+        return "bg-red-100 text-red-800";
+      case "high":
+        return "bg-orange-100 text-orange-800";
+      case "medium":
+        return "bg-yellow-100 text-yellow-800";
+      case "low":
+        return "bg-green-100 text-green-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
-  }
+  };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'completed': return <CheckCircle className="h-4 w-4 text-green-600" />
-      case 'in-progress': return <Clock className="h-4 w-4 text-blue-600" />
-      case 'review': return <AlertCircle className="h-4 w-4 text-orange-600" />
-      default: return <div className="h-4 w-4 rounded-full border-2 border-gray-400" />
+      case "completed":
+        return <CheckCircle className="h-4 w-4 text-green-600" />;
+      case "in-progress":
+        return <Clock className="h-4 w-4 text-blue-600" />;
+      case "review":
+        return <AlertCircle className="h-4 w-4 text-orange-600" />;
+      default:
+        return <div className="h-4 w-4 rounded-full border-2 border-gray-400" />;
     }
-  }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed': return 'bg-green-100 text-green-800'
-      case 'in-progress': return 'bg-blue-100 text-blue-800'
-      case 'review': return 'bg-orange-100 text-orange-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case "completed":
+        return "bg-green-100 text-green-800";
+      case "in-progress":
+        return "bg-blue-100 text-blue-800";
+      case "review":
+        return "bg-orange-100 text-orange-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -118,8 +140,8 @@ export function TaskList({ projectId }: TaskListProps) {
             <TaskForm
               projectId={projectId}
               onSuccess={() => {
-                setIsCreating(false)
-                refetch()
+                setIsCreating(false);
+                refetch();
               }}
               onCancel={() => setIsCreating(false)}
             />
@@ -138,8 +160,8 @@ export function TaskList({ projectId }: TaskListProps) {
               projectId={projectId}
               task={editingTask}
               onSuccess={() => {
-                setEditingTask(null)
-                refetch()
+                setEditingTask(null);
+                refetch();
               }}
               onCancel={() => setEditingTask(null)}
             />
@@ -154,10 +176,12 @@ export function TaskList({ projectId }: TaskListProps) {
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
                 <button
-                  onClick={() => updateStatus.mutate({
-                    id: task.id,
-                    status: task.status === 'completed' ? 'todo' : 'completed'
-                  })}
+                  onClick={() =>
+                    updateStatus.mutate({
+                      id: task.id,
+                      status: task.status === "completed" ? "todo" : "completed",
+                    })
+                  }
                   className="mt-1"
                 >
                   {getStatusIcon(task.status)}
@@ -166,7 +190,9 @@ export function TaskList({ projectId }: TaskListProps) {
                 <div className="flex-1">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h3 className={`font-medium ${task.status === 'completed' ? 'line-through text-gray-500' : ''}`}>
+                      <h3
+                        className={`font-medium ${task.status === "completed" ? "line-through text-gray-500" : ""}`}
+                      >
                         {task.title}
                       </h3>
                       {task.description && (
@@ -178,7 +204,8 @@ export function TaskList({ projectId }: TaskListProps) {
                           <div className="flex items-center gap-1">
                             <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center">
                               <span className="text-xs font-medium text-indigo-600">
-                                {task.assignee.firstName?.[0]}{task.assignee.lastName?.[0]}
+                                {task.assignee.firstName?.[0]}
+                                {task.assignee.lastName?.[0]}
                               </span>
                             </div>
                             <span className="text-sm text-gray-600">
@@ -204,11 +231,9 @@ export function TaskList({ projectId }: TaskListProps) {
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <Badge className={getPriorityColor(task.priority)}>
-                        {task.priority}
-                      </Badge>
+                      <Badge className={getPriorityColor(task.priority)}>{task.priority}</Badge>
                       <Badge className={getStatusColor(task.status)}>
-                        {task.status.replace('_', ' ')}
+                        {task.status.replace("_", " ")}
                       </Badge>
 
                       <div className="relative group">
@@ -225,8 +250,8 @@ export function TaskList({ projectId }: TaskListProps) {
                           </button>
                           <button
                             onClick={() => {
-                              if (confirm('Are you sure you want to delete this task?')) {
-                                deleteTask.mutate(task.id)
+                              if (confirm("Are you sure you want to delete this task?")) {
+                                deleteTask.mutate(task.id);
                               }
                             }}
                             className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2 text-red-600"
@@ -242,7 +267,10 @@ export function TaskList({ projectId }: TaskListProps) {
                   {task.tags && task.tags.length > 0 && (
                     <div className="flex gap-2 mt-2">
                       {(task.tags as string[]).map((tag, index) => (
-                        <span key={index} className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
+                        <span
+                          key={index}
+                          className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded"
+                        >
                           {tag}
                         </span>
                       ))}
@@ -257,11 +285,13 @@ export function TaskList({ projectId }: TaskListProps) {
         {tasks?.length === 0 && (
           <Card>
             <CardContent className="p-8 text-center">
-              <p className="text-gray-500">No tasks found. Create your first task to get started!</p>
+              <p className="text-gray-500">
+                No tasks found. Create your first task to get started!
+              </p>
             </CardContent>
           </Card>
         )}
       </div>
     </div>
-  )
+  );
 }

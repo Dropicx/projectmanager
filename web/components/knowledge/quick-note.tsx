@@ -1,49 +1,79 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle, Button, Input, Label, Textarea, Badge } from '@consulting-platform/ui'
-import { Plus, Save, X, FileText, Users, Lightbulb, AlertCircle, MessageSquare, ListTodo } from 'lucide-react'
-import { trpc as api } from '@/app/providers/trpc-provider'
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Input,
+  Label,
+  Textarea,
+} from "@consulting-platform/ui";
+import {
+  AlertCircle,
+  FileText,
+  Lightbulb,
+  ListTodo,
+  MessageSquare,
+  Plus,
+  Save,
+  Users,
+  X,
+} from "lucide-react";
+import { useState } from "react";
+import { trpc as api } from "@/app/providers/trpc-provider";
 
 interface QuickNoteProps {
-  projectId: string
-  onNoteAdded?: () => void
+  projectId: string;
+  onNoteAdded?: () => void;
 }
 
 const noteTypes = [
-  { value: 'note', label: 'Note', icon: FileText, color: 'bg-blue-100 text-blue-700' },
-  { value: 'meeting', label: 'Meeting', icon: Users, color: 'bg-purple-100 text-purple-700' },
-  { value: 'decision', label: 'Decision', icon: Lightbulb, color: 'bg-yellow-100 text-yellow-700' },
-  { value: 'feedback', label: 'Feedback', icon: MessageSquare, color: 'bg-green-100 text-green-700' },
-  { value: 'task_update', label: 'Task Update', icon: ListTodo, color: 'bg-orange-100 text-orange-700' }
-]
+  { value: "note", label: "Note", icon: FileText, color: "bg-blue-100 text-blue-700" },
+  { value: "meeting", label: "Meeting", icon: Users, color: "bg-purple-100 text-purple-700" },
+  { value: "decision", label: "Decision", icon: Lightbulb, color: "bg-yellow-100 text-yellow-700" },
+  {
+    value: "feedback",
+    label: "Feedback",
+    icon: MessageSquare,
+    color: "bg-green-100 text-green-700",
+  },
+  {
+    value: "task_update",
+    label: "Task Update",
+    icon: ListTodo,
+    color: "bg-orange-100 text-orange-700",
+  },
+];
 
 export function QuickNote({ projectId, onNoteAdded }: QuickNoteProps) {
-  const [isExpanded, setIsExpanded] = useState(false)
-  const [title, setTitle] = useState('')
-  const [content, setContent] = useState('')
-  const [type, setType] = useState<string>('note')
-  const [tags, setTags] = useState<string[]>([])
-  const [tagInput, setTagInput] = useState('')
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [type, setType] = useState<string>("note");
+  const [tags, setTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState("");
 
   const createNoteMutation = api.knowledge.create.useMutation({
     onSuccess: () => {
       // Reset form
-      setTitle('')
-      setContent('')
-      setType('note')
-      setTags([])
-      setIsExpanded(false)
+      setTitle("");
+      setContent("");
+      setType("note");
+      setTags([]);
+      setIsExpanded(false);
 
       // Callback
       if (onNoteAdded) {
-        onNoteAdded()
+        onNoteAdded();
       }
-    }
-  })
+    },
+  });
 
   const handleSubmit = () => {
-    if (!title.trim() || !content.trim()) return
+    if (!title.trim() || !content.trim()) return;
 
     createNoteMutation.mutate({
       projectId,
@@ -52,22 +82,22 @@ export function QuickNote({ projectId, onNoteAdded }: QuickNoteProps) {
       type: type as any,
       tags,
       metadata: {
-        wordCount: content.split(' ').length,
-        characterCount: content.length
-      }
-    })
-  }
+        wordCount: content.split(" ").length,
+        characterCount: content.length,
+      },
+    });
+  };
 
   const handleAddTag = () => {
     if (tagInput.trim() && !tags.includes(tagInput.trim())) {
-      setTags([...tags, tagInput.trim()])
-      setTagInput('')
+      setTags([...tags, tagInput.trim()]);
+      setTagInput("");
     }
-  }
+  };
 
   const removeTag = (tagToRemove: string) => {
-    setTags(tags.filter(t => t !== tagToRemove))
-  }
+    setTags(tags.filter((t) => t !== tagToRemove));
+  };
 
   if (!isExpanded) {
     return (
@@ -79,7 +109,7 @@ export function QuickNote({ projectId, onNoteAdded }: QuickNoteProps) {
         <Plus className="h-4 w-4" />
         Add Quick Note
       </Button>
-    )
+    );
   }
 
   return (
@@ -87,11 +117,7 @@ export function QuickNote({ projectId, onNoteAdded }: QuickNoteProps) {
       <CardHeader className="pb-4">
         <div className="flex justify-between items-center">
           <CardTitle className="text-lg">Add to Knowledge Base</CardTitle>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => setIsExpanded(false)}
-          >
+          <Button size="sm" variant="ghost" onClick={() => setIsExpanded(false)}>
             <X className="h-4 w-4" />
           </Button>
         </div>
@@ -99,14 +125,14 @@ export function QuickNote({ projectId, onNoteAdded }: QuickNoteProps) {
       <CardContent className="space-y-4">
         {/* Note Type Selection */}
         <div className="flex gap-2 flex-wrap">
-          {noteTypes.map(noteType => (
+          {noteTypes.map((noteType) => (
             <button
               key={noteType.value}
               onClick={() => setType(noteType.value)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                 type === noteType.value
                   ? noteType.color
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               }`}
             >
               <noteType.icon className="h-3.5 w-3.5" />
@@ -121,10 +147,13 @@ export function QuickNote({ projectId, onNoteAdded }: QuickNoteProps) {
           <Input
             id="note-title"
             placeholder={
-              type === 'meeting' ? 'e.g., Weekly Standup - Jan 15' :
-              type === 'decision' ? 'e.g., Chose React over Vue for frontend' :
-              type === 'feedback' ? 'e.g., Client feedback on MVP demo' :
-              'e.g., Important note about...'
+              type === "meeting"
+                ? "e.g., Weekly Standup - Jan 15"
+                : type === "decision"
+                  ? "e.g., Chose React over Vue for frontend"
+                  : type === "feedback"
+                    ? "e.g., Client feedback on MVP demo"
+                    : "e.g., Important note about..."
             }
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -137,17 +166,20 @@ export function QuickNote({ projectId, onNoteAdded }: QuickNoteProps) {
           <Textarea
             id="note-content"
             placeholder={
-              type === 'meeting' ? 'Meeting notes, attendees, action items...' :
-              type === 'decision' ? 'What was decided, why, and by whom...' :
-              type === 'feedback' ? 'Feedback details, source, and implications...' :
-              'Your note content...'
+              type === "meeting"
+                ? "Meeting notes, attendees, action items..."
+                : type === "decision"
+                  ? "What was decided, why, and by whom..."
+                  : type === "feedback"
+                    ? "Feedback details, source, and implications..."
+                    : "Your note content..."
             }
             value={content}
             onChange={(e) => setContent(e.target.value)}
             className="min-h-[120px]"
           />
           <p className="text-xs text-gray-500 mt-1">
-            {content.length} characters • {content.split(' ').filter(w => w).length} words
+            {content.length} characters • {content.split(" ").filter((w) => w).length} words
           </p>
         </div>
 
@@ -160,29 +192,18 @@ export function QuickNote({ projectId, onNoteAdded }: QuickNoteProps) {
               placeholder="Add tags..."
               value={tagInput}
               onChange={(e) => setTagInput(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
+              onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), handleAddTag())}
             />
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleAddTag}
-            >
+            <Button size="sm" variant="outline" onClick={handleAddTag}>
               Add
             </Button>
           </div>
           {tags.length > 0 && (
             <div className="flex gap-2 flex-wrap">
-              {tags.map(tag => (
-                <Badge
-                  key={tag}
-                  variant="secondary"
-                  className="flex items-center gap-1"
-                >
+              {tags.map((tag) => (
+                <Badge key={tag} variant="secondary" className="flex items-center gap-1">
                   {tag}
-                  <button
-                    onClick={() => removeTag(tag)}
-                    className="ml-1 hover:text-red-600"
-                  >
+                  <button onClick={() => removeTag(tag)} className="ml-1 hover:text-red-600">
                     <X className="h-3 w-3" />
                   </button>
                 </Badge>
@@ -193,10 +214,7 @@ export function QuickNote({ projectId, onNoteAdded }: QuickNoteProps) {
 
         {/* Action Buttons */}
         <div className="flex justify-end gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setIsExpanded(false)}
-          >
+          <Button variant="outline" onClick={() => setIsExpanded(false)}>
             Cancel
           </Button>
           <Button
@@ -205,7 +223,7 @@ export function QuickNote({ projectId, onNoteAdded }: QuickNoteProps) {
             className="flex items-center gap-2"
           >
             <Save className="h-4 w-4" />
-            {createNoteMutation.isPending ? 'Saving...' : 'Save to Knowledge Base'}
+            {createNoteMutation.isPending ? "Saving..." : "Save to Knowledge Base"}
           </Button>
         </div>
 
@@ -217,5 +235,5 @@ export function QuickNote({ projectId, onNoteAdded }: QuickNoteProps) {
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

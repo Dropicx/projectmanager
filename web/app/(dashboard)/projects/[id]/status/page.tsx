@@ -1,60 +1,91 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { useParams } from 'next/navigation'
-import { Card, CardContent, CardHeader, CardTitle, Button, Badge, Progress } from '@consulting-platform/ui'
-import { RefreshCw, TrendingUp, AlertCircle, CheckCircle, Clock, Users, Calendar, Target, Activity, Brain } from 'lucide-react'
-import { trpc as api } from '@/app/providers/trpc-provider'
-import { formatDistanceToNow } from 'date-fns'
-import ReactMarkdown from 'react-markdown'
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Progress,
+} from "@consulting-platform/ui";
+import { formatDistanceToNow } from "date-fns";
+import {
+  Activity,
+  AlertCircle,
+  Brain,
+  CheckCircle,
+  Clock,
+  RefreshCw,
+  Target,
+  TrendingUp,
+} from "lucide-react";
+import { useParams } from "next/navigation";
+import { useState } from "react";
+import ReactMarkdown from "react-markdown";
+import { trpc as api } from "@/app/providers/trpc-provider";
 
 export default function ProjectStatusPage() {
-  const params = useParams()
-  const projectId = params.id as string
-  const [isGenerating, setIsGenerating] = useState(false)
+  const params = useParams();
+  const projectId = params.id as string;
+  const [isGenerating, setIsGenerating] = useState(false);
 
   // Fetch project details
-  const { data: project } = api.projects.getById.useQuery({ id: projectId })
+  const { data: project } = api.projects.getById.useQuery({ id: projectId });
 
   // Fetch knowledge entries
   const { data: recentEntries, refetch: refetchEntries } = api.knowledge.getByProject.useQuery({
     projectId: projectId,
-    limit: 10
-  })
+    limit: 10,
+  });
 
   // Generate status query
-  const { data: statusData, refetch: refetchStatus, isLoading } = api.knowledge.generateStatus.useQuery({
-    projectId: projectId
-  })
+  const {
+    data: statusData,
+    refetch: refetchStatus,
+    isLoading,
+  } = api.knowledge.generateStatus.useQuery({
+    projectId: projectId,
+  });
 
   const handleRegenerate = async () => {
-    setIsGenerating(true)
-    await refetchStatus()
-    setIsGenerating(false)
-  }
+    setIsGenerating(true);
+    await refetchStatus();
+    setIsGenerating(false);
+  };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'completed': return <CheckCircle className="h-5 w-5 text-green-600" />
-      case 'active': return <Activity className="h-5 w-5 text-blue-600" />
-      case 'on-hold': return <Clock className="h-5 w-5 text-yellow-600" />
-      case 'planning': return <Target className="h-5 w-5 text-purple-600" />
-      default: return <AlertCircle className="h-5 w-5 text-gray-600" />
+      case "completed":
+        return <CheckCircle className="h-5 w-5 text-green-600" />;
+      case "active":
+        return <Activity className="h-5 w-5 text-blue-600" />;
+      case "on-hold":
+        return <Clock className="h-5 w-5 text-yellow-600" />;
+      case "planning":
+        return <Target className="h-5 w-5 text-purple-600" />;
+      default:
+        return <AlertCircle className="h-5 w-5 text-gray-600" />;
     }
-  }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed': return 'bg-green-100 text-green-800 border-green-200'
-      case 'active': return 'bg-blue-100 text-blue-800 border-blue-200'
-      case 'on-hold': return 'bg-yellow-100 text-yellow-800 border-yellow-200'
-      case 'planning': return 'bg-purple-100 text-purple-800 border-purple-200'
-      default: return 'bg-gray-100 text-gray-800 border-gray-200'
+      case "completed":
+        return "bg-green-100 text-green-800 border-green-200";
+      case "active":
+        return "bg-blue-100 text-blue-800 border-blue-200";
+      case "on-hold":
+        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+      case "planning":
+        return "bg-purple-100 text-purple-800 border-purple-200";
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-200";
     }
-  }
+  };
 
   if (!project) {
-    return <div>Loading project...</div>
+    return <div>Loading project...</div>;
   }
 
   return (
@@ -70,7 +101,7 @@ export default function ProjectStatusPage() {
           disabled={isGenerating}
           className="flex items-center gap-2"
         >
-          <RefreshCw className={`h-4 w-4 ${isGenerating ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`h-4 w-4 ${isGenerating ? "animate-spin" : ""}`} />
           Regenerate Status
         </Button>
       </div>
@@ -113,7 +144,7 @@ export default function ProjectStatusPage() {
             <p className="text-lg font-bold">
               {project.updated_at
                 ? formatDistanceToNow(new Date(project.updated_at), { addSuffix: true })
-                : 'Never'}
+                : "Never"}
             </p>
           </CardContent>
         </Card>
@@ -127,7 +158,7 @@ export default function ProjectStatusPage() {
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">
-              ${project.budget ? (project.budget / 1000).toFixed(0) + 'k' : '0'}
+              ${project.budget ? `${(project.budget / 1000).toFixed(0)}k` : "0"}
             </p>
             <Progress value={65} className="mt-2 h-2" />
           </CardContent>
@@ -167,7 +198,9 @@ export default function ProjectStatusPage() {
               )}
             </div>
           ) : (
-            <p className="text-gray-500">No status data available. Add some notes to generate insights.</p>
+            <p className="text-gray-500">
+              No status data available. Add some notes to generate insights.
+            </p>
           )}
         </CardContent>
       </Card>
@@ -184,20 +217,25 @@ export default function ProjectStatusPage() {
           {recentEntries && recentEntries.length > 0 ? (
             <div className="space-y-4">
               {recentEntries.map((entry: any) => {
-                const entryType = (entry.metadata as any)?.type || 'note'
+                const entryType = (entry.metadata as any)?.type || "note";
                 const typeConfigs: Record<string, { color: string; icon: string }> = {
-                  note: { color: 'bg-blue-100 text-blue-700', icon: '📝' },
-                  meeting: { color: 'bg-purple-100 text-purple-700', icon: '👥' },
-                  decision: { color: 'bg-yellow-100 text-yellow-700', icon: '💡' },
-                  feedback: { color: 'bg-green-100 text-green-700', icon: '💬' },
-                  task_update: { color: 'bg-orange-100 text-orange-700', icon: '✅' }
-                }
-                const typeConfig = typeConfigs[entryType] || { color: 'bg-gray-100 text-gray-700', icon: '📄' }
+                  note: { color: "bg-blue-100 text-blue-700", icon: "📝" },
+                  meeting: { color: "bg-purple-100 text-purple-700", icon: "👥" },
+                  decision: { color: "bg-yellow-100 text-yellow-700", icon: "💡" },
+                  feedback: { color: "bg-green-100 text-green-700", icon: "💬" },
+                  task_update: { color: "bg-orange-100 text-orange-700", icon: "✅" },
+                };
+                const typeConfig = typeConfigs[entryType] || {
+                  color: "bg-gray-100 text-gray-700",
+                  icon: "📄",
+                };
 
                 return (
                   <div key={entry.id} className="flex gap-4">
                     <div className="flex-shrink-0">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${typeConfig.color}`}>
+                      <div
+                        className={`w-10 h-10 rounded-full flex items-center justify-center ${typeConfig.color}`}
+                      >
                         <span className="text-lg">{typeConfig.icon}</span>
                       </div>
                     </div>
@@ -214,7 +252,7 @@ export default function ProjectStatusPage() {
                       </div>
                     </div>
                   </div>
-                )
+                );
               })}
             </div>
           ) : (
@@ -225,5 +263,5 @@ export default function ProjectStatusPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

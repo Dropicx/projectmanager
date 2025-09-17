@@ -1,84 +1,85 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle, Button, Input } from '@consulting-platform/ui'
-import { Users, Mail, Shield, Calendar, Search, UserPlus, MoreVertical, Edit, Trash2 } from 'lucide-react'
+import { Button, Card, CardContent, CardHeader, CardTitle, Input } from "@consulting-platform/ui";
+import { Calendar, Edit, Mail, MoreVertical, Search, Shield, UserPlus, Users } from "lucide-react";
+import { useState } from "react";
 
 export default function TeamPage() {
-  const [searchTerm, setSearchTerm] = useState('')
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Mock data - replace with actual data from API
   const teamMembers = [
     {
-      id: '1',
-      name: 'Sarah Johnson',
-      email: 'sarah.johnson@consailt.com',
-      role: 'Senior Consultant',
-      department: 'Strategy',
-      joinedDate: '2023-01-15',
-      status: 'active',
+      id: "1",
+      name: "Sarah Johnson",
+      email: "sarah.johnson@consailt.com",
+      role: "Senior Consultant",
+      department: "Strategy",
+      joinedDate: "2023-01-15",
+      status: "active",
       projects: 5,
-      avatar: null
+      avatar: null,
     },
     {
-      id: '2',
-      name: 'Michael Chen',
-      email: 'michael.chen@consailt.com',
-      role: 'Project Manager',
-      department: 'Operations',
-      joinedDate: '2023-03-22',
-      status: 'active',
+      id: "2",
+      name: "Michael Chen",
+      email: "michael.chen@consailt.com",
+      role: "Project Manager",
+      department: "Operations",
+      joinedDate: "2023-03-22",
+      status: "active",
       projects: 3,
-      avatar: null
+      avatar: null,
     },
     {
-      id: '3',
-      name: 'Emily Rodriguez',
-      email: 'emily.rodriguez@consailt.com',
-      role: 'Data Analyst',
-      department: 'Analytics',
-      joinedDate: '2023-06-10',
-      status: 'active',
+      id: "3",
+      name: "Emily Rodriguez",
+      email: "emily.rodriguez@consailt.com",
+      role: "Data Analyst",
+      department: "Analytics",
+      joinedDate: "2023-06-10",
+      status: "active",
       projects: 4,
-      avatar: null
+      avatar: null,
     },
     {
-      id: '4',
-      name: 'James Wilson',
-      email: 'james.wilson@consailt.com',
-      role: 'UX Designer',
-      department: 'Design',
-      joinedDate: '2023-02-28',
-      status: 'active',
+      id: "4",
+      name: "James Wilson",
+      email: "james.wilson@consailt.com",
+      role: "UX Designer",
+      department: "Design",
+      joinedDate: "2023-02-28",
+      status: "active",
       projects: 2,
-      avatar: null
+      avatar: null,
     },
     {
-      id: '5',
-      name: 'Lisa Anderson',
-      email: 'lisa.anderson@consailt.com',
-      role: 'Business Analyst',
-      department: 'Strategy',
-      joinedDate: '2023-04-15',
-      status: 'inactive',
+      id: "5",
+      name: "Lisa Anderson",
+      email: "lisa.anderson@consailt.com",
+      role: "Business Analyst",
+      department: "Strategy",
+      joinedDate: "2023-04-15",
+      status: "inactive",
       projects: 1,
-      avatar: null
-    }
-  ]
+      avatar: null,
+    },
+  ];
 
-  const filteredMembers = teamMembers.filter(member =>
-    member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    member.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    member.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    member.department.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const filteredMembers = teamMembers.filter(
+    (member) =>
+      member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      member.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      member.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      member.department.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const departmentStats = {
     Strategy: 2,
     Operations: 1,
     Analytics: 1,
-    Design: 1
-  }
+    Design: 1,
+  };
 
   return (
     <div className="space-y-8">
@@ -104,7 +105,7 @@ export default function TeamPage() {
           <CardContent>
             <div className="text-2xl font-bold">{teamMembers.length}</div>
             <p className="text-xs text-gray-500 mt-1">
-              {teamMembers.filter(m => m.status === 'active').length} active
+              {teamMembers.filter((m) => m.status === "active").length} active
             </p>
           </CardContent>
         </Card>
@@ -140,7 +141,10 @@ export default function TeamPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {(teamMembers.reduce((sum, m) => sum + m.projects, 0) / teamMembers.filter(m => m.projects > 0).length).toFixed(1)}
+              {(
+                teamMembers.reduce((sum, m) => sum + m.projects, 0) /
+                teamMembers.filter((m) => m.projects > 0).length
+              ).toFixed(1)}
             </div>
             <p className="text-xs text-gray-500 mt-1">Per project</p>
           </CardContent>
@@ -187,7 +191,10 @@ export default function TeamPage() {
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center">
                           <span className="text-indigo-600 font-semibold">
-                            {member.name.split(' ').map(n => n[0]).join('')}
+                            {member.name
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")}
                           </span>
                         </div>
                         <div>
@@ -200,11 +207,13 @@ export default function TeamPage() {
                     <td className="py-4 px-4 text-gray-700">{member.department}</td>
                     <td className="py-4 px-4 text-gray-700">{member.projects}</td>
                     <td className="py-4 px-4">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        member.status === 'active'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-gray-100 text-gray-800'
-                      }`}>
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          member.status === "active"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-gray-100 text-gray-800"
+                        }`}
+                      >
                         {member.status}
                       </span>
                     </td>
@@ -246,5 +255,5 @@ export default function TeamPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

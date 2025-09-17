@@ -16,14 +16,22 @@
     "start": "turbo start --filter=web",
     "worker:start": "turbo start --filter=worker",
     "lint": "turbo lint",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
     "type-check": "turbo type-check",
     "db:push": "turbo db:push",
     "db:migrate": "turbo db:migrate",
     "db:studio": "turbo db:studio",
     "test": "turbo test",
     "test:e2e": "turbo test:e2e",
+    "test:ci": "turbo test --coverage",
     "deploy": "railway up",
-    "clean": "turbo clean"
+    "clean": "turbo clean",
+    "prepare": "husky install",
+    "pre-commit": "lint-staged",
+    "security:audit": "audit-ci --config audit-ci.json",
+    "security:check": "pnpm audit --audit-level moderate",
+    "validate": "pnpm type-check && pnpm lint && pnpm security:audit && pnpm test"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.2.4",
@@ -40,5 +48,17 @@
   "workspaces": [
     "apps/*",
     "packages/*"
-  ]
+  ],
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,json,md}": [
+      "biome check --write",
+      "biome format --write"
+    ],
+    "*.{ts,tsx}": [
+      "tsc --noEmit"
+    ],
+    "package.json": [
+      "pnpm security:audit"
+    ]
+  }
 }

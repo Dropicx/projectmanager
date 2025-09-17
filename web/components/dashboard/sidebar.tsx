@@ -1,47 +1,46 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { cn } from '@consulting-platform/ui'
-import { useSidebar } from '@/contexts/sidebar-context'
-import dynamic from 'next/dynamic'
+import { cn } from "@consulting-platform/ui";
 import {
-  LayoutDashboard,
-  Briefcase,
-  Brain,
-  Database,
-  Settings,
-  Search,
   BarChart3,
-  Menu,
+  Bell,
+  Briefcase,
   ChevronLeft,
+  Database,
   Hash,
+  LayoutDashboard,
+  Menu,
+  Search,
+  Settings,
   Sparkles,
-  Bell
-} from 'lucide-react'
+} from "lucide-react";
+import dynamic from "next/dynamic";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useSidebar } from "@/contexts/sidebar-context";
 
-const UserButton = dynamic(
-  () => import('@clerk/nextjs').then(mod => mod.UserButton),
-  { ssr: false, loading: () => <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" /> }
-)
+const UserButton = dynamic(() => import("@clerk/nextjs").then((mod) => mod.UserButton), {
+  ssr: false,
+  loading: () => <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />,
+});
 
 const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Knowledge Base', href: '/knowledge', icon: Database },
-  { name: 'Engagements', href: '/projects', icon: Briefcase },
-  { name: 'AI Insights', href: '/insights', icon: Sparkles },
-  { name: 'Search', href: '/search', icon: Search },
-  { name: 'Topics', href: '/topics', icon: Hash },
-  { name: 'Analytics', href: '/analytics', icon: BarChart3 },
-  { name: 'Settings', href: '/settings', icon: Settings },
-]
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Knowledge Base", href: "/knowledge", icon: Database },
+  { name: "Engagements", href: "/projects", icon: Briefcase },
+  { name: "AI Insights", href: "/insights", icon: Sparkles },
+  { name: "Search", href: "/search", icon: Search },
+  { name: "Topics", href: "/topics", icon: Hash },
+  { name: "Analytics", href: "/analytics", icon: BarChart3 },
+  { name: "Settings", href: "/settings", icon: Settings },
+];
 
 export function DashboardSidebar() {
-  const pathname = usePathname()
-  const { isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen } = useSidebar()
+  const pathname = usePathname();
+  const { isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen } = useSidebar();
 
-  const toggleSidebar = () => setIsCollapsed(!isCollapsed)
-  const toggleMobile = () => setIsMobileOpen(!isMobileOpen)
+  const toggleSidebar = () => setIsCollapsed(!isCollapsed);
+  const toggleMobile = () => setIsMobileOpen(!isMobileOpen);
 
   return (
     <>
@@ -55,22 +54,19 @@ export function DashboardSidebar() {
 
       {/* Mobile overlay */}
       {isMobileOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/30 lg:hidden"
-          onClick={toggleMobile}
-        />
+        <div className="fixed inset-0 z-40 bg-black/30 lg:hidden" onClick={toggleMobile} />
       )}
 
       {/* Sidebar */}
       <div
         className={cn(
-          'fixed inset-y-0 z-50 flex flex-col bg-gradient-to-b from-indigo-600 to-indigo-700 text-white shadow-xl transition-all duration-300',
+          "fixed inset-y-0 z-50 flex flex-col bg-gradient-to-b from-indigo-600 to-indigo-700 text-white shadow-xl transition-all duration-300",
           // Desktop width
-          isCollapsed ? 'lg:w-20' : 'lg:w-72',
+          isCollapsed ? "lg:w-20" : "lg:w-72",
           // Mobile/tablet visibility
-          isMobileOpen ? 'left-0 w-72' : '-left-72 lg:left-0',
+          isMobileOpen ? "left-0 w-72" : "-left-72 lg:left-0",
           // Always visible on large screens
-          'lg:left-0'
+          "lg:left-0"
         )}
       >
         {/* Header with branding */}
@@ -89,10 +85,12 @@ export function DashboardSidebar() {
             onClick={toggleSidebar}
             className="hidden lg:block p-1.5 rounded-md hover:bg-indigo-500/30 transition-colors"
           >
-            <ChevronLeft className={cn(
-              "h-5 w-5 text-indigo-200 transition-transform",
-              isCollapsed && "rotate-180"
-            )} />
+            <ChevronLeft
+              className={cn(
+                "h-5 w-5 text-indigo-200 transition-transform",
+                isCollapsed && "rotate-180"
+              )}
+            />
           </button>
 
           {/* Mobile close button */}
@@ -122,50 +120,44 @@ export function DashboardSidebar() {
         <nav className="flex-1 overflow-y-auto py-4">
           <ul className="space-y-1 px-3">
             {navigation.map((item) => {
-              const isActive = pathname === item.href
+              const isActive = pathname === item.href;
               return (
                 <li key={item.name}>
                   <Link
                     href={item.href}
                     onClick={() => setIsMobileOpen(false)}
                     className={cn(
-                      'group flex items-center gap-x-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all',
+                      "group flex items-center gap-x-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all",
                       isActive
-                        ? 'bg-white/20 text-white shadow-md'
-                        : 'text-indigo-100 hover:text-white hover:bg-indigo-500/20'
+                        ? "bg-white/20 text-white shadow-md"
+                        : "text-indigo-100 hover:text-white hover:bg-indigo-500/20"
                     )}
                     title={isCollapsed ? item.name : undefined}
                   >
                     <item.icon
                       className={cn(
-                        'h-6 w-6 shrink-0',
-                        isActive ? 'text-white' : 'text-indigo-200 group-hover:text-white'
+                        "h-6 w-6 shrink-0",
+                        isActive ? "text-white" : "text-indigo-200 group-hover:text-white"
                       )}
                     />
-                    <span className={cn(
-                      'transition-all',
-                      isCollapsed && 'lg:hidden'
-                    )}>
+                    <span className={cn("transition-all", isCollapsed && "lg:hidden")}>
                       {item.name}
                     </span>
                   </Link>
                 </li>
-              )
+              );
             })}
           </ul>
         </nav>
 
         {/* User section at bottom */}
         <div className="border-t border-indigo-500/30 p-4">
-          <div className={cn(
-            "flex items-center gap-3",
-            isCollapsed && "lg:justify-center"
-          )}>
+          <div className={cn("flex items-center gap-3", isCollapsed && "lg:justify-center")}>
             <UserButton
               appearance={{
                 elements: {
-                  avatarBox: "w-10 h-10"
-                }
+                  avatarBox: "w-10 h-10",
+                },
               }}
             />
             {!isCollapsed && (
@@ -186,5 +178,5 @@ export function DashboardSidebar() {
         </div>
       </div>
     </>
-  )
+  );
 }

@@ -1,16 +1,16 @@
-import { router } from './trpc'
-import { projectsRouter } from './routers/projects'
-import { aiRouter } from './routers/ai'
-import { tasksRouter } from './routers/tasks'
-import { usageRouter } from './routers/usage'
-import { knowledgeRouter } from './routers/knowledge'
+import { aiRouter } from "./routers/ai";
+import { knowledgeRouter } from "./routers/knowledge";
+import { projectsRouter } from "./routers/projects";
+import { tasksRouter } from "./routers/tasks";
+import { usageRouter } from "./routers/usage";
+import { router } from "./trpc";
 
 export const appRouter = router({
   projects: projectsRouter,
   ai: aiRouter,
   tasks: tasksRouter,
   usage: usageRouter,
-  knowledge: knowledgeRouter
-})
+  knowledge: knowledgeRouter,
+});
 
-export type AppRouter = typeof appRouter
+export type AppRouter = typeof appRouter;

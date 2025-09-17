@@ -1,48 +1,69 @@
-'use client'
+"use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button, Badge, Input } from '@consulting-platform/ui'
-import { trpc } from '@/app/providers/trpc-provider'
-import { useUser } from '@clerk/nextjs'
-import Link from 'next/link'
-import { useState } from 'react'
+import { useUser } from "@clerk/nextjs";
 import {
-  ArrowRight, Brain, Search, BookOpen, Lightbulb,
-  TrendingUp, Clock, FileText, Hash, Plus, Sparkles,
-  Database, Users, Target, Zap
-} from 'lucide-react'
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Input,
+} from "@consulting-platform/ui";
+import {
+  ArrowRight,
+  BookOpen,
+  Brain,
+  Clock,
+  Database,
+  FileText,
+  Hash,
+  Lightbulb,
+  Plus,
+  Search,
+  Sparkles,
+  Target,
+  TrendingUp,
+  Users,
+  Zap,
+} from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
+import { trpc } from "@/app/providers/trpc-provider";
 
 export default function DashboardPage() {
-  const { user } = useUser()
-  const [searchQuery, setSearchQuery] = useState('')
-  const { data: projects } = trpc.projects.getAll.useQuery()
+  const { user } = useUser();
+  const [searchQuery, setSearchQuery] = useState("");
+  const { data: projects } = trpc.projects.getAll.useQuery();
 
   // Calculate knowledge statistics
-  const totalClients = projects?.length || 0
-  const activeEngagements = projects?.filter((p: any) => p.status === 'active').length || 0
+  const totalClients = projects?.length || 0;
+  const activeEngagements = projects?.filter((p: any) => p.status === "active").length || 0;
 
   // Mock knowledge stats (will be real when DB is set up)
   const knowledgeStats = {
     totalNotes: 142,
     weeklyGrowth: 23,
-    topTags: ['architecture', 'security', 'cloud', 'devops'],
-    recentInsights: 8
-  }
+    topTags: ["architecture", "security", "cloud", "devops"],
+    recentInsights: 8,
+  };
 
   // Get recent engagements (top 3)
-  const recentEngagements = projects?.slice(0, 3) || []
+  const recentEngagements = projects?.slice(0, 3) || [];
 
   const formatTimeAgo = (date: Date | string | null) => {
-    if (!date) return 'Never'
-    const now = new Date()
-    const then = new Date(date)
-    const diffInHours = Math.floor((now.getTime() - then.getTime()) / (1000 * 60 * 60))
+    if (!date) return "Never";
+    const now = new Date();
+    const then = new Date(date);
+    const diffInHours = Math.floor((now.getTime() - then.getTime()) / (1000 * 60 * 60));
 
-    if (diffInHours < 1) return 'Just now'
-    if (diffInHours < 24) return `${diffInHours}h ago`
-    const diffInDays = Math.floor(diffInHours / 24)
-    if (diffInDays < 30) return `${diffInDays}d ago`
-    return then.toLocaleDateString()
-  }
+    if (diffInHours < 1) return "Just now";
+    if (diffInHours < 24) return `${diffInHours}h ago`;
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 30) return `${diffInDays}d ago`;
+    return then.toLocaleDateString();
+  };
 
   return (
     <div className="space-y-6">
@@ -50,7 +71,8 @@ export default function DashboardPage() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Knowledge Dashboard</h1>
         <p className="text-muted-foreground">
-          Welcome back, {user?.firstName || 'Consultant'}! Capture and leverage insights from your engagements.
+          Welcome back, {user?.firstName || "Consultant"}! Capture and leverage insights from your
+          engagements.
         </p>
 
         {/* Global Knowledge Search */}
@@ -79,8 +101,8 @@ export default function DashboardPage() {
           <CardContent>
             <div className="text-2xl font-bold">{knowledgeStats.totalNotes}</div>
             <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <TrendingUp className="h-3 w-3 text-green-600" />
-              +{knowledgeStats.weeklyGrowth} this week
+              <TrendingUp className="h-3 w-3 text-green-600" />+{knowledgeStats.weeklyGrowth} this
+              week
             </p>
           </CardContent>
         </Card>
@@ -92,9 +114,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{activeEngagements}</div>
-            <p className="text-xs text-muted-foreground">
-              {totalClients} total engagements
-            </p>
+            <p className="text-xs text-muted-foreground">{totalClients} total engagements</p>
           </CardContent>
         </Card>
 
@@ -105,9 +125,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{knowledgeStats.recentInsights}</div>
-            <p className="text-xs text-muted-foreground">
-              Generated this week
-            </p>
+            <p className="text-xs text-muted-foreground">Generated this week</p>
           </CardContent>
         </Card>
 
@@ -118,9 +136,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">+16%</div>
-            <p className="text-xs text-muted-foreground">
-              vs last month
-            </p>
+            <p className="text-xs text-muted-foreground">vs last month</p>
           </CardContent>
         </Card>
       </div>
@@ -133,9 +149,7 @@ export default function DashboardPage() {
               <Plus className="h-5 w-5" />
               Quick Capture
             </CardTitle>
-            <CardDescription>
-              Add knowledge from any engagement
-            </CardDescription>
+            <CardDescription>Add knowledge from any engagement</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
@@ -174,9 +188,24 @@ export default function DashboardPage() {
           <CardContent>
             <div className="space-y-3">
               {[
-                { title: 'AWS Architecture Review', client: 'TechCorp', time: '2h ago', type: 'technical' },
-                { title: 'Security Audit Findings', client: 'FinanceInc', time: '5h ago', type: 'audit' },
-                { title: 'DevOps Strategy Meeting', client: 'StartupXYZ', time: '1d ago', type: 'meeting' }
+                {
+                  title: "AWS Architecture Review",
+                  client: "TechCorp",
+                  time: "2h ago",
+                  type: "technical",
+                },
+                {
+                  title: "Security Audit Findings",
+                  client: "FinanceInc",
+                  time: "5h ago",
+                  type: "audit",
+                },
+                {
+                  title: "DevOps Strategy Meeting",
+                  client: "StartupXYZ",
+                  time: "1d ago",
+                  type: "meeting",
+                },
               ].map((entry, i) => (
                 <div key={i} className="text-sm space-y-1">
                   <p className="font-medium line-clamp-1">{entry.title}</p>
@@ -198,9 +227,7 @@ export default function DashboardPage() {
               <Brain className="h-5 w-5 text-indigo-600" />
               AI Assistant
             </CardTitle>
-            <CardDescription>
-              Get insights from your knowledge
-            </CardDescription>
+            <CardDescription>Get insights from your knowledge</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -224,9 +251,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>Active Engagements</CardTitle>
-              <CardDescription>
-                Your current client projects
-              </CardDescription>
+              <CardDescription>Your current client projects</CardDescription>
             </div>
             <Link href="/projects">
               <Button variant="outline" size="sm">
@@ -280,9 +305,7 @@ export default function DashboardPage() {
             <Hash className="h-5 w-5" />
             Popular Topics
           </CardTitle>
-          <CardDescription>
-            Your most frequently referenced areas
-          </CardDescription>
+          <CardDescription>Your most frequently referenced areas</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-2">
@@ -302,5 +325,5 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

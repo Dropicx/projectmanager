@@ -1,54 +1,54 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Button, Input, Label, Textarea } from '@consulting-platform/ui'
-import { trpc as api } from '@/app/providers/trpc-provider'
+import { Button, Input, Label, Textarea } from "@consulting-platform/ui";
+import { useState } from "react";
+import { trpc as api } from "@/app/providers/trpc-provider";
 
 interface TaskFormProps {
-  projectId: string
-  task?: any
-  onSuccess: () => void
-  onCancel: () => void
+  projectId: string;
+  task?: any;
+  onSuccess: () => void;
+  onCancel: () => void;
 }
 
 export function TaskForm({ projectId, task, onSuccess, onCancel }: TaskFormProps) {
   const [formData, setFormData] = useState({
-    title: task?.title || '',
-    description: task?.description || '',
-    status: task?.status || 'todo',
-    priority: task?.priority || 'medium',
-    assigneeId: task?.assigneeId || '',
-    dueDate: task?.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '',
-    estimatedHours: task?.estimatedHours || '',
-    tags: task?.tags || []
-  })
+    title: task?.title || "",
+    description: task?.description || "",
+    status: task?.status || "todo",
+    priority: task?.priority || "medium",
+    assigneeId: task?.assigneeId || "",
+    dueDate: task?.dueDate ? new Date(task.dueDate).toISOString().split("T")[0] : "",
+    estimatedHours: task?.estimatedHours || "",
+    tags: task?.tags || [],
+  });
 
   const createTask = api.tasks.create.useMutation({
-    onSuccess
-  })
+    onSuccess,
+  });
 
   const updateTask = api.tasks.update.useMutation({
-    onSuccess
-  })
+    onSuccess,
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     const data = {
       ...formData,
       estimatedHours: formData.estimatedHours ? Number(formData.estimatedHours) : undefined,
       dueDate: formData.dueDate ? new Date(formData.dueDate).toISOString() : undefined,
-      assigneeId: formData.assigneeId || undefined
-    }
+      assigneeId: formData.assigneeId || undefined,
+    };
 
     if (task) {
-      updateTask.mutate({ id: task.id, ...data })
+      updateTask.mutate({ id: task.id, ...data });
     } else {
-      createTask.mutate({ projectId, ...data })
+      createTask.mutate({ projectId, ...data });
     }
-  }
+  };
 
-  const isLoading = createTask.isPending || updateTask.isPending
+  const isLoading = createTask.isPending || updateTask.isPending;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -135,11 +135,16 @@ export function TaskForm({ projectId, task, onSuccess, onCancel }: TaskFormProps
         <Label htmlFor="tags">Tags (comma separated)</Label>
         <Input
           id="tags"
-          value={formData.tags.join(', ')}
-          onChange={(e) => setFormData({
-            ...formData,
-            tags: e.target.value.split(',').map((t: string) => t.trim()).filter((t: string) => t)
-          })}
+          value={formData.tags.join(", ")}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              tags: e.target.value
+                .split(",")
+                .map((t: string) => t.trim())
+                .filter((t: string) => t),
+            })
+          }
           placeholder="bug, feature, urgent"
         />
       </div>
@@ -149,9 +154,9 @@ export function TaskForm({ projectId, task, onSuccess, onCancel }: TaskFormProps
           Cancel
         </Button>
         <Button type="submit" disabled={isLoading}>
-          {isLoading ? 'Saving...' : task ? 'Update Task' : 'Create Task'}
+          {isLoading ? "Saving..." : task ? "Update Task" : "Create Task"}
         </Button>
       </div>
     </form>
-  )
+  );
 }

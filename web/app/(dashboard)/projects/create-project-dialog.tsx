@@ -1,78 +1,78 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { useForm } from 'react-hook-form'
-import { trpc } from '@/app/providers/trpc-provider'
 import {
+  Button,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  Button,
   Input,
   Label,
   Textarea,
-} from '@consulting-platform/ui'
-import { Loader2, AlertCircle } from 'lucide-react'
+} from "@consulting-platform/ui";
+import { AlertCircle, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { trpc } from "@/app/providers/trpc-provider";
 
 type CreateProjectFormData = {
-  name: string
-  description?: string
-  budget?: string
-  startDate?: string
-  endDate?: string
-}
+  name: string;
+  description?: string;
+  budget?: string;
+  startDate?: string;
+  endDate?: string;
+};
 
 interface CreateProjectDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
 export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogProps) {
-  const router = useRouter()
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const utils = trpc.useUtils()
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const utils = trpc.useUtils();
 
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<CreateProjectFormData>()
+  } = useForm<CreateProjectFormData>();
 
   const createProjectMutation = trpc.projects.create.useMutation({
     onSuccess: async (newProject) => {
       // Invalidate and refetch projects list
-      await utils.projects.getAll.invalidate()
+      await utils.projects.getAll.invalidate();
 
       // Reset form
-      reset()
+      reset();
 
       // Close dialog
-      onOpenChange(false)
+      onOpenChange(false);
 
       // Navigate to new project
-      router.push(`/projects/${newProject.id}`)
+      router.push(`/projects/${newProject.id}`);
     },
     onError: (error) => {
-      console.error('Failed to create project:', error)
+      console.error("Failed to create project:", error);
     },
-  })
+  });
 
   const onSubmit = async (data: CreateProjectFormData) => {
-    setIsSubmitting(true)
+    setIsSubmitting(true);
 
     try {
       // Build timeline object if dates are provided
-      let timeline = undefined
+      let timeline;
       if (data.startDate || data.endDate) {
         timeline = {
           start: data.startDate || null,
           end: data.endDate || null,
-        }
+        };
       }
 
       await createProjectMutation.mutateAsync({
@@ -80,20 +80,20 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
         description: data.description,
         budget: data.budget ? parseInt(data.budget, 10) : undefined,
         timeline,
-      })
-    } catch (error) {
+      });
+    } catch (_error) {
       // Error is handled in mutation onError
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   const handleClose = () => {
     if (!isSubmitting) {
-      reset()
-      onOpenChange(false)
+      reset();
+      onOpenChange(false);
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -114,7 +114,7 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
               <Input
                 id="name"
                 placeholder="e.g., Digital Transformation Initiative"
-                {...register('name', { required: 'Project name is required' })}
+                {...register("name", { required: "Project name is required" })}
                 disabled={isSubmitting}
               />
               {errors.name && (
@@ -131,7 +131,7 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
                 id="description"
                 placeholder="Brief description of the project goals and scope..."
                 rows={3}
-                {...register('description')}
+                {...register("description")}
                 disabled={isSubmitting}
               />
             </div>
@@ -142,7 +142,7 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
                 id="budget"
                 type="number"
                 placeholder="e.g., 250000"
-                {...register('budget')}
+                {...register("budget")}
                 disabled={isSubmitting}
               />
             </div>
@@ -153,18 +153,13 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
                 <Input
                   id="startDate"
                   type="date"
-                  {...register('startDate')}
+                  {...register("startDate")}
                   disabled={isSubmitting}
                 />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="endDate">End Date</Label>
-                <Input
-                  id="endDate"
-                  type="date"
-                  {...register('endDate')}
-                  disabled={isSubmitting}
-                />
+                <Input id="endDate" type="date" {...register("endDate")} disabled={isSubmitting} />
               </div>
             </div>
           </div>
@@ -179,12 +174,7 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
           )}
 
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleClose}
-              disabled={isSubmitting}
-            >
+            <Button type="button" variant="outline" onClick={handleClose} disabled={isSubmitting}>
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting}>
@@ -194,12 +184,12 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
                   Creating...
                 </>
               ) : (
-                'Create Project'
+                "Create Project"
               )}
             </Button>
           </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

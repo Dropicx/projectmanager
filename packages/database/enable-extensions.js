@@ -1,6 +1,8 @@
-const postgres = require('postgres');
+const postgres = require("postgres");
 
-const DATABASE_URL = process.env.DATABASE_URL || "postgresql://postgres:vtwyKVDTWAyWySGhzxYJpBpEJPjsiiLN@crossover.proxy.rlwy.net:39737/railway";
+const DATABASE_URL =
+  process.env.DATABASE_URL ||
+  "postgresql://postgres:vtwyKVDTWAyWySGhzxYJpBpEJPjsiiLN@crossover.proxy.rlwy.net:39737/railway";
 
 async function enableExtensions() {
   console.log("Connecting to database...");
@@ -21,12 +23,11 @@ async function enableExtensions() {
     try {
       await client`CREATE EXTENSION IF NOT EXISTS "vector"`;
       console.log("✓ pgvector extension enabled");
-    } catch (err) {
+    } catch (_err) {
       console.log("⚠ pgvector extension not available (optional for embeddings)");
     }
 
     console.log("\n✅ Extensions enabled successfully!");
-
   } catch (error) {
     console.error("Error enabling extensions:", error);
     process.exit(1);

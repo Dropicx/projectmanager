@@ -9,7 +9,7 @@
  */
 export function cosineSimilarity(a: number[], b: number[]): number {
   if (a.length !== b.length) {
-    throw new Error('Vectors must have the same length');
+    throw new Error("Vectors must have the same length");
   }
 
   let dotProduct = 0;
@@ -36,11 +36,11 @@ export function findSimilarEmbeddings(
   threshold: number = 0.7
 ): Array<{ id: string; similarity: number; [key: string]: any }> {
   const similarities = embeddings
-    .map(item => ({
+    .map((item) => ({
       ...item,
-      similarity: cosineSimilarity(queryEmbedding, item.embedding)
+      similarity: cosineSimilarity(queryEmbedding, item.embedding),
     }))
-    .filter(item => item.similarity >= threshold)
+    .filter((item) => item.similarity >= threshold)
     .sort((a, b) => b.similarity - a.similarity)
     .slice(0, topK);
 
@@ -53,7 +53,10 @@ export function findSimilarEmbeddings(
  */
 export interface VectorDBService {
   store(id: string, embedding: number[], metadata?: any): Promise<void>;
-  search(embedding: number[], topK?: number): Promise<Array<{ id: string; score: number; metadata?: any }>>;
+  search(
+    embedding: number[],
+    topK?: number
+  ): Promise<Array<{ id: string; score: number; metadata?: any }>>;
   delete(id: string): Promise<void>;
 }
 
@@ -85,11 +88,14 @@ export class HybridEmbeddingService {
   /**
    * Store embedding in PostgreSQL as JSONB
    */
-  async store(db: any, id: string, embedding: number[], table: string = 'knowledge_base') {
+  async store(db: any, id: string, embedding: number[], table: string = "knowledge_base") {
     // Store in database as JSONB array
-    await db.update(table).set({
-      embedding: JSON.stringify(embedding)
-    }).where({ id });
+    await db
+      .update(table)
+      .set({
+        embedding: JSON.stringify(embedding),
+      })
+      .where({ id });
 
     // Cache in memory for fast search
     this.cache.set(id, embedding);
@@ -98,18 +104,19 @@ export class HybridEmbeddingService {
   /**
    * Load all embeddings into memory for search
    */
-  async loadEmbeddings(db: any, table: string = 'knowledge_base') {
-    const records = await db.select().from(table).where({
-      embedding: { not: null }
-    });
+  async loadEmbeddings(db: any, table: string = "knowledge_base") {
+    const records = await db
+      .select()
+      .from(table)
+      .where({
+        embedding: { not: null },
+      });
 
     for (const record of records) {
       if (record.embedding) {
         this.cache.set(
           record.id,
-          typeof record.embedding === 'string'
-            ? JSON.parse(record.embedding)
-            : record.embedding
+          typeof record.embedding === "string" ? JSON.parse(record.embedding) : record.embedding
         );
       }
     }
@@ -121,7 +128,7 @@ export class HybridEmbeddingService {
   search(queryEmbedding: number[], topK: number = 5): Array<{ id: string; similarity: number }> {
     const embeddings = Array.from(this.cache.entries()).map(([id, embedding]) => ({
       id,
-      embedding
+      embedding,
     }));
 
     return findSimilarEmbeddings(queryEmbedding, embeddings, topK);
@@ -135,18 +142,18 @@ export class HybridEmbeddingService {
 export const OPENSEARCH_MAPPING = {
   mappings: {
     properties: {
-      content: { type: 'text' },
+      content: { type: "text" },
       embedding: {
-        type: 'knn_vector',
+        type: "knn_vector",
         dimension: 1536,
         method: {
-          name: 'hnsw',
-          space_type: 'cosinesimil',
-          engine: 'lucene'
-        }
-      }
-    }
-  }
+          name: "hnsw",
+          space_type: "cosinesimil",
+          engine: "lucene",
+        },
+      },
+    },
+  },
 };
 
 /**
@@ -167,5 +174,5 @@ export default {
   findSimilarEmbeddings,
   HybridEmbeddingService,
   SUPABASE_MIGRATION_QUERY,
-  OPENSEARCH_MAPPING
+  OPENSEARCH_MAPPING,
 };

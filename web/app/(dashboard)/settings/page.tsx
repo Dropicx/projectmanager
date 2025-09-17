@@ -1,16 +1,35 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle, Button, Input, Label, Switch } from '@consulting-platform/ui'
-import { Settings, Bell, Shield, Palette, Globe, CreditCard, Download, Save, ChevronRight, Brain, TrendingUp, AlertCircle } from 'lucide-react'
-import { AIUsageDashboard } from '@/components/settings/ai-usage-dashboard'
+import {
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Input,
+  Label,
+  Switch,
+} from "@consulting-platform/ui";
+import {
+  Bell,
+  ChevronRight,
+  CreditCard,
+  Download,
+  Globe,
+  Palette,
+  Save,
+  Settings,
+  Shield,
+} from "lucide-react";
+import { useState } from "react";
+import { AIUsageDashboard } from "@/components/settings/ai-usage-dashboard";
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState({
-    organizationName: 'Consailt Inc.',
-    organizationEmail: 'admin@consailt.com',
-    timezone: 'America/New_York',
-    language: 'English',
+    organizationName: "Consailt Inc.",
+    organizationEmail: "admin@consailt.com",
+    timezone: "America/New_York",
+    language: "English",
     notifications: {
       email: true,
       push: true,
@@ -21,45 +40,48 @@ export default function SettingsPage() {
     },
     security: {
       twoFactor: false,
-      sessionTimeout: '30',
+      sessionTimeout: "30",
       ipWhitelist: false,
     },
     appearance: {
-      theme: 'light',
+      theme: "light",
       compactMode: false,
       showTips: true,
-    }
-  })
+    },
+  });
 
   const handleNotificationChange = (key: string) => {
-    setSettings(prev => ({
+    setSettings((prev) => ({
       ...prev,
       notifications: {
         ...prev.notifications,
-        [key]: !prev.notifications[key as keyof typeof prev.notifications]
-      }
-    }))
-  }
+        [key]: !prev.notifications[key as keyof typeof prev.notifications],
+      },
+    }));
+  };
 
   const handleSecurityChange = (key: string) => {
-    setSettings(prev => ({
+    setSettings((prev) => ({
       ...prev,
       security: {
         ...prev.security,
-        [key]: key === 'sessionTimeout' ? prev.security.sessionTimeout : !prev.security[key as keyof typeof prev.security]
-      }
-    }))
-  }
+        [key]:
+          key === "sessionTimeout"
+            ? prev.security.sessionTimeout
+            : !prev.security[key as keyof typeof prev.security],
+      },
+    }));
+  };
 
   const handleAppearanceChange = (key: string) => {
-    setSettings(prev => ({
+    setSettings((prev) => ({
       ...prev,
       appearance: {
         ...prev.appearance,
-        [key]: !prev.appearance[key as keyof typeof prev.appearance]
-      }
-    }))
-  }
+        [key]: !prev.appearance[key as keyof typeof prev.appearance],
+      },
+    }));
+  };
 
   return (
     <div className="space-y-8">
@@ -156,7 +178,7 @@ export default function SettingsPage() {
               </div>
               <Switch
                 checked={settings.notifications.email}
-                onCheckedChange={() => handleNotificationChange('email')}
+                onCheckedChange={() => handleNotificationChange("email")}
               />
             </div>
             <div className="flex items-center justify-between">
@@ -166,7 +188,7 @@ export default function SettingsPage() {
               </div>
               <Switch
                 checked={settings.notifications.push}
-                onCheckedChange={() => handleNotificationChange('push')}
+                onCheckedChange={() => handleNotificationChange("push")}
               />
             </div>
             <div className="flex items-center justify-between">
@@ -176,7 +198,7 @@ export default function SettingsPage() {
               </div>
               <Switch
                 checked={settings.notifications.projectUpdates}
-                onCheckedChange={() => handleNotificationChange('projectUpdates')}
+                onCheckedChange={() => handleNotificationChange("projectUpdates")}
               />
             </div>
             <div className="flex items-center justify-between">
@@ -186,7 +208,7 @@ export default function SettingsPage() {
               </div>
               <Switch
                 checked={settings.notifications.taskAssignments}
-                onCheckedChange={() => handleNotificationChange('taskAssignments')}
+                onCheckedChange={() => handleNotificationChange("taskAssignments")}
               />
             </div>
             <div className="flex items-center justify-between">
@@ -196,7 +218,7 @@ export default function SettingsPage() {
               </div>
               <Switch
                 checked={settings.notifications.teamInvites}
-                onCheckedChange={() => handleNotificationChange('teamInvites')}
+                onCheckedChange={() => handleNotificationChange("teamInvites")}
               />
             </div>
             <div className="flex items-center justify-between">
@@ -206,7 +228,7 @@ export default function SettingsPage() {
               </div>
               <Switch
                 checked={settings.notifications.weeklyReports}
-                onCheckedChange={() => handleNotificationChange('weeklyReports')}
+                onCheckedChange={() => handleNotificationChange("weeklyReports")}
               />
             </div>
           </div>
@@ -230,7 +252,7 @@ export default function SettingsPage() {
               </div>
               <Switch
                 checked={settings.security.twoFactor}
-                onCheckedChange={() => handleSecurityChange('twoFactor')}
+                onCheckedChange={() => handleSecurityChange("twoFactor")}
               />
             </div>
             <div className="flex items-center justify-between">
@@ -241,10 +263,12 @@ export default function SettingsPage() {
               <select
                 className="px-3 py-1 border rounded-lg"
                 value={settings.security.sessionTimeout}
-                onChange={(e) => setSettings({
-                  ...settings,
-                  security: { ...settings.security, sessionTimeout: e.target.value }
-                })}
+                onChange={(e) =>
+                  setSettings({
+                    ...settings,
+                    security: { ...settings.security, sessionTimeout: e.target.value },
+                  })
+                }
               >
                 <option value="15">15 minutes</option>
                 <option value="30">30 minutes</option>
@@ -259,7 +283,7 @@ export default function SettingsPage() {
               </div>
               <Switch
                 checked={settings.security.ipWhitelist}
-                onCheckedChange={() => handleSecurityChange('ipWhitelist')}
+                onCheckedChange={() => handleSecurityChange("ipWhitelist")}
               />
             </div>
           </div>
@@ -284,10 +308,12 @@ export default function SettingsPage() {
               <select
                 className="px-3 py-1 border rounded-lg"
                 value={settings.appearance.theme}
-                onChange={(e) => setSettings({
-                  ...settings,
-                  appearance: { ...settings.appearance, theme: e.target.value }
-                })}
+                onChange={(e) =>
+                  setSettings({
+                    ...settings,
+                    appearance: { ...settings.appearance, theme: e.target.value },
+                  })
+                }
               >
                 <option value="light">Light</option>
                 <option value="dark">Dark</option>
@@ -301,7 +327,7 @@ export default function SettingsPage() {
               </div>
               <Switch
                 checked={settings.appearance.compactMode}
-                onCheckedChange={() => handleAppearanceChange('compactMode')}
+                onCheckedChange={() => handleAppearanceChange("compactMode")}
               />
             </div>
             <div className="flex items-center justify-between">
@@ -311,7 +337,7 @@ export default function SettingsPage() {
               </div>
               <Switch
                 checked={settings.appearance.showTips}
-                onCheckedChange={() => handleAppearanceChange('showTips')}
+                onCheckedChange={() => handleAppearanceChange("showTips")}
               />
             </div>
           </div>
@@ -369,12 +395,15 @@ export default function SettingsPage() {
               <Download className="h-4 w-4 mr-2" />
               Download Your Data
             </Button>
-            <Button variant="outline" className="w-full justify-start text-red-600 hover:text-red-700">
+            <Button
+              variant="outline"
+              className="w-full justify-start text-red-600 hover:text-red-700"
+            >
               Delete Account
             </Button>
           </div>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

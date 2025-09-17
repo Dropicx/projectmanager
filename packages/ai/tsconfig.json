@@ -9,15 +9,6 @@
     "module": "CommonJS",
     "moduleResolution": "node"
   },
-  "include": [
-    "*.ts",
-    "bedrock/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "test-*.ts",
-    "**/*.test.ts",
-    "**/*.spec.ts"
-  ]
+  "include": ["*.ts", "bedrock/**/*.ts"],
+  "exclude": ["node_modules", "dist", "test-*.ts", "**/*.test.ts", "**/*.spec.ts"]
 }

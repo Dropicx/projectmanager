@@ -1,21 +1,21 @@
-'use client'
+"use client";
 
-import { Button } from '@consulting-platform/ui'
-import { Filter, SortAsc, SortDesc } from 'lucide-react'
-import { useState } from 'react'
+import { Button } from "@consulting-platform/ui";
+import { Filter, SortAsc, SortDesc } from "lucide-react";
+import { useState } from "react";
 
 interface TaskFiltersProps {
   filters: {
-    status: 'todo' | 'in-progress' | 'review' | 'completed' | 'all'
-    assigneeId?: string
-    sortBy: 'dueDate' | 'priority' | 'createdAt' | 'title'
-    sortOrder: 'asc' | 'desc'
-  }
-  setFilters: (filters: any) => void
+    status: "todo" | "in-progress" | "review" | "completed" | "all";
+    assigneeId?: string;
+    sortBy: "dueDate" | "priority" | "createdAt" | "title";
+    sortOrder: "asc" | "desc";
+  };
+  setFilters: (filters: any) => void;
 }
 
 export function TaskFilters({ filters, setFilters }: TaskFiltersProps) {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
     <div className="relative">
@@ -67,18 +67,18 @@ export function TaskFilters({ filters, setFilters }: TaskFiltersProps) {
               <div className="flex gap-2 mt-1">
                 <button
                   className={`flex-1 px-3 py-1 border rounded-lg text-sm flex items-center justify-center gap-1 ${
-                    filters.sortOrder === 'asc' ? 'bg-indigo-50 border-indigo-300' : ''
+                    filters.sortOrder === "asc" ? "bg-indigo-50 border-indigo-300" : ""
                   }`}
-                  onClick={() => setFilters({ ...filters, sortOrder: 'asc' })}
+                  onClick={() => setFilters({ ...filters, sortOrder: "asc" })}
                 >
                   <SortAsc className="h-3 w-3" />
                   Ascending
                 </button>
                 <button
                   className={`flex-1 px-3 py-1 border rounded-lg text-sm flex items-center justify-center gap-1 ${
-                    filters.sortOrder === 'desc' ? 'bg-indigo-50 border-indigo-300' : ''
+                    filters.sortOrder === "desc" ? "bg-indigo-50 border-indigo-300" : ""
                   }`}
-                  onClick={() => setFilters({ ...filters, sortOrder: 'desc' })}
+                  onClick={() => setFilters({ ...filters, sortOrder: "desc" })}
                 >
                   <SortDesc className="h-3 w-3" />
                   Descending
@@ -92,11 +92,11 @@ export function TaskFilters({ filters, setFilters }: TaskFiltersProps) {
               className="text-sm text-indigo-600 hover:text-indigo-700"
               onClick={() => {
                 setFilters({
-                  status: 'all',
+                  status: "all",
                   assigneeId: undefined,
-                  sortBy: 'createdAt',
-                  sortOrder: 'desc'
-                })
+                  sortBy: "createdAt",
+                  sortOrder: "desc",
+                });
               }}
             >
               Reset Filters
@@ -105,5 +105,5 @@ export function TaskFilters({ filters, setFilters }: TaskFiltersProps) {
         </div>
       )}
     </div>
-  )
+  );
 }

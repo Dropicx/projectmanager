@@ -1,28 +1,46 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle, Button, Input, Label, Progress } from '@consulting-platform/ui'
-import { Brain, TrendingUp, AlertCircle, DollarSign, Activity, Zap, BarChart3, Calendar, Settings2 } from 'lucide-react'
-import { trpc as api } from '@/app/providers/trpc-provider'
-import { formatDistanceToNow } from 'date-fns'
+import {
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Input,
+  Label,
+  Progress,
+} from "@consulting-platform/ui";
+import {
+  Activity,
+  AlertCircle,
+  BarChart3,
+  Brain,
+  Calendar,
+  DollarSign,
+  Settings2,
+  TrendingUp,
+  Zap,
+} from "lucide-react";
+import { useState } from "react";
+import { trpc as api } from "@/app/providers/trpc-provider";
 
 export function AIUsageDashboard() {
-  const [isEditing, setIsEditing] = useState(false)
+  const [isEditing, setIsEditing] = useState(false);
   const [newLimits, setNewLimits] = useState({
     monthlyBudgetUSD: 100,
-    dailyLimitUSD: 10
-  })
+    dailyLimitUSD: 10,
+  });
 
   // Fetch usage statistics
-  const { data: usageStats, isLoading, error, refetch } = api.usage.getStats.useQuery()
+  const { data: usageStats, isLoading, error, refetch } = api.usage.getStats.useQuery();
 
   // Update limits mutation
   const updateLimitsMutation = api.usage.updateLimits.useMutation({
     onSuccess: () => {
-      setIsEditing(false)
-      refetch()
-    }
-  })
+      setIsEditing(false);
+      refetch();
+    },
+  });
 
   if (isLoading) {
     return (
@@ -39,7 +57,7 @@ export function AIUsageDashboard() {
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   if (error) {
@@ -55,19 +73,19 @@ export function AIUsageDashboard() {
           <div className="text-red-600">Error loading usage data</div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
-  const monthlyPercentage = usageStats?.usage.monthly.percentUsed || 0
-  const dailyPercentage = usageStats?.usage.daily.percentUsed || 0
-  const isNearLimit = usageStats?.isNearLimit || false
+  const monthlyPercentage = usageStats?.usage.monthly.percentUsed || 0;
+  const dailyPercentage = usageStats?.usage.daily.percentUsed || 0;
+  const isNearLimit = usageStats?.isNearLimit || false;
 
   const handleSaveLimits = () => {
-    updateLimitsMutation.mutate(newLimits)
-  }
+    updateLimitsMutation.mutate(newLimits);
+  };
 
   return (
-    <Card className={isNearLimit ? 'border-orange-400' : ''}>
+    <Card className={isNearLimit ? "border-orange-400" : ""}>
       <CardHeader>
         <div className="flex justify-between items-start">
           <CardTitle className="flex items-center gap-2">
@@ -81,7 +99,7 @@ export function AIUsageDashboard() {
             className="flex items-center gap-1"
           >
             <Settings2 className="h-4 w-4" />
-            {isEditing ? 'Cancel' : 'Edit Limits'}
+            {isEditing ? "Cancel" : "Edit Limits"}
           </Button>
         </div>
       </CardHeader>
@@ -93,7 +111,8 @@ export function AIUsageDashboard() {
             <div>
               <p className="font-medium text-orange-900">Approaching Budget Limit</p>
               <p className="text-sm text-orange-700 mt-1">
-                You've used {monthlyPercentage.toFixed(1)}% of your monthly AI budget. Consider upgrading your plan or optimizing AI usage.
+                You've used {monthlyPercentage.toFixed(1)}% of your monthly AI budget. Consider
+                upgrading your plan or optimizing AI usage.
               </p>
             </div>
           </div>
@@ -108,17 +127,13 @@ export function AIUsageDashboard() {
                 <Calendar className="h-4 w-4 text-indigo-600" />
                 <span className="text-sm font-medium text-gray-700">Monthly Usage</span>
               </div>
-              <span className="text-xs text-gray-500">
-                {30 - new Date().getDate()} days left
-              </span>
+              <span className="text-xs text-gray-500">{30 - new Date().getDate()} days left</span>
             </div>
-            <p className="text-2xl font-bold text-gray-900">
-              {usageStats?.formattedUsage.monthly}
-            </p>
+            <p className="text-2xl font-bold text-gray-900">{usageStats?.formattedUsage.monthly}</p>
             <Progress
               value={monthlyPercentage}
               className="mt-3 h-2"
-              indicatorClassName={monthlyPercentage > 80 ? 'bg-orange-500' : 'bg-indigo-600'}
+              indicatorClassName={monthlyPercentage > 80 ? "bg-orange-500" : "bg-indigo-600"}
             />
             <p className="text-xs text-gray-600 mt-1">
               {monthlyPercentage.toFixed(1)}% of monthly budget
@@ -134,13 +149,11 @@ export function AIUsageDashboard() {
               </div>
               <span className="text-xs text-gray-500">Today</span>
             </div>
-            <p className="text-2xl font-bold text-gray-900">
-              {usageStats?.formattedUsage.daily}
-            </p>
+            <p className="text-2xl font-bold text-gray-900">{usageStats?.formattedUsage.daily}</p>
             <Progress
               value={dailyPercentage}
               className="mt-3 h-2"
-              indicatorClassName={dailyPercentage > 80 ? 'bg-orange-500' : 'bg-green-600'}
+              indicatorClassName={dailyPercentage > 80 ? "bg-orange-500" : "bg-green-600"}
             />
             <p className="text-xs text-gray-600 mt-1">
               {dailyPercentage.toFixed(1)}% of daily limit
@@ -156,16 +169,12 @@ export function AIUsageDashboard() {
               </div>
               <span className="text-xs text-gray-500">This month</span>
             </div>
-            <p className="text-2xl font-bold text-gray-900">
-              $0.08
-            </p>
+            <p className="text-2xl font-bold text-gray-900">$0.08</p>
             <div className="flex items-center gap-1 mt-3">
               <TrendingUp className="h-3 w-3 text-green-600" />
               <span className="text-xs text-green-600">12% more efficient</span>
             </div>
-            <p className="text-xs text-gray-600 mt-1">
-              vs last month ($0.09)
-            </p>
+            <p className="text-xs text-gray-600 mt-1">vs last month ($0.09)</p>
           </div>
         </div>
 
@@ -185,14 +194,14 @@ export function AIUsageDashboard() {
                   min="10"
                   max="10000"
                   value={newLimits.monthlyBudgetUSD}
-                  onChange={(e) => setNewLimits({
-                    ...newLimits,
-                    monthlyBudgetUSD: parseFloat(e.target.value)
-                  })}
+                  onChange={(e) =>
+                    setNewLimits({
+                      ...newLimits,
+                      monthlyBudgetUSD: parseFloat(e.target.value),
+                    })
+                  }
                 />
-                <p className="text-xs text-gray-500 mt-1">
-                  Min: $10 • Max: $10,000
-                </p>
+                <p className="text-xs text-gray-500 mt-1">Min: $10 • Max: $10,000</p>
               </div>
               <div>
                 <Label htmlFor="daily-limit">Daily Limit (USD)</Label>
@@ -202,22 +211,18 @@ export function AIUsageDashboard() {
                   min="1"
                   max="1000"
                   value={newLimits.dailyLimitUSD}
-                  onChange={(e) => setNewLimits({
-                    ...newLimits,
-                    dailyLimitUSD: parseFloat(e.target.value)
-                  })}
+                  onChange={(e) =>
+                    setNewLimits({
+                      ...newLimits,
+                      dailyLimitUSD: parseFloat(e.target.value),
+                    })
+                  }
                 />
-                <p className="text-xs text-gray-500 mt-1">
-                  Min: $1 • Max: $1,000
-                </p>
+                <p className="text-xs text-gray-500 mt-1">Min: $1 • Max: $1,000</p>
               </div>
             </div>
             <div className="flex justify-end gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsEditing(false)}
-              >
+              <Button variant="outline" size="sm" onClick={() => setIsEditing(false)}>
                 Cancel
               </Button>
               <Button
@@ -225,7 +230,7 @@ export function AIUsageDashboard() {
                 onClick={handleSaveLimits}
                 disabled={updateLimitsMutation.isPending}
               >
-                {updateLimitsMutation.isPending ? 'Saving...' : 'Save Changes'}
+                {updateLimitsMutation.isPending ? "Saving..." : "Save Changes"}
               </Button>
             </div>
           </div>
@@ -239,12 +244,15 @@ export function AIUsageDashboard() {
           </h3>
           <div className="space-y-2">
             {[
-              { model: 'Nova Lite', cost: '$3.20', usage: '53,333 tokens', percentage: 40 },
-              { model: 'Nova Pro', cost: '$8.00', usage: '10,000 tokens', percentage: 30 },
-              { model: 'Claude 3.7', cost: '$15.00', usage: '5,000 tokens', percentage: 20 },
-              { model: 'Llama 3', cost: '$1.50', usage: '15,000 tokens', percentage: 10 }
+              { model: "Nova Lite", cost: "$3.20", usage: "53,333 tokens", percentage: 40 },
+              { model: "Nova Pro", cost: "$8.00", usage: "10,000 tokens", percentage: 30 },
+              { model: "Claude 3.7", cost: "$15.00", usage: "5,000 tokens", percentage: 20 },
+              { model: "Llama 3", cost: "$1.50", usage: "15,000 tokens", percentage: 10 },
             ].map((model) => (
-              <div key={model.model} className="flex items-center justify-between py-2 border-b last:border-0">
+              <div
+                key={model.model}
+                className="flex items-center justify-between py-2 border-b last:border-0"
+              >
                 <div className="flex items-center gap-3">
                   <div className="w-32">
                     <p className="text-sm font-medium text-gray-900">{model.model}</p>
@@ -272,5 +280,5 @@ export function AIUsageDashboard() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

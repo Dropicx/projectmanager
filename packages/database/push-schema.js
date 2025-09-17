@@ -1,7 +1,9 @@
-const { drizzle } = require('drizzle-orm/postgres-js');
-const postgres = require('postgres');
+const { drizzle } = require("drizzle-orm/postgres-js");
+const postgres = require("postgres");
 
-const DATABASE_URL = process.env.DATABASE_URL || "postgresql://postgres:vtwyKVDTWAyWySGhzxYJpBpEJPjsiiLN@crossover.proxy.rlwy.net:39737/railway";
+const DATABASE_URL =
+  process.env.DATABASE_URL ||
+  "postgresql://postgres:vtwyKVDTWAyWySGhzxYJpBpEJPjsiiLN@crossover.proxy.rlwy.net:39737/railway";
 
 async function pushSchema() {
   console.log("Connecting to database...");
@@ -154,7 +156,7 @@ async function pushSchema() {
       `ALTER TABLE "organizations" ADD COLUMN IF NOT EXISTS "current_month_usage_cents" integer DEFAULT 0`,
       `ALTER TABLE "organizations" ADD COLUMN IF NOT EXISTS "usage_reset_date" timestamp DEFAULT now()`,
       `ALTER TABLE "organizations" ADD COLUMN IF NOT EXISTS "daily_limit_cents" integer DEFAULT 1000`,
-      `ALTER TABLE "organizations" ADD COLUMN IF NOT EXISTS "current_day_usage_cents" integer DEFAULT 0`
+      `ALTER TABLE "organizations" ADD COLUMN IF NOT EXISTS "current_day_usage_cents" integer DEFAULT 0`,
     ];
 
     for (const alterCmd of alterCommands) {
@@ -162,7 +164,7 @@ async function pushSchema() {
         await client.unsafe(alterCmd);
         console.log(`✓ ${alterCmd.split('"')[3]} column added`);
       } catch (err) {
-        if (err.message.includes('already exists')) {
+        if (err.message.includes("already exists")) {
           console.log(`✓ ${alterCmd.split('"')[3]} column already exists`);
         } else {
           console.warn(`Warning: ${err.message}`);
@@ -189,7 +191,7 @@ async function pushSchema() {
       `ALTER TABLE "knowledge_base" ADD CONSTRAINT "knowledge_base_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE no action ON UPDATE no action`,
       `ALTER TABLE "knowledge_base" ADD CONSTRAINT "knowledge_base_project_id_projects_id_fk" FOREIGN KEY ("project_id") REFERENCES "projects"("id") ON DELETE no action ON UPDATE no action`,
       `ALTER TABLE "knowledge_base" ADD CONSTRAINT "knowledge_base_created_by_users_id_fk" FOREIGN KEY ("created_by") REFERENCES "users"("id") ON DELETE no action ON UPDATE no action`,
-      `ALTER TABLE "notifications" ADD CONSTRAINT "notifications_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE no action ON UPDATE no action`
+      `ALTER TABLE "notifications" ADD CONSTRAINT "notifications_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE no action ON UPDATE no action`,
     ];
 
     for (const constraint of constraints) {
@@ -197,7 +199,7 @@ async function pushSchema() {
         await client.unsafe(constraint);
       } catch (err) {
         // Ignore if constraint already exists
-        if (!err.message.includes('already exists')) {
+        if (!err.message.includes("already exists")) {
           console.warn(`Warning: ${err.message}`);
         }
       }
@@ -205,7 +207,6 @@ async function pushSchema() {
 
     console.log("Foreign key constraints added!");
     console.log("✅ Database schema pushed successfully!");
-
   } catch (error) {
     console.error("Error pushing schema:", error);
     process.exit(1);

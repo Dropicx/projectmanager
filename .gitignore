@@ -187,3 +187,13 @@ $RECYCLE.BIN/
 
 #Claude
 Claude.md
+
+# Husky
+.husky/_
+
+# Linting
+.eslintcache
+.biome/
+
+# Security
+audit-ci.json

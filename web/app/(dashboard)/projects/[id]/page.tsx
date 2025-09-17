@@ -1,64 +1,90 @@
-'use client'
+"use client";
 
-import { useParams, useRouter } from 'next/navigation'
-import { useState } from 'react'
-import { trpc } from '@/app/providers/trpc-provider'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button, Badge } from '@consulting-platform/ui'
-import { ArrowLeft, Edit, Trash, Calendar, DollarSign, Users, AlertCircle, Loader2, Brain, Activity, Book } from 'lucide-react'
-import Link from 'next/link'
-import { TaskList } from '@/components/tasks/task-list'
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@consulting-platform/ui";
+import {
+  Activity,
+  AlertCircle,
+  ArrowLeft,
+  Book,
+  Brain,
+  Calendar,
+  DollarSign,
+  Edit,
+  Loader2,
+  Trash,
+  Users,
+} from "lucide-react";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import { useState } from "react";
+import { trpc } from "@/app/providers/trpc-provider";
+import { TaskList } from "@/components/tasks/task-list";
 
 export default function ProjectDetailPage() {
-  const params = useParams()
-  const router = useRouter()
-  const projectId = params.id as string
-  const [isDeleting, setIsDeleting] = useState(false)
+  const params = useParams();
+  const router = useRouter();
+  const projectId = params.id as string;
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  const { data: project, isLoading, error } = trpc.projects.getById.useQuery({ id: projectId })
-  const utils = trpc.useUtils()
+  const { data: project, isLoading, error } = trpc.projects.getById.useQuery({ id: projectId });
+  const utils = trpc.useUtils();
 
   const deleteProjectMutation = trpc.projects.delete.useMutation({
     onSuccess: () => {
-      utils.projects.getAll.invalidate()
-      router.push('/projects')
-    }
-  })
+      utils.projects.getAll.invalidate();
+      router.push("/projects");
+    },
+  });
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
-      return
+    if (!confirm("Are you sure you want to delete this project? This action cannot be undone.")) {
+      return;
     }
-    setIsDeleting(true)
+    setIsDeleting(true);
     try {
-      await deleteProjectMutation.mutateAsync({ id: projectId })
+      await deleteProjectMutation.mutateAsync({ id: projectId });
     } catch (error) {
-      console.error('Failed to delete project:', error)
-      setIsDeleting(false)
+      console.error("Failed to delete project:", error);
+      setIsDeleting(false);
     }
-  }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'success'
-      case 'planning': return 'warning'
-      case 'on-hold': return 'secondary'
-      case 'completed': return 'default'
-      case 'cancelled': return 'destructive'
-      default: return 'default'
+      case "active":
+        return "success";
+      case "planning":
+        return "warning";
+      case "on-hold":
+        return "secondary";
+      case "completed":
+        return "default";
+      case "cancelled":
+        return "destructive";
+      default:
+        return "default";
     }
-  }
+  };
 
   const formatDate = (date: Date | string | null) => {
-    if (!date) return 'Not set'
-    return new Date(date).toLocaleDateString()
-  }
+    if (!date) return "Not set";
+    return new Date(date).toLocaleDateString();
+  };
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-96">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
-    )
+    );
   }
 
   if (error || !project) {
@@ -73,7 +99,7 @@ export default function ProjectDetailPage() {
           </Button>
         </Link>
       </div>
-    )
+    );
   }
 
   return (
@@ -88,12 +114,14 @@ export default function ProjectDetailPage() {
           </Link>
           <div>
             <h1 className="text-3xl font-bold tracking-tight">{project.name}</h1>
-            <p className="text-muted-foreground">{project.description || 'No description provided'}</p>
+            <p className="text-muted-foreground">
+              {project.description || "No description provided"}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant={getStatusColor(project.status || 'planning')} className="text-sm">
-            {project.status || 'planning'}
+          <Badge variant={getStatusColor(project.status || "planning")} className="text-sm">
+            {project.status || "planning"}
           </Badge>
           <Link href={`/projects/${projectId}/status`}>
             <Button variant="outline" size="sm">
@@ -111,12 +139,7 @@ export default function ProjectDetailPage() {
             <Edit className="mr-2 h-4 w-4" />
             Edit
           </Button>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={handleDelete}
-            disabled={isDeleting}
-          >
+          <Button variant="destructive" size="sm" onClick={handleDelete} disabled={isDeleting}>
             {isDeleting ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
@@ -138,7 +161,7 @@ export default function ProjectDetailPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {project.budget ? `$${project.budget.toLocaleString()}` : 'Not set'}
+              {project.budget ? `$${project.budget.toLocaleString()}` : "Not set"}
             </div>
           </CardContent>
         </Card>
@@ -150,13 +173,21 @@ export default function ProjectDetailPage() {
           </CardHeader>
           <CardContent>
             <div className="text-sm">
-              {project.timeline && typeof project.timeline === 'object' ? (
+              {project.timeline && typeof project.timeline === "object" ? (
                 <>
-                  <p>Start: {formatDate((project.timeline as any).start || (project.timeline as any).startDate)}</p>
-                  <p>End: {formatDate((project.timeline as any).end || (project.timeline as any).endDate)}</p>
+                  <p>
+                    Start:{" "}
+                    {formatDate(
+                      (project.timeline as any).start || (project.timeline as any).startDate
+                    )}
+                  </p>
+                  <p>
+                    End:{" "}
+                    {formatDate((project.timeline as any).end || (project.timeline as any).endDate)}
+                  </p>
                 </>
               ) : (
-                'No timeline set'
+                "No timeline set"
               )}
             </div>
           </CardContent>
@@ -202,5 +233,5 @@ export default function ProjectDetailPage() {
       {/* Tasks Section */}
       <TaskList projectId={projectId} />
     </div>
-  )
+  );
 }

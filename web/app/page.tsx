@@ -1,20 +1,19 @@
-'use client'
+"use client";
 
-import { Button } from '@consulting-platform/ui'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
-import { useUser, SignInButton, SignUpButton } from '@clerk/nextjs'
+import { SignInButton, SignUpButton, useUser } from "@clerk/nextjs";
+import { Button } from "@consulting-platform/ui";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function HomePage() {
-  const { isSignedIn, user } = useUser()
-  const router = useRouter()
+  const { isSignedIn, user } = useUser();
+  const router = useRouter();
 
   useEffect(() => {
     if (isSignedIn) {
-      router.push('/dashboard')
+      router.push("/dashboard");
     }
-  }, [isSignedIn, router])
+  }, [isSignedIn, router]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -24,16 +23,18 @@ export default function HomePage() {
             Consailt
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            AI-powered consulting platform that transforms how teams manage projects,
-            gain insights, and collaborate with intelligent recommendations.
+            AI-powered consulting platform that transforms how teams manage projects, gain insights,
+            and collaborate with intelligent recommendations.
           </p>
-          
+
           <div className="flex gap-4 justify-center">
             <SignInButton mode="modal">
               <Button size="lg">Sign In</Button>
             </SignInButton>
             <SignUpButton mode="modal">
-              <Button variant="outline" size="lg">Get Started</Button>
+              <Button variant="outline" size="lg">
+                Get Started
+              </Button>
             </SignUpButton>
           </div>
         </div>
@@ -42,28 +43,28 @@ export default function HomePage() {
           <div className="bg-white p-8 rounded-xl shadow-lg">
             <h3 className="text-2xl font-semibold mb-4">AI-Powered Insights</h3>
             <p className="text-gray-600">
-              Get intelligent project analysis, risk assessment, and recommendations 
-              powered by multiple AI models including Claude, Nova, and Mistral.
+              Get intelligent project analysis, risk assessment, and recommendations powered by
+              multiple AI models including Claude, Nova, and Mistral.
             </p>
           </div>
-          
+
           <div className="bg-white p-8 rounded-xl shadow-lg">
             <h3 className="text-2xl font-semibold mb-4">Knowledge Management</h3>
             <p className="text-gray-600">
-              Build and search your knowledge base with RAG capabilities, 
-              making institutional knowledge easily accessible and actionable.
+              Build and search your knowledge base with RAG capabilities, making institutional
+              knowledge easily accessible and actionable.
             </p>
           </div>
-          
+
           <div className="bg-white p-8 rounded-xl shadow-lg">
             <h3 className="text-2xl font-semibold mb-4">Real-time Collaboration</h3>
             <p className="text-gray-600">
-              Work together seamlessly with real-time updates, notifications, 
-              and collaborative project management tools.
+              Work together seamlessly with real-time updates, notifications, and collaborative
+              project management tools.
             </p>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

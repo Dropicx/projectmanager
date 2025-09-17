@@ -1,75 +1,93 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button, Badge } from '@consulting-platform/ui'
-import { Search, Plus, BookOpen, FileText, Users, Calendar } from 'lucide-react'
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@consulting-platform/ui";
+import { BookOpen, Calendar, FileText, Plus, Search, Users } from "lucide-react";
 
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
 export default function KnowledgePage() {
   const knowledgeItems = [
     {
-      id: '1',
-      title: 'Digital Transformation Best Practices',
-      content: 'Comprehensive guide to digital transformation methodologies...',
-      type: 'methodology',
-      tags: ['digital-transformation', 'methodology', 'best-practices'],
-      author: 'John Smith',
-      createdAt: '2024-01-10',
+      id: "1",
+      title: "Digital Transformation Best Practices",
+      content: "Comprehensive guide to digital transformation methodologies...",
+      type: "methodology",
+      tags: ["digital-transformation", "methodology", "best-practices"],
+      author: "John Smith",
+      createdAt: "2024-01-10",
       views: 45,
-      isPublic: true
+      isPublic: true,
     },
     {
-      id: '2',
-      title: 'Client Engagement Framework',
-      content: 'Framework for effective client engagement and relationship management...',
-      type: 'framework',
-      tags: ['client-engagement', 'framework', 'relationships'],
-      author: 'Sarah Johnson',
-      createdAt: '2024-01-08',
+      id: "2",
+      title: "Client Engagement Framework",
+      content: "Framework for effective client engagement and relationship management...",
+      type: "framework",
+      tags: ["client-engagement", "framework", "relationships"],
+      author: "Sarah Johnson",
+      createdAt: "2024-01-08",
       views: 32,
-      isPublic: false
+      isPublic: false,
     },
     {
-      id: '3',
-      title: 'Project Risk Assessment Template',
-      content: 'Template and guidelines for conducting project risk assessments...',
-      type: 'template',
-      tags: ['risk-assessment', 'template', 'project-management'],
-      author: 'Mike Chen',
-      createdAt: '2024-01-05',
+      id: "3",
+      title: "Project Risk Assessment Template",
+      content: "Template and guidelines for conducting project risk assessments...",
+      type: "template",
+      tags: ["risk-assessment", "template", "project-management"],
+      author: "Mike Chen",
+      createdAt: "2024-01-05",
       views: 28,
-      isPublic: true
+      isPublic: true,
     },
     {
-      id: '4',
-      title: 'AI Implementation Case Study',
-      content: 'Case study of successful AI implementation in enterprise environment...',
-      type: 'case-study',
-      tags: ['ai', 'implementation', 'case-study', 'enterprise'],
-      author: 'Emily Davis',
-      createdAt: '2024-01-03',
+      id: "4",
+      title: "AI Implementation Case Study",
+      content: "Case study of successful AI implementation in enterprise environment...",
+      type: "case-study",
+      tags: ["ai", "implementation", "case-study", "enterprise"],
+      author: "Emily Davis",
+      createdAt: "2024-01-03",
       views: 67,
-      isPublic: true
-    }
-  ]
+      isPublic: true,
+    },
+  ];
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'methodology': return BookOpen
-      case 'framework': return FileText
-      case 'template': return FileText
-      case 'case-study': return BookOpen
-      default: return FileText
+      case "methodology":
+        return BookOpen;
+      case "framework":
+        return FileText;
+      case "template":
+        return FileText;
+      case "case-study":
+        return BookOpen;
+      default:
+        return FileText;
     }
-  }
+  };
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'methodology': return 'success'
-      case 'framework': return 'info'
-      case 'template': return 'warning'
-      case 'case-study': return 'default'
-      default: return 'default'
+      case "methodology":
+        return "success";
+      case "framework":
+        return "info";
+      case "template":
+        return "warning";
+      case "case-study":
+        return "default";
+      default:
+        return "default";
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -99,7 +117,7 @@ export default function KnowledgePage() {
       {/* Knowledge Items */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {knowledgeItems.map((item) => {
-          const Icon = getTypeIcon(item.type)
+          const Icon = getTypeIcon(item.type);
           return (
             <Card key={item.id} className="hover:shadow-lg transition-shadow">
               <CardHeader>
@@ -113,9 +131,7 @@ export default function KnowledgePage() {
                       </CardDescription>
                     </div>
                   </div>
-                  <Badge variant={getTypeColor(item.type)}>
-                    {item.type}
-                  </Badge>
+                  <Badge variant={getTypeColor(item.type)}>{item.type}</Badge>
                 </div>
               </CardHeader>
               <CardContent>
@@ -156,9 +172,9 @@ export default function KnowledgePage() {
                 </div>
               </CardContent>
             </Card>
-          )
+          );
         })}
       </div>
     </div>
-  )
+  );
 }

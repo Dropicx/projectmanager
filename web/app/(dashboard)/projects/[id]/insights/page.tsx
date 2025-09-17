@@ -1,74 +1,97 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useParams } from 'next/navigation'
-import { Card, CardContent, CardHeader, CardTitle, Button, Badge, Progress } from '@consulting-platform/ui'
-import { Brain, TrendingUp, AlertCircle, Target, Lightbulb, BarChart3, RefreshCw, Download, Share2, Calendar, DollarSign, Users } from 'lucide-react'
-import { trpc as api } from '@/app/providers/trpc-provider'
-import { formatDistanceToNow } from 'date-fns'
-import ReactMarkdown from 'react-markdown'
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Progress,
+} from "@consulting-platform/ui";
+import { formatDistanceToNow } from "date-fns";
+import {
+  AlertCircle,
+  BarChart3,
+  Brain,
+  Calendar,
+  DollarSign,
+  Download,
+  Lightbulb,
+  RefreshCw,
+  Target,
+  TrendingUp,
+} from "lucide-react";
+import { useParams } from "next/navigation";
+import { useState } from "react";
+import ReactMarkdown from "react-markdown";
+import { trpc as api } from "@/app/providers/trpc-provider";
 
 export default function ProjectInsightsPage() {
-  const params = useParams()
-  const projectId = params.id as string
-  const [isGenerating, setIsGenerating] = useState(false)
-  const [selectedMetric, setSelectedMetric] = useState<'cost' | 'time' | 'risk'>('cost')
+  const params = useParams();
+  const projectId = params.id as string;
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [selectedMetric, setSelectedMetric] = useState<"cost" | "time" | "risk">("cost");
 
   // Fetch project
-  const { data: project } = api.projects.getById.useQuery({ id: projectId })
+  const { data: project } = api.projects.getById.useQuery({ id: projectId });
 
   // Skip fetching knowledge entries for now to avoid errors
-  const knowledgeEntries = []
+  const knowledgeEntries = [];
 
   // Generate insights query
-  const { data: insights, refetch: regenerateInsights, isRefetching } = api.projects.generateInsights.useQuery(
+  const {
+    data: insights,
+    refetch: regenerateInsights,
+    isRefetching,
+  } = api.projects.generateInsights.useQuery(
     { projectId },
     {
-      enabled: false // Only fetch when requested
+      enabled: false, // Only fetch when requested
     }
-  )
+  );
 
   const handleGenerateInsights = async () => {
-    setIsGenerating(true)
-    await regenerateInsights()
-    setIsGenerating(false)
-  }
+    setIsGenerating(true);
+    await regenerateInsights();
+    setIsGenerating(false);
+  };
 
   const handleExportInsights = () => {
-    if (!insights) return
+    if (!insights) return;
 
-    const dataStr = JSON.stringify(insights, null, 2)
-    const dataBlob = new Blob([dataStr], { type: 'application/json' })
-    const url = URL.createObjectURL(dataBlob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `${project?.name || 'project'}-insights-${new Date().toISOString().split('T')[0]}.json`
-    link.click()
-  }
+    const dataStr = JSON.stringify(insights, null, 2);
+    const dataBlob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${project?.name || "project"}-insights-${new Date().toISOString().split("T")[0]}.json`;
+    link.click();
+  };
 
   const metricsData = {
     cost: {
-      label: 'Cost Efficiency',
+      label: "Cost Efficiency",
       value: 75,
-      trend: '+12%',
-      color: 'text-green-600',
-      bgColor: 'bg-green-100'
+      trend: "+12%",
+      color: "text-green-600",
+      bgColor: "bg-green-100",
     },
     time: {
-      label: 'Time to Delivery',
+      label: "Time to Delivery",
       value: 82,
-      trend: '-5 days',
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-100'
+      trend: "-5 days",
+      color: "text-blue-600",
+      bgColor: "bg-blue-100",
     },
     risk: {
-      label: 'Risk Score',
+      label: "Risk Score",
       value: 35,
-      trend: '-8%',
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-100'
-    }
-  }
+      trend: "-8%",
+      color: "text-orange-600",
+      bgColor: "bg-orange-100",
+    },
+  };
 
   return (
     <div className="space-y-6">
@@ -79,11 +102,7 @@ export default function ProjectInsightsPage() {
           <p className="text-gray-600 mt-2">{project?.name}</p>
         </div>
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={handleExportInsights}
-            disabled={!insights}
-          >
+          <Button variant="outline" onClick={handleExportInsights} disabled={!insights}>
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
@@ -92,7 +111,9 @@ export default function ProjectInsightsPage() {
             disabled={isGenerating || isRefetching}
             className="flex items-center gap-2"
           >
-            <RefreshCw className={`h-4 w-4 ${isGenerating || isRefetching ? 'animate-spin' : ''}`} />
+            <RefreshCw
+              className={`h-4 w-4 ${isGenerating || isRefetching ? "animate-spin" : ""}`}
+            />
             Generate Insights
           </Button>
         </div>
@@ -103,15 +124,13 @@ export default function ProjectInsightsPage() {
         {Object.entries(metricsData).map(([key, metric]) => (
           <Card
             key={key}
-            className={`cursor-pointer transition-all ${selectedMetric === key ? 'ring-2 ring-indigo-500' : ''}`}
+            className={`cursor-pointer transition-all ${selectedMetric === key ? "ring-2 ring-indigo-500" : ""}`}
             onClick={() => setSelectedMetric(key as any)}
           >
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-medium text-gray-700">{metric.label}</CardTitle>
-                <Badge className={metric.bgColor + ' ' + metric.color}>
-                  {metric.trend}
-                </Badge>
+                <Badge className={`${metric.bgColor} ${metric.color}`}>{metric.trend}</Badge>
               </div>
             </CardHeader>
             <CardContent>
@@ -194,11 +213,15 @@ export default function ProjectInsightsPage() {
                     {insights.recommendations.map((rec: any, index: number) => (
                       <div key={index} className="bg-gray-50 rounded-lg p-3">
                         <div className="flex items-start gap-2">
-                          <Badge className={
-                            rec.priority === 'high' ? 'bg-red-100 text-red-700' :
-                            rec.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
-                            'bg-green-100 text-green-700'
-                          }>
+                          <Badge
+                            className={
+                              rec.priority === "high"
+                                ? "bg-red-100 text-red-700"
+                                : rec.priority === "medium"
+                                  ? "bg-yellow-100 text-yellow-700"
+                                  : "bg-green-100 text-green-700"
+                            }
+                          >
                             {rec.priority} priority
                           </Badge>
                           <div className="flex-1">
@@ -245,7 +268,8 @@ export default function ProjectInsightsPage() {
                 No insights generated yet. Click "Generate Insights" to analyze your project data.
               </p>
               <p className="text-sm text-gray-400">
-                AI will analyze {knowledgeEntries?.length || 0} knowledge entries to provide strategic recommendations.
+                AI will analyze {knowledgeEntries?.length || 0} knowledge entries to provide
+                strategic recommendations.
               </p>
             </div>
           )}
@@ -290,11 +314,15 @@ export default function ProjectInsightsPage() {
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Current Spend</span>
-                <span className="font-medium">${project?.budget ? (project.budget * 0.65 / 1000).toFixed(1) : '0'}k</span>
+                <span className="font-medium">
+                  ${project?.budget ? ((project.budget * 0.65) / 1000).toFixed(1) : "0"}k
+                </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Projected Total</span>
-                <span className="font-medium">${project?.budget ? (project.budget * 0.95 / 1000).toFixed(1) : '0'}k</span>
+                <span className="font-medium">
+                  ${project?.budget ? ((project.budget * 0.95) / 1000).toFixed(1) : "0"}k
+                </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Variance</span>
@@ -305,5 +333,5 @@ export default function ProjectInsightsPage() {
         </Card>
       </div>
     </div>
-  )
+  );
 }
