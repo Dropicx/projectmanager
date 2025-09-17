@@ -30,7 +30,7 @@ import {
   User,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import React, { useState } from "react";
 import { trpc } from "@/app/providers/trpc-provider";
 import { KnowledgeEditor, KnowledgeViewer } from "./knowledge-editor";
 
@@ -56,16 +56,18 @@ export function KnowledgeDetailView({ knowledgeId, onBack, onDelete }: Knowledge
     { id: knowledgeId },
     {
       enabled: !!knowledgeId,
-      onSuccess: (data) => {
-        if (data) {
-          setEditedTitle(data.title || "");
-          setEditedContent(data.content || "");
-          setEditedType(data.knowledge_type || "reference");
-          setEditedTags(data.tags || []);
-        }
-      },
     }
   );
+
+  // Set initial values when item loads
+  React.useEffect(() => {
+    if (item) {
+      setEditedTitle(item.title || "");
+      setEditedContent(item.content || "");
+      setEditedType(item.knowledge_type || "reference");
+      setEditedTags(item.tags || []);
+    }
+  }, [item]);
 
   // Fetch categories
   const { data: categories = [] } = trpc.knowledge.getCategories.useQuery();
@@ -75,13 +77,15 @@ export function KnowledgeDetailView({ knowledgeId, onBack, onDelete }: Knowledge
     { knowledgeId },
     {
       enabled: !!knowledgeId && isEditMode,
-      onSuccess: (data) => {
-        if (data && data.length > 0) {
-          setEditedCategoryId(data[0].id);
-        }
-      },
     }
   );
+
+  // Set category when data loads
+  React.useEffect(() => {
+    if (knowledgeCategories && knowledgeCategories.length > 0) {
+      setEditedCategoryId(knowledgeCategories[0].id);
+    }
+  }, [knowledgeCategories]);
 
   // Update mutation
   const updateMutation = trpc.knowledge.updateGeneral.useMutation({
@@ -365,7 +369,7 @@ export function KnowledgeDetailView({ knowledgeId, onBack, onDelete }: Knowledge
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none">No category</SelectItem>
-                      {categories.map((category: any) => (
+                      {categories.map((category) => (
                         <SelectItem key={category.id} value={category.id}>
                           {category.name}
                         </SelectItem>

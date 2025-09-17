@@ -39,7 +39,7 @@ export default function DashboardPage() {
 
   // Calculate knowledge statistics
   const totalClients = projects?.length || 0;
-  const activeEngagements = projects?.filter((p: any) => p.status === "active").length || 0;
+  const activeProjects = projects?.filter((p) => p.status === "active").length || 0;
 
   // Mock knowledge stats (will be real when DB is set up)
   const knowledgeStats = {
@@ -49,8 +49,8 @@ export default function DashboardPage() {
     recentInsights: 8,
   };
 
-  // Get recent engagements (top 3)
-  const recentEngagements = projects?.slice(0, 3) || [];
+  // Get recent projects (top 3)
+  const recentProjects = projects?.slice(0, 3) || [];
 
   const formatTimeAgo = (date: Date | string | null) => {
     if (!date) return "Never";
@@ -113,8 +113,8 @@ export default function DashboardPage() {
             <Users className="h-4 w-4 text-purple-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{activeEngagements}</div>
-            <p className="text-xs text-muted-foreground">{totalClients} total engagements</p>
+            <div className="text-2xl font-bold">{activeProjects}</div>
+            <p className="text-xs text-muted-foreground">{totalClients} total projects</p>
           </CardContent>
         </Card>
 
@@ -149,7 +149,7 @@ export default function DashboardPage() {
               <Plus className="h-5 w-5" />
               Quick Capture
             </CardTitle>
-            <CardDescription>Add knowledge from any engagement</CardDescription>
+            <CardDescription>Add knowledge from any project</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
@@ -206,8 +206,8 @@ export default function DashboardPage() {
                   time: "1d ago",
                   type: "meeting",
                 },
-              ].map((entry, i) => (
-                <div key={i} className="text-sm space-y-1">
+              ].map((entry) => (
+                <div key={entry.title} className="text-sm space-y-1">
                   <p className="font-medium line-clamp-1">{entry.title}</p>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <span>{entry.client}</span>
@@ -245,26 +245,26 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Active Engagements */}
+      {/* Active Projects */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Active Engagements</CardTitle>
+              <CardTitle>Active Projects</CardTitle>
               <CardDescription>Your current client projects</CardDescription>
             </div>
             <Link href="/projects">
               <Button variant="outline" size="sm">
                 <Plus className="mr-2 h-3 w-3" />
-                New Engagement
+                New Project
               </Button>
             </Link>
           </div>
         </CardHeader>
         <CardContent>
-          {recentEngagements.length > 0 ? (
+          {recentProjects.length > 0 ? (
             <div className="space-y-4">
-              {recentEngagements.map((project: any) => (
+              {recentProjects.map((project) => (
                 <Link
                   key={project.id}
                   href={`/projects/${project.id}/knowledge`}
