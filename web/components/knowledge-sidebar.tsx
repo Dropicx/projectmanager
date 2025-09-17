@@ -146,16 +146,16 @@ function SortableCategory({
                   )}
                   onClick={() => onCategorySelect(category.id)}
                 >
-                  <div className="flex items-center justify-between w-full">
-                    <div className="flex items-center">
-                      {renderCategoryIcon(category.icon, category.color)}
-                      <span className="text-sm font-medium">{category.name}</span>
-                    </div>
-                    <span className="text-xs text-muted-foreground min-w-[20px] text-right">
-                      {category.item_count > 0 ? category.item_count : ""}
-                    </span>
+                  <div className="flex items-center w-full">
+                    {renderCategoryIcon(category.icon, category.color)}
+                    <span className="text-sm font-medium flex-1">{category.name}</span>
                   </div>
                 </Button>
+
+                {/* Item counter */}
+                <span className="text-xs text-muted-foreground min-w-[24px] text-center px-1">
+                  {category.item_count > 0 ? category.item_count : ""}
+                </span>
 
                 {/* Accordion trigger just for expand/collapse */}
                 <AccordionTrigger className="px-2 py-1.5 hover:bg-transparent [&[data-state=open]>svg]:-rotate-90" />
@@ -219,16 +219,16 @@ function SortableCategory({
           )}
           onClick={() => onCategorySelect(category.id)}
         >
-          <div className="flex items-center justify-between w-full">
-            <div className="flex items-center">
-              {level === 0 && renderCategoryIcon(category.icon, category.color)}
-              <span className="text-sm">{category.name}</span>
-            </div>
-            <span className="text-xs text-muted-foreground min-w-[20px] text-right">
-              {category.item_count > 0 ? category.item_count : ""}
-            </span>
+          <div className="flex items-center w-full">
+            {level === 0 && renderCategoryIcon(category.icon, category.color)}
+            <span className="text-sm flex-1">{category.name}</span>
           </div>
         </Button>
+
+        {/* Item counter - positioned after button for alignment */}
+        <span className="text-xs text-muted-foreground min-w-[24px] text-center px-1">
+          {category.item_count > 0 ? category.item_count : ""}
+        </span>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

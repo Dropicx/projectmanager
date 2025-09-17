@@ -1,6 +1,6 @@
 import { AIOrchestrator } from "@consulting-platform/ai";
 import { db } from "@consulting-platform/database";
-import { initTRPC } from "@trpc/server";
+import { initTRPC, TRPCError } from "@trpc/server";
 
 // Create AI orchestrator instance
 const aiOrchestrator = new AIOrchestrator();
@@ -31,7 +31,10 @@ export const createContext = (): Context => ({
 // Middleware for authentication
 const authMiddleware = t.middleware(({ ctx, next }) => {
   if (!ctx.user) {
-    throw new Error("Unauthorized");
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "Not authenticated",
+    });
   }
   return next({
     ctx: {
