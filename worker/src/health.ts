@@ -1,14 +1,14 @@
 /**
  * Health Check Server - Worker Service Monitoring
- * 
+ *
  * This module provides a simple HTTP server for health monitoring
  * of the worker service. It's essential for:
- * 
+ *
  * - Railway deployment health checks
  * - Load balancer health monitoring
  * - Service discovery and monitoring
  * - Debugging and troubleshooting
- * 
+ *
  * The server responds to health check requests with service status
  * and timestamp information for monitoring systems.
  */
@@ -21,7 +21,7 @@ const PORT = process.env.PORT || process.env.HEALTH_PORT || 3001;
 
 /**
  * Create a simple HTTP server for health checks
- * 
+ *
  * Responds to health check requests with JSON status information.
  * Used by Railway and other monitoring systems to verify service health.
  */

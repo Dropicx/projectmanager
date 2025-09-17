@@ -26,7 +26,6 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { trpc } from "@/app/providers/trpc-provider";
-import { TaskList } from "@/components/tasks/task-list";
 
 export default function ProjectDetailPage() {
   const params = useParams();
@@ -74,7 +73,7 @@ export default function ProjectDetailPage() {
     }
   };
 
-  const formatDate = (date: Date | string | null) => {
+  const _formatDate = (date: Date | string | null) => {
     if (!date) return "Not set";
     return new Date(date).toLocaleDateString();
   };
@@ -173,22 +172,7 @@ export default function ProjectDetailPage() {
           </CardHeader>
           <CardContent>
             <div className="text-sm">
-              {project.timeline && typeof project.timeline === "object" ? (
-                <>
-                  <p>
-                    Start:{" "}
-                    {formatDate(
-                      (project.timeline as any).start || (project.timeline as any).startDate
-                    )}
-                  </p>
-                  <p>
-                    End:{" "}
-                    {formatDate((project.timeline as any).end || (project.timeline as any).endDate)}
-                  </p>
-                </>
-              ) : (
-                "No timeline set"
-              )}
+              <span className="text-muted-foreground">No timeline data</span>
             </div>
           </CardContent>
         </Card>
@@ -221,7 +205,7 @@ export default function ProjectDetailPage() {
             <Link href={`/projects/${projectId}/insights`}>
               <Button>Generate Insights</Button>
             </Link>
-            {project.ai_insights && (
+            {Boolean(project.ai_insights) && (
               <div className="flex-1 p-4 bg-muted rounded-lg">
                 <p className="text-sm">Last generated insights available</p>
               </div>
@@ -231,7 +215,6 @@ export default function ProjectDetailPage() {
       </Card>
 
       {/* Tasks Section */}
-      <TaskList projectId={projectId} />
     </div>
   );
 }

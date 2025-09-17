@@ -66,20 +66,10 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
     setIsSubmitting(true);
 
     try {
-      // Build timeline object if dates are provided
-      let timeline;
-      if (data.startDate || data.endDate) {
-        timeline = {
-          start: data.startDate || null,
-          end: data.endDate || null,
-        };
-      }
-
       await createProjectMutation.mutateAsync({
         name: data.name,
         description: data.description,
         budget: data.budget ? parseInt(data.budget, 10) : undefined,
-        timeline,
       });
     } catch (_error) {
       // Error is handled in mutation onError

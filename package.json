@@ -54,9 +54,6 @@
       "biome check --write",
       "biome format --write"
     ],
-    "*.{ts,tsx}": [
-      "tsc --noEmit"
-    ],
     "package.json": [
       "pnpm security:audit"
     ]

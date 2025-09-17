@@ -1,14 +1,14 @@
 /**
  * Root Layout - Application Shell and Provider Setup
- * 
+ *
  * This is the main layout component that wraps the entire application.
  * It sets up the essential providers and global configurations:
- * 
+ *
  * - ClerkProvider: Authentication and user management
  * - TRPCProvider: Type-safe API client for server communication
  * - Global CSS styles and font configuration
  * - SEO metadata for the application
- * 
+ *
  * The layout ensures all pages have access to authentication
  * and API functionality through React context providers.
  */
@@ -31,12 +31,12 @@ export const metadata: Metadata = {
 
 /**
  * Root Layout Component
- * 
+ *
  * Provides the application shell with essential providers:
  * - Authentication (Clerk)
  * - API client (tRPC)
  * - Global styling and fonts
- * 
+ *
  * @param children - The page content to render
  * @returns JSX element with provider hierarchy
  */

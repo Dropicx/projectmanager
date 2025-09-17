@@ -44,18 +44,13 @@ export const knowledgeRouter = router({
       const [entry] = await ctx.db
         .insert(knowledge_base)
         .values({
-          organization_id: engagement[0].organization_id,
+          organization_id: engagement[0].organization_id || "",
           engagement_id: input.projectId,
           title: input.title,
           content: input.content,
           embedding: embedding,
           tags: input.tags || [],
-          metadata: {
-            type: input.type,
-            author: ctx.user.id,
-            createdAt: new Date().toISOString(),
-            ...input.metadata,
-          },
+          knowledge_type: input.type as "solution" | "issue" | "decision" | "pattern" | "template" | "reference" | "insight" | "lesson_learned",
           created_by: ctx.user.id,
         })
         .returning();
@@ -90,8 +85,7 @@ export const knowledgeRouter = router({
         // Filter by type in memory if specified
         if (input.type && input.type !== "all") {
           return entries.filter((entry) => {
-            const metadata = entry.metadata as Record<string, unknown>;
-            return metadata?.type === input.type;
+            return entry.knowledge_type === input.type;
           });
         }
 
@@ -233,7 +227,7 @@ export const knowledgeRouter = router({
           recentUpdates: entries.map((e) => ({
             title: e.title,
             content: e.content.substring(0, 500),
-            type: (e.metadata as Record<string, unknown>)?.type as string,
+            type: e.knowledge_type || "note",
             date: e.created_at,
           })),
         };
@@ -303,8 +297,7 @@ Format the response in markdown.`,
 
         // Filter for documentation and decision types
         const docs = allEntries.filter((entry) => {
-          const metadata = entry.metadata as Record<string, unknown>;
-          return metadata?.type === "documentation" || metadata?.type === "decision";
+          return entry.knowledge_type === "reference" || entry.knowledge_type === "decision";
         });
 
         const [engagement] = await ctx.db

@@ -1,13 +1,13 @@
 /**
  * Worker Service - Background Job Processing and AI Operations
- * 
+ *
  * This service handles all background processing for the consulting platform:
  * - AI-powered project insights generation
  * - Risk assessment and analysis
  * - Scheduled job processing with cron
  * - Queue management with BullMQ and Redis
  * - Health monitoring and graceful shutdown
- * 
+ *
  * Key Features:
  * - Redis-based job queues for scalability
  * - AI orchestrator integration for intelligent processing
@@ -99,7 +99,11 @@ const aiInsightsWorker = new Worker(
 
     try {
       // Get project data
-      const project = await db.select().from(engagements).where(eq(engagements.id, projectId)).limit(1);
+      const project = await db
+        .select()
+        .from(engagements)
+        .where(eq(engagements.id, projectId))
+        .limit(1);
 
       if (!project.length) {
         throw new Error("Project not found");
@@ -149,7 +153,11 @@ const riskAssessmentWorker = new Worker(
 
     try {
       // Get project data
-      const project = await db.select().from(engagements).where(eq(engagements.id, projectId)).limit(1);
+      const project = await db
+        .select()
+        .from(engagements)
+        .where(eq(engagements.id, projectId))
+        .limit(1);
 
       if (!project.length) {
         throw new Error("Project not found");
@@ -194,7 +202,10 @@ const _dailyInsightsJob = new CronJob(
     console.log("Running daily AI insights generation...");
 
     // Get all active projects
-    const activeProjects = await db.select().from(engagements).where(eq(engagements.status, "active"));
+    const activeProjects = await db
+      .select()
+      .from(engagements)
+      .where(eq(engagements.status, "active"));
 
     // Queue AI insights for each project
     for (const project of activeProjects) {
@@ -216,7 +227,10 @@ const _weeklyRiskAssessmentJob = new CronJob(
     console.log("Running weekly risk assessment...");
 
     // Get all active projects
-    const activeProjects = await db.select().from(engagements).where(eq(engagements.status, "active"));
+    const activeProjects = await db
+      .select()
+      .from(engagements)
+      .where(eq(engagements.status, "active"));
 
     // Queue risk assessment for each project
     for (const project of activeProjects) {

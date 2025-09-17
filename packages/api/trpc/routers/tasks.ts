@@ -38,62 +38,52 @@ export const tasksRouter = router({
       return [];
     }),
 
-  getById: protectedProcedure
-    .input(z.object({ id: z.string().uuid() }))
-    .query(async () => {
-      return null;
-    }),
+  getById: protectedProcedure.input(z.object({ id: z.string().uuid() })).query(async () => {
+    return null;
+  }),
 
-  create: protectedProcedure
-    .input(createTaskSchema)
-    .mutation(async ({ input }) => {
-      // Tasks removed - return mock task
-      return {
-        id: crypto.randomUUID(),
-        ...input,
-        created_at: new Date(),
-        updated_at: new Date(),
-      };
-    }),
+  create: protectedProcedure.input(createTaskSchema).mutation(async ({ input }) => {
+    // Tasks removed - return mock task
+    return {
+      id: crypto.randomUUID(),
+      ...input,
+      created_at: new Date(),
+      updated_at: new Date(),
+    };
+  }),
 
-  update: protectedProcedure
-    .input(updateTaskSchema)
-    .mutation(async ({ input }) => {
-      // Tasks removed - return mock task
-      return {
-        ...input,
-        updated_at: new Date(),
-      };
-    }),
+  update: protectedProcedure.input(updateTaskSchema).mutation(async ({ input }) => {
+    // Tasks removed - return mock task
+    return {
+      ...input,
+      updated_at: new Date(),
+    };
+  }),
 
-  delete: protectedProcedure
-    .input(z.object({ id: z.string().uuid() }))
-    .mutation(async () => {
-      return { success: true };
-    }),
+  delete: protectedProcedure.input(z.object({ id: z.string().uuid() })).mutation(async () => {
+    return { success: true };
+  }),
 
-  getStats: protectedProcedure
-    .input(z.object({ projectId: z.string().uuid() }))
-    .query(async () => {
-      // Return empty stats
-      return {
-        total: 0,
-        byStatus: {
-          todo: 0,
-          "in-progress": 0,
-          review: 0,
-          completed: 0,
-        },
-        byPriority: {
-          low: 0,
-          medium: 0,
-          high: 0,
-          urgent: 0,
-        },
-        totalEstimatedHours: 0,
-        totalActualHours: 0,
-        completionRate: 0,
-        overdueTasks: 0,
-      };
-    }),
+  getStats: protectedProcedure.input(z.object({ projectId: z.string().uuid() })).query(async () => {
+    // Return empty stats
+    return {
+      total: 0,
+      byStatus: {
+        todo: 0,
+        "in-progress": 0,
+        review: 0,
+        completed: 0,
+      },
+      byPriority: {
+        low: 0,
+        medium: 0,
+        high: 0,
+        urgent: 0,
+      },
+      totalEstimatedHours: 0,
+      totalActualHours: 0,
+      completionRate: 0,
+      overdueTasks: 0,
+    };
+  }),
 });

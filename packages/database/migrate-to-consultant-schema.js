@@ -5,18 +5,20 @@
  * This will DROP existing tables and create new ones - make sure to backup first!
  */
 
-const { Pool } = require('pg');
+const { Pool } = require("pg");
 
-const DATABASE_URL = process.env.DATABASE_URL || "postgresql://postgres:vtwyKVDTWAyWySGhzxYJpBpEJPjsiiLN@crossover.proxy.rlwy.net:39737/railway";
+const DATABASE_URL =
+  process.env.DATABASE_URL ||
+  "postgresql://postgres:vtwyKVDTWAyWySGhzxYJpBpEJPjsiiLN@crossover.proxy.rlwy.net:39737/railway";
 
 async function migrate() {
   const pool = new Pool({ connectionString: DATABASE_URL });
 
   try {
-    console.log('🚀 Starting migration to consultant knowledge schema...\n');
+    console.log("🚀 Starting migration to consultant knowledge schema...\n");
 
     // Drop existing tables (in correct order to handle foreign keys)
-    console.log('📦 Dropping old tables...');
+    console.log("📦 Dropping old tables...");
     await pool.query(`
       DROP TABLE IF EXISTS notifications CASCADE;
       DROP TABLE IF EXISTS tasks CASCADE;
@@ -28,10 +30,10 @@ async function migrate() {
       DROP TABLE IF EXISTS users CASCADE;
       DROP TABLE IF EXISTS organizations CASCADE;
     `);
-    console.log('✅ Old tables dropped\n');
+    console.log("✅ Old tables dropped\n");
 
     // Create new organizations table
-    console.log('🏢 Creating organizations table...');
+    console.log("🏢 Creating organizations table...");
     await pool.query(`
       CREATE TABLE organizations (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -48,10 +50,10 @@ async function migrate() {
         updated_at TIMESTAMP DEFAULT NOW()
       );
     `);
-    console.log('✅ Organizations table created\n');
+    console.log("✅ Organizations table created\n");
 
     // Create users table
-    console.log('👤 Creating users table...');
+    console.log("👤 Creating users table...");
     await pool.query(`
       CREATE TABLE users (
         id TEXT PRIMARY KEY,
@@ -67,10 +69,10 @@ async function migrate() {
         updated_at TIMESTAMP DEFAULT NOW()
       );
     `);
-    console.log('✅ Users table created\n');
+    console.log("✅ Users table created\n");
 
     // Create engagements table (formerly projects)
-    console.log('💼 Creating engagements table...');
+    console.log("💼 Creating engagements table...");
     await pool.query(`
       CREATE TABLE engagements (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -95,10 +97,10 @@ async function migrate() {
         updated_at TIMESTAMP DEFAULT NOW()
       );
     `);
-    console.log('✅ Engagements table created\n');
+    console.log("✅ Engagements table created\n");
 
     // Create knowledge_base table
-    console.log('📚 Creating knowledge_base table...');
+    console.log("📚 Creating knowledge_base table...");
     await pool.query(`
       CREATE TABLE knowledge_base (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -130,20 +132,20 @@ async function migrate() {
         updated_at TIMESTAMP DEFAULT NOW()
       );
     `);
-    console.log('✅ Knowledge base table created\n');
+    console.log("✅ Knowledge base table created\n");
 
     // Create indexes for knowledge_base
-    console.log('🔍 Creating indexes...');
+    console.log("🔍 Creating indexes...");
     await pool.query(`
       CREATE INDEX knowledge_engagement_idx ON knowledge_base(engagement_id);
       CREATE INDEX knowledge_type_idx ON knowledge_base(knowledge_type);
       CREATE INDEX knowledge_visibility_idx ON knowledge_base(visibility);
       CREATE INDEX knowledge_created_by_idx ON knowledge_base(created_by);
     `);
-    console.log('✅ Indexes created\n');
+    console.log("✅ Indexes created\n");
 
     // Create knowledge_templates table
-    console.log('📋 Creating knowledge_templates table...');
+    console.log("📋 Creating knowledge_templates table...");
     await pool.query(`
       CREATE TABLE knowledge_templates (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -164,10 +166,10 @@ async function migrate() {
         updated_at TIMESTAMP DEFAULT NOW()
       );
     `);
-    console.log('✅ Knowledge templates table created\n');
+    console.log("✅ Knowledge templates table created\n");
 
     // Create tags table
-    console.log('🏷️ Creating tags table...');
+    console.log("🏷️ Creating tags table...");
     await pool.query(`
       CREATE TABLE tags (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -184,10 +186,10 @@ async function migrate() {
       );
       CREATE INDEX unique_org_tag_slug ON tags(organization_id, slug);
     `);
-    console.log('✅ Tags table created\n');
+    console.log("✅ Tags table created\n");
 
     // Create knowledge_tags junction table
-    console.log('🔗 Creating knowledge_tags table...');
+    console.log("🔗 Creating knowledge_tags table...");
     await pool.query(`
       CREATE TABLE knowledge_tags (
         knowledge_id UUID REFERENCES knowledge_base(id) NOT NULL,
@@ -196,10 +198,10 @@ async function migrate() {
       );
       CREATE INDEX knowledge_tags_pk ON knowledge_tags(knowledge_id, tag_id);
     `);
-    console.log('✅ Knowledge_tags table created\n');
+    console.log("✅ Knowledge_tags table created\n");
 
     // Create knowledge_insights table
-    console.log('💡 Creating knowledge_insights table...');
+    console.log("💡 Creating knowledge_insights table...");
     await pool.query(`
       CREATE TABLE knowledge_insights (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -221,10 +223,10 @@ async function migrate() {
         created_at TIMESTAMP DEFAULT NOW()
       );
     `);
-    console.log('✅ Knowledge insights table created\n');
+    console.log("✅ Knowledge insights table created\n");
 
     // Create search_history table
-    console.log('🔍 Creating search_history table...');
+    console.log("🔍 Creating search_history table...");
     await pool.query(`
       CREATE TABLE search_history (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -238,10 +240,10 @@ async function migrate() {
         created_at TIMESTAMP DEFAULT NOW()
       );
     `);
-    console.log('✅ Search history table created\n');
+    console.log("✅ Search history table created\n");
 
     // Create ai_interactions table
-    console.log('🤖 Creating ai_interactions table...');
+    console.log("🤖 Creating ai_interactions table...");
     await pool.query(`
       CREATE TABLE ai_interactions (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -262,10 +264,10 @@ async function migrate() {
         created_at TIMESTAMP DEFAULT NOW()
       );
     `);
-    console.log('✅ AI interactions table created\n');
+    console.log("✅ AI interactions table created\n");
 
     // Create engagement_stakeholders table
-    console.log('👥 Creating engagement_stakeholders table...');
+    console.log("👥 Creating engagement_stakeholders table...");
     await pool.query(`
       CREATE TABLE engagement_stakeholders (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -278,10 +280,10 @@ async function migrate() {
         left_at TIMESTAMP
       );
     `);
-    console.log('✅ Engagement stakeholders table created\n');
+    console.log("✅ Engagement stakeholders table created\n");
 
     // Create files table
-    console.log('📁 Creating files table...');
+    console.log("📁 Creating files table...");
     await pool.query(`
       CREATE TABLE files (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -300,28 +302,27 @@ async function migrate() {
         created_at TIMESTAMP DEFAULT NOW()
       );
     `);
-    console.log('✅ Files table created\n');
+    console.log("✅ Files table created\n");
 
     // Create compatibility aliases
-    console.log('🔄 Creating compatibility aliases...');
+    console.log("🔄 Creating compatibility aliases...");
     await pool.query(`
       CREATE VIEW projects AS SELECT * FROM engagements;
       CREATE VIEW project_members AS SELECT * FROM engagement_stakeholders;
     `);
-    console.log('✅ Compatibility aliases created\n');
+    console.log("✅ Compatibility aliases created\n");
 
-    console.log('🎉 Migration completed successfully!\n');
-    console.log('📝 New schema features:');
-    console.log('   - Client engagements instead of projects');
-    console.log('   - Enhanced knowledge base with types and visibility');
-    console.log('   - Knowledge templates for reusable content');
-    console.log('   - Normalized tags system');
-    console.log('   - AI insights tracking');
-    console.log('   - Search history for better recommendations');
-    console.log('   - File attachments with text extraction\n');
-
+    console.log("🎉 Migration completed successfully!\n");
+    console.log("📝 New schema features:");
+    console.log("   - Client engagements instead of projects");
+    console.log("   - Enhanced knowledge base with types and visibility");
+    console.log("   - Knowledge templates for reusable content");
+    console.log("   - Normalized tags system");
+    console.log("   - AI insights tracking");
+    console.log("   - Search history for better recommendations");
+    console.log("   - File attachments with text extraction\n");
   } catch (error) {
-    console.error('❌ Migration failed:', error);
+    console.error("❌ Migration failed:", error);
     process.exit(1);
   } finally {
     await pool.end();

@@ -108,15 +108,15 @@ export default function ProjectStatusPage() {
 
       {/* Status Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className={`border-2 ${getStatusColor(project.status)}`}>
+        <Card className={`border-2 ${getStatusColor(project.status || "active")}`}>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-medium">Status</CardTitle>
-              {getStatusIcon(project.status)}
+              {getStatusIcon(project.status || "active")}
             </div>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold capitalize">{project.status}</p>
+            <p className="text-2xl font-bold capitalize">{project.status || "active"}</p>
           </CardContent>
         </Card>
 

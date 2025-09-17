@@ -37,7 +37,6 @@ export const projectsRouter = router({
         name: z.string().min(1),
         description: z.string().optional(),
         budget: z.number().optional(),
-        timeline: z.record(z.any()).optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -45,19 +44,19 @@ export const projectsRouter = router({
         .insert(projects)
         .values({
           organization_id: ctx.user.organizationId,
+          client_name: input.name, // Using name as client_name for now
           name: input.name,
           description: input.description,
           budget: input.budget,
-          timeline: input.timeline,
-          status: "planning",
+          status: "prospect",
         })
         .returning();
 
-      // Add creator as project owner
+      // Add creator as project lead
       await ctx.db.insert(project_members).values({
-        project_id: newProject.id,
+        engagement_id: newProject.id,
         user_id: ctx.user.id,
-        role: "owner",
+        role: "lead",
       });
 
       return newProject;
@@ -70,9 +69,8 @@ export const projectsRouter = router({
         id: z.string(),
         name: z.string().min(1).optional(),
         description: z.string().optional(),
-        status: z.enum(["planning", "active", "on-hold", "completed", "cancelled"]).optional(),
+        status: z.enum(["prospect", "active", "on-hold", "completed", "archived"]).optional(),
         budget: z.number().optional(),
-        timeline: z.record(z.any()).optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -113,12 +111,10 @@ export const projectsRouter = router({
     }),
 
   // Get project tasks (deprecated - tasks removed from schema)
-  getTasks: protectedProcedure
-    .input(z.object({ projectId: z.string() }))
-    .query(async () => {
-      // Tasks have been removed from the consultant-focused schema
-      return [];
-    }),
+  getTasks: protectedProcedure.input(z.object({ projectId: z.string() })).query(async () => {
+    // Tasks have been removed from the consultant-focused schema
+    return [];
+  }),
 
   // Get project insights from AI
   getInsights: protectedProcedure
@@ -144,7 +140,6 @@ export const projectsRouter = router({
         description: project[0].description,
         status: project[0].status,
         budget: project[0].budget,
-        timeline: project[0].timeline,
       };
 
       const insights = await ctx.ai.generateProjectInsights(

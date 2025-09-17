@@ -1,14 +1,14 @@
 /**
  * Home Page - Landing Page and Authentication Gateway
- * 
+ *
  * This is the main landing page that serves as the entry point for the application.
  * It provides:
- * 
+ *
  * - Marketing content showcasing platform features
  * - Authentication buttons for sign-in and sign-up
  * - Automatic redirection for authenticated users
  * - Feature highlights and value propositions
- * 
+ *
  * The page uses Clerk for authentication and automatically redirects
  * authenticated users to the dashboard to avoid showing the landing page
  * to users who are already logged in.
@@ -23,10 +23,10 @@ import { useEffect } from "react";
 
 /**
  * Home Page Component
- * 
+ *
  * Renders the landing page with marketing content and authentication options.
  * Automatically redirects authenticated users to the dashboard.
- * 
+ *
  * @returns JSX element representing the landing page
  */
 export default function HomePage() {
