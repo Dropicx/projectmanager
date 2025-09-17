@@ -173,7 +173,7 @@ export function KnowledgeSidebar({
           </AccordionTrigger>
           <AccordionContent className="pb-1">
             <div className="ml-4">
-              {category.children.map((child) => renderCategory(child, level + 1))}
+              {category.children?.map((child) => renderCategory(child, level + 1))}
             </div>
           </AccordionContent>
         </AccordionItem>
