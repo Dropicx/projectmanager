@@ -32,9 +32,24 @@ import { trpc } from "@/app/providers/trpc-provider";
 import { AddKnowledgeDialog } from "@/components/knowledge/add-knowledge-dialog";
 import { KnowledgeDetailView } from "@/components/knowledge/knowledge-detail-view";
 import { KnowledgeSidebar } from "@/components/knowledge-sidebar";
-import { useSidebar } from "@/contexts/sidebar-context";
 
 export const dynamic = "force-dynamic";
+
+// Helper function to strip HTML tags and get plain text
+function stripHtml(html: string): string {
+  if (!html) return "";
+  // Remove HTML tags and decode HTML entities
+  const tmp = document.createElement("DIV");
+  tmp.innerHTML = html;
+  return tmp.textContent || tmp.innerText || "";
+}
+
+// Helper function to get excerpt from HTML content
+function getContentExcerpt(htmlContent: string, maxLength: number = 150): string {
+  const plainText = stripHtml(htmlContent);
+  if (plainText.length <= maxLength) return plainText;
+  return `${plainText.substring(0, maxLength).trim()}...`;
+}
 
 export default function KnowledgePage() {
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>();
@@ -209,7 +224,9 @@ export default function KnowledgePage() {
                         </Badge>
                       </div>
                       <CardTitle className="text-lg">{item.title}</CardTitle>
-                      <CardDescription className="line-clamp-3">{item.content}</CardDescription>
+                      <CardDescription className="line-clamp-3">
+                        {getContentExcerpt(item.content || "", 200)}
+                      </CardDescription>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-3">

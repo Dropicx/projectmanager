@@ -7,7 +7,6 @@ import {
   Briefcase,
   ChevronLeft,
   Database,
-  Hash,
   LayoutDashboard,
   Menu,
   Newspaper,
@@ -18,6 +17,7 @@ import {
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import { useSidebar } from "@/contexts/sidebar-context";
 
 const UserButton = dynamic(() => import("@clerk/nextjs").then((mod) => mod.UserButton), {
@@ -37,9 +37,11 @@ const navigation = [
 
 export function DashboardSidebar() {
   const pathname = usePathname();
-  const { isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen } = useSidebar();
+  const { isMobileOpen, setIsMobileOpen } = useSidebar();
+  const [isHovered, setIsHovered] = useState(false);
 
-  const toggleSidebar = () => setIsCollapsed(!isCollapsed);
+  // Desktop: always collapsed unless hovered
+  const isCollapsed = !isHovered;
   const toggleMobile = () => setIsMobileOpen(!isMobileOpen);
 
   return (
@@ -65,9 +67,12 @@ export function DashboardSidebar() {
 
       {/* Sidebar */}
       <div
+        role="navigation"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
         className={cn(
           "h-screen lg:h-full lg:min-h-screen flex flex-col bg-gradient-to-b from-indigo-600 to-indigo-700 text-white shadow-xl transition-all duration-300 fixed lg:sticky lg:top-0 z-50",
-          // Desktop width
+          // Desktop width - always starts collapsed, expands on hover
           isCollapsed ? "lg:w-20" : "lg:w-72",
           // Mobile/tablet visibility
           isMobileOpen ? "left-0 w-72" : "-left-72 lg:left-0",
@@ -83,22 +88,8 @@ export function DashboardSidebar() {
               <p className="text-xs text-indigo-200">AI-Powered Consulting</p>
             </div>
           ) : (
-            <span className="text-2xl font-bold text-white hidden lg:block">C</span>
+            <span className="text-2xl font-bold text-white mx-auto lg:block">C</span>
           )}
-
-          {/* Desktop collapse button */}
-          <button
-            type="button"
-            onClick={toggleSidebar}
-            className="hidden lg:block p-1.5 rounded-md hover:bg-indigo-500/30 transition-colors"
-          >
-            <ChevronLeft
-              className={cn(
-                "h-5 w-5 text-indigo-200 transition-transform",
-                isCollapsed && "rotate-180"
-              )}
-            />
-          </button>
 
           {/* Mobile close button */}
           <button
