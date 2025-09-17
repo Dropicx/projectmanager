@@ -7,16 +7,16 @@ import { useSidebar } from '@/contexts/sidebar-context'
 import dynamic from 'next/dynamic'
 import {
   LayoutDashboard,
-  FolderOpen,
+  Briefcase,
   Brain,
-  BookOpen,
+  Database,
   Settings,
-  Users,
+  Search,
   BarChart3,
   Menu,
   ChevronLeft,
-  Bell,
-  Search
+  Hash,
+  Sparkles
 } from 'lucide-react'
 
 const UserButton = dynamic(
@@ -26,11 +26,12 @@ const UserButton = dynamic(
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Projects', href: '/projects', icon: FolderOpen },
-  { name: 'Insights', href: '/insights', icon: Brain },
-  { name: 'Knowledge', href: '/knowledge', icon: BookOpen },
+  { name: 'Knowledge Base', href: '/knowledge', icon: Database },
+  { name: 'Engagements', href: '/projects', icon: Briefcase },
+  { name: 'AI Insights', href: '/insights', icon: Sparkles },
+  { name: 'Search', href: '/search', icon: Search },
+  { name: 'Topics', href: '/topics', icon: Hash },
   { name: 'Analytics', href: '/analytics', icon: BarChart3 },
-  { name: 'Team', href: '/team', icon: Users },
   { name: 'Settings', href: '/settings', icon: Settings },
 ]
 
