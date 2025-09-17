@@ -319,9 +319,12 @@ export function KnowledgeSidebar({
     const baseCategories = draggedCategories || categories;
     let processed = [...baseCategories];
 
-    // Apply filtering
+    // Apply filtering - hide empty categories when showEmpty is false
     if (!filterOption.showEmpty) {
-      processed = processed.filter((cat) => cat.item_count && cat.item_count > 0);
+      processed = processed.filter((cat) => {
+        // Keep categories that have items or have been manually marked as non-empty
+        return cat.item_count !== null && cat.item_count !== undefined && cat.item_count > 0;
+      });
     }
 
     if (filterOption.searchQuery) {

@@ -118,7 +118,29 @@ export const knowledgeRouter = router({
         .from(knowledge_categories)
         .where(eq(knowledge_categories.organization_id, ctx.user.organizationId || ""))
         .orderBy(knowledge_categories.position, knowledge_categories.name);
-      return categories;
+
+      // Calculate actual item counts for each category
+      const categoriesWithCounts = await Promise.all(
+        categories.map(async (category) => {
+          const count = await ctx.db
+            .select({ count: sql`count(*)::int` })
+            .from(knowledge_to_categories)
+            .innerJoin(knowledge_base, eq(knowledge_to_categories.knowledge_id, knowledge_base.id))
+            .where(
+              and(
+                eq(knowledge_to_categories.category_id, category.id),
+                eq(knowledge_base.organization_id, ctx.user.organizationId || "")
+              )
+            );
+
+          return {
+            ...category,
+            item_count: count[0]?.count || 0,
+          };
+        })
+      );
+
+      return categoriesWithCounts;
     } catch (error) {
       console.error("Error fetching categories:", error);
       return [];
