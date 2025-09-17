@@ -32,6 +32,9 @@ importers:
       pg:
         specifier: ^8.16.3
         version: 8.16.3
+      tsx:
+        specifier: ^4.19.2
+        version: 4.20.5
       turbo:
         specifier: ^2.5.6
         version: 2.5.6
