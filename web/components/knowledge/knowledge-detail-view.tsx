@@ -162,7 +162,7 @@ export function KnowledgeDetailView({ knowledgeId, onBack, onDelete }: Knowledge
                   {getTypeLabel(item.knowledge_type)}
                 </Badge>
               )}
-              {item.tags && Array.isArray(item.tags) && item.tags.length > 0 && (
+              {item.tags && Array.isArray(item.tags) && item.tags.length > 0 ? (
                 <>
                   <Separator orientation="vertical" className="h-4" />
                   {(item.tags as string[]).map((tag: string) => (
@@ -172,7 +172,7 @@ export function KnowledgeDetailView({ knowledgeId, onBack, onDelete }: Knowledge
                     </Badge>
                   ))}
                 </>
-              )}
+              ) : null}
             </div>
           </div>
 
