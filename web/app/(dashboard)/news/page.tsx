@@ -8,17 +8,42 @@ import {
   CardHeader,
   CardTitle,
 } from "@consulting-platform/ui/components/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@consulting-platform/ui/components/dropdown-menu";
 import { Skeleton } from "@consulting-platform/ui/components/skeleton";
 import { format } from "date-fns";
-import { CalendarDays, ExternalLink, Newspaper, RefreshCw } from "lucide-react";
+import { CalendarDays, ChevronDown, ExternalLink, Newspaper, RefreshCw } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { trpc } from "@/app/providers/trpc-provider";
 
+type NewsCategory = "all" | "general" | "security" | "citizen";
+
+const categoryLabels: Record<NewsCategory, string> = {
+  all: "All Categories",
+  general: "General IT News",
+  security: "Security Advisories",
+  citizen: "Citizen Security",
+};
+
 export default function NewsPage() {
   const [daysBack, setDaysBack] = useState(7);
+  const [selectedCategory, setSelectedCategory] = useState<NewsCategory>("all");
 
-  const { data: articles, isLoading, refetch } = trpc.news.getRecentNews.useQuery({ daysBack });
+  const {
+    data: articles,
+    isLoading,
+    refetch,
+  } = trpc.news.getRecentNews.useQuery({
+    daysBack,
+    category: selectedCategory,
+  });
+
+  const { data: feedCategories } = trpc.news.getFeedCategories.useQuery();
 
   // Function to strip HTML tags and clean up content
   const stripHtml = (html: string): string => {
@@ -44,7 +69,7 @@ export default function NewsPage() {
   });
 
   const handleRefresh = () => {
-    syncRssFeed();
+    syncRssFeed({ category: selectedCategory });
   };
 
   if (isLoading) {
@@ -82,10 +107,42 @@ export default function NewsPage() {
               News Feed
             </h1>
             <p className="text-muted-foreground mt-2">
-              Displaying articles from the last {daysBack} days
+              {selectedCategory === "all"
+                ? `Displaying all articles from the last ${daysBack} days`
+                : `Displaying ${categoryLabels[selectedCategory]} from the last ${daysBack} days`}
             </p>
           </div>
           <div className="flex gap-2">
+            {/* Category Selector */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  {categoryLabels[selectedCategory]}
+                  <ChevronDown className="ml-2 h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem onClick={() => setSelectedCategory("all")}>
+                  <div className="flex flex-col">
+                    <span className="font-medium">All Categories</span>
+                    <span className="text-xs text-muted-foreground">Show all news sources</span>
+                  </div>
+                </DropdownMenuItem>
+                {feedCategories?.map((category) => (
+                  <DropdownMenuItem
+                    key={category.id}
+                    onClick={() => setSelectedCategory(category.id as NewsCategory)}
+                  >
+                    <div className="flex flex-col">
+                      <span className="font-medium">{category.name}</span>
+                      <span className="text-xs text-muted-foreground">{category.description}</span>
+                    </div>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Time Range Buttons */}
             <Button
               variant={daysBack === 1 ? "default" : "outline"}
               size="sm"
@@ -107,6 +164,8 @@ export default function NewsPage() {
             >
               Week
             </Button>
+
+            {/* Refresh Button */}
             <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isSyncing}>
               <RefreshCw className={`h-4 w-4 mr-1 ${isSyncing ? "animate-spin" : ""}`} />
               {isSyncing ? "Syncing..." : "Refresh"}
@@ -159,6 +218,14 @@ export default function NewsPage() {
                 <CardDescription className="flex items-center gap-2 text-sm">
                   <CalendarDays className="h-3 w-3" />
                   {format(new Date(article.published_at), "MMM d, yyyy h:mm a")}
+                  {article.metadata?.feed_category_name && (
+                    <>
+                      <span className="text-muted-foreground">•</span>
+                      <span className="text-xs bg-secondary px-2 py-0.5 rounded">
+                        {article.metadata.feed_category_name as string}
+                      </span>
+                    </>
+                  )}
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex-grow">

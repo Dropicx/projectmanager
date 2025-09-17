@@ -31,9 +31,30 @@ export interface NewsArticle {
   metadata: Record<string, any>;
 }
 
-export async function fetchAndStoreRSSFeed(
-  feedUrl: string = "https://rss.the-morpheus.news/rss/high_rating"
-) {
+// RSS Feed Categories Configuration
+export const RSS_FEED_CATEGORIES = {
+  general: {
+    name: "General IT News",
+    url: "https://rss.the-morpheus.news/rss/high_rating",
+    description: "Global IT news from governments, companies, and releases",
+  },
+  security: {
+    name: "Security Advisories",
+    url: "https://wid.cert-bund.de/content/public/securityAdvisory/rss",
+    description: "Security vulnerabilities and advisories from CERT-Bund",
+  },
+  citizen: {
+    name: "Citizen Security",
+    url: "https://wid.cert-bund.de/content/public/buergercert/rss",
+    description: "Security information for citizens from CERT-Bund",
+  },
+} as const;
+
+export type FeedCategory = keyof typeof RSS_FEED_CATEGORIES;
+
+export async function fetchAndStoreRSSFeed(feedCategory: FeedCategory = "general") {
+  const feedConfig = RSS_FEED_CATEGORIES[feedCategory];
+  const feedUrl = feedConfig.url;
   try {
     console.log(`Fetching RSS feed from: ${feedUrl}`);
 
@@ -88,6 +109,8 @@ export async function fetchAndStoreRSSFeed(
         metadata: {
           feed_title: feed.title,
           feed_description: feed.description,
+          feed_category: feedCategory,
+          feed_category_name: feedConfig.name,
         },
       };
 
@@ -135,21 +158,61 @@ export async function fetchAndStoreRSSFeed(
   }
 }
 
-export async function getRecentNewsArticles(daysBack: number = 7): Promise<NewsArticle[]> {
+export async function getRecentNewsArticles(
+  daysBack: number = 7,
+  feedCategory?: FeedCategory
+): Promise<NewsArticle[]> {
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - daysBack);
+
+  // Build the where clause
+  let whereClause: any;
+  if (feedCategory) {
+    const feedUrl = RSS_FEED_CATEGORIES[feedCategory].url;
+    whereClause = and(
+      gte(news_articles.published_at, cutoffDate),
+      eq(news_articles.source, feedUrl)
+    );
+  } else {
+    whereClause = gte(news_articles.published_at, cutoffDate);
+  }
 
   const articles = await db
     .select()
     .from(news_articles)
-    .where(gte(news_articles.published_at, cutoffDate))
+    .where(whereClause)
     .orderBy(desc(news_articles.published_at));
 
   return articles as NewsArticle[];
 }
 
-export async function getAllNewsArticles(): Promise<NewsArticle[]> {
-  const articles = await db.select().from(news_articles).orderBy(desc(news_articles.published_at));
+export async function getAllNewsArticles(feedCategory?: FeedCategory): Promise<NewsArticle[]> {
+  // Build query with optional where clause
+  if (feedCategory) {
+    const feedUrl = RSS_FEED_CATEGORIES[feedCategory].url;
+    const articles = await db
+      .select()
+      .from(news_articles)
+      .where(eq(news_articles.source, feedUrl))
+      .orderBy(desc(news_articles.published_at));
+    return articles as NewsArticle[];
+  } else {
+    const articles = await db
+      .select()
+      .from(news_articles)
+      .orderBy(desc(news_articles.published_at));
+    return articles as NewsArticle[];
+  }
+}
 
-  return articles as NewsArticle[];
+// Sync all configured RSS feeds
+export async function syncAllRssFeeds() {
+  const results = [];
+
+  for (const category of Object.keys(RSS_FEED_CATEGORIES) as FeedCategory[]) {
+    const result = await fetchAndStoreRSSFeed(category);
+    results.push({ category, ...result });
+  }
+
+  return results;
 }
