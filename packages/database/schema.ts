@@ -27,6 +27,7 @@ import {
   integer,
   jsonb,
   pgTable,
+  primaryKey,
   real,
   text,
   timestamp,
@@ -310,28 +311,20 @@ export const knowledge_categories = pgTable(
 export const knowledge_to_categories = pgTable(
   "knowledge_to_categories",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
     knowledge_id: uuid("knowledge_id")
-      .references(() => knowledge_base.id)
+      .references(() => knowledge_base.id, { onDelete: "cascade" })
       .notNull(),
     category_id: uuid("category_id")
-      .references(() => knowledge_categories.id)
+      .references(() => knowledge_categories.id, { onDelete: "cascade" })
       .notNull(),
-
-    // Primary category flag
-    is_primary: boolean("is_primary").default(false),
-
     created_at: timestamp("created_at").defaultNow(),
   },
   (table) => ({
-    // Composite unique constraint
-    uniqueKnowledgeCategory: index("unique_knowledge_category").on(
-      table.knowledge_id,
-      table.category_id
-    ),
-    // Indexes
-    knowledgeIdx: index("ktc_knowledge_idx").on(table.knowledge_id),
-    categoryIdx: index("ktc_category_idx").on(table.category_id),
+    // Composite primary key (no separate id field)
+    pk: primaryKey({ columns: [table.knowledge_id, table.category_id] }),
+    // Indexes for performance
+    knowledgeIdx: index("idx_knowledge_to_categories_knowledge_id").on(table.knowledge_id),
+    categoryIdx: index("idx_knowledge_to_categories_category_id").on(table.category_id),
   })
 );
 
