@@ -314,7 +314,7 @@ export default function KnowledgePage() {
   };
 
   return (
-    <div className="h-full p-6">
+    <div className="h-full px-6 pt-6">
       <div className="flex h-full bg-white rounded-lg shadow-sm border">
         <aside
           className={cn(

@@ -165,6 +165,10 @@ export function DashboardSidebar() {
               appearance={{
                 elements: {
                   avatarBox: "w-10 h-10",
+                  userButtonBox: "flex-row-reverse",
+                  userButtonTrigger: "focus:outline-none",
+                  userButtonAvatarBox: "w-10 h-10",
+                  userButtonOuterIdentifier: "text-indigo-100 text-sm font-medium ml-3",
                 },
               }}
               showName={!isCollapsed}
