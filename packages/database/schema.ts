@@ -198,6 +198,10 @@ export const knowledge_base = pgTable(
     usefulness_score: real("usefulness_score").default(0), // 0-5 rating
     last_accessed: timestamp("last_accessed"),
 
+    // Additional fields
+    is_public: boolean("is_public").default(true),
+    metadata: jsonb("metadata").default({}),
+
     // Authorship
     created_by: text("created_by")
       .references(() => users.id)
@@ -251,6 +255,7 @@ export const knowledge_templates = pgTable("knowledge_templates", {
   // Metadata
   tags: jsonb("tags").default([]),
   technologies: jsonb("technologies").default([]),
+  metadata: jsonb("metadata").default({}), // Additional metadata like view counts
 
   created_by: text("created_by")
     .references(() => users.id)
