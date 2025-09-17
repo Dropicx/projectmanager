@@ -109,9 +109,12 @@ export default function NewsPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 auto-rows-max">
           {articles?.map((article) => (
-            <Card key={article.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+            <Card
+              key={article.id}
+              className="overflow-hidden hover:shadow-lg transition-shadow flex flex-col"
+            >
               {(article.image_url || article.thumbnail_url) && (
                 <div className="relative h-48 w-full bg-muted">
                   <Image
@@ -141,11 +144,14 @@ export default function NewsPage() {
                   {format(new Date(article.published_at), "MMM d, yyyy h:mm a")}
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                {article.description && (
-                  <p className="text-sm text-muted-foreground line-clamp-3 mb-4">
-                    {article.description}
-                  </p>
+              <CardContent className="flex-grow">
+                {/* Show full content if available, otherwise show description */}
+                {(article.content || article.description) && (
+                  <div className="text-sm text-muted-foreground mb-4 space-y-2">
+                    <p className="whitespace-pre-wrap">
+                      {article.content || article.description || ""}
+                    </p>
+                  </div>
                 )}
                 {article.author && (
                   <p className="text-xs text-muted-foreground mb-2">By {article.author}</p>
@@ -168,7 +174,7 @@ export default function NewsPage() {
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
                 >
-                  Read More
+                  Read Full Article
                   <ExternalLink className="h-3 w-3" />
                 </a>
               </CardContent>
