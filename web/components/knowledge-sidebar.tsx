@@ -8,10 +8,18 @@ import {
   Button,
   cn,
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  Input,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
   ScrollArea,
   Separator,
 } from "@consulting-platform/ui";
@@ -33,6 +41,8 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
+  ArrowDown,
+  ArrowUp,
   BookOpen,
   Calendar,
   ChevronRight,
@@ -45,10 +55,12 @@ import {
   Loader2,
   MoreHorizontal,
   Plus,
+  Search,
   Settings,
   SortAsc,
   Trash2,
   Users,
+  X,
 } from "lucide-react";
 import type React from "react";
 import { useEffect, useState } from "react";
@@ -252,6 +264,13 @@ function SortableCategory({
   );
 }
 
+type SortOption = "name-asc" | "name-desc" | "items-asc" | "items-desc" | "manual";
+
+type FilterOption = {
+  showEmpty: boolean;
+  searchQuery: string;
+};
+
 export function KnowledgeSidebar({
   selectedCategory,
   onCategorySelect,
@@ -261,6 +280,12 @@ export function KnowledgeSidebar({
   const [editingCategory, setEditingCategory] = useState<any>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [localCategories, setLocalCategories] = useState<any[]>([]);
+  const [sortOption, setSortOption] = useState<SortOption>("manual");
+  const [filterOption, setFilterOption] = useState<FilterOption>({
+    showEmpty: true,
+    searchQuery: "",
+  });
+  const [filterPopoverOpen, setFilterPopoverOpen] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -293,10 +318,47 @@ export function KnowledgeSidebar({
     },
   });
 
-  // Sync local categories with fetched data
+  // Apply sorting and filtering to categories
   useEffect(() => {
-    setLocalCategories(categories);
-  }, [categories]);
+    let processedCategories = [...categories];
+
+    // Apply filtering
+    if (!filterOption.showEmpty) {
+      processedCategories = processedCategories.filter(
+        (cat) => cat.item_count && cat.item_count > 0
+      );
+    }
+
+    if (filterOption.searchQuery) {
+      const query = filterOption.searchQuery.toLowerCase();
+      processedCategories = processedCategories.filter((cat) =>
+        cat.name.toLowerCase().includes(query)
+      );
+    }
+
+    // Apply sorting
+    switch (sortOption) {
+      case "name-asc":
+        processedCategories.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case "name-desc":
+        processedCategories.sort((a, b) => b.name.localeCompare(a.name));
+        break;
+      case "items-asc":
+        processedCategories.sort((a, b) => (a.item_count || 0) - (b.item_count || 0));
+        break;
+      case "items-desc":
+        processedCategories.sort((a, b) => (b.item_count || 0) - (a.item_count || 0));
+        break;
+      case "manual":
+      default:
+        // Keep original order (by position)
+        processedCategories.sort((a, b) => (a.position || 0) - (b.position || 0));
+        break;
+    }
+
+    setLocalCategories(processedCategories);
+  }, [categories, sortOption, filterOption]);
 
   const handleEditCategory = (category: any, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -330,15 +392,17 @@ export function KnowledgeSidebar({
       const newCategories = arrayMove(localCategories, oldIndex, newIndex);
       setLocalCategories(newCategories);
 
-      // Update positions in the database
-      newCategories.forEach((cat, index) => {
-        if (cat.position !== index) {
-          updatePositionMutation.mutate({
-            id: cat.id,
-            position: index,
-          });
-        }
-      });
+      // Update positions in the database only if in manual sort mode
+      if (sortOption === "manual") {
+        newCategories.forEach((cat, index) => {
+          if (cat.position !== index) {
+            updatePositionMutation.mutate({
+              id: cat.id,
+              position: index,
+            });
+          }
+        });
+      }
     }
 
     setActiveId(null);
@@ -408,12 +472,136 @@ export function KnowledgeSidebar({
               <Plus className="h-3 w-3 mr-1" />
               Category
             </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <Filter className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <SortAsc className="h-4 w-4" />
-            </Button>
+
+            {/* Filter Button */}
+            <Popover open={filterPopoverOpen} onOpenChange={setFilterPopoverOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn(
+                    "h-8 w-8",
+                    (!filterOption.showEmpty || filterOption.searchQuery) && "text-primary"
+                  )}
+                >
+                  <Filter className="h-4 w-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-64" align="end">
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-medium mb-2">Filter Categories</h4>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <Input
+                        placeholder="Search categories..."
+                        value={filterOption.searchQuery}
+                        onChange={(e) =>
+                          setFilterOption({
+                            ...filterOption,
+                            searchQuery: e.target.value,
+                          })
+                        }
+                        className="h-8"
+                      />
+                      {filterOption.searchQuery && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() =>
+                            setFilterOption({
+                              ...filterOption,
+                              searchQuery: "",
+                            })
+                          }
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      )}
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        variant={filterOption.showEmpty ? "outline" : "default"}
+                        size="sm"
+                        onClick={() =>
+                          setFilterOption({
+                            ...filterOption,
+                            showEmpty: !filterOption.showEmpty,
+                          })
+                        }
+                        className="w-full"
+                      >
+                        {filterOption.showEmpty ? "Hide" : "Show"} Empty Categories
+                      </Button>
+                    </div>
+                  </div>
+
+                  {(!filterOption.showEmpty || filterOption.searchQuery) && (
+                    <div className="pt-2 border-t">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() =>
+                          setFilterOption({
+                            showEmpty: true,
+                            searchQuery: "",
+                          })
+                        }
+                        className="w-full"
+                      >
+                        Clear Filters
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </PopoverContent>
+            </Popover>
+
+            {/* Sort Button */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn("h-8 w-8", sortOption !== "manual" && "text-primary")}
+                >
+                  <SortAsc className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>Sort Categories</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuRadioGroup
+                  value={sortOption}
+                  onValueChange={(value) => setSortOption(value as SortOption)}
+                >
+                  <DropdownMenuRadioItem value="manual">
+                    <GripVertical className="h-4 w-4 mr-2" />
+                    Manual Order
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="name-asc">
+                    <ArrowUp className="h-4 w-4 mr-2" />
+                    Name (A to Z)
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="name-desc">
+                    <ArrowDown className="h-4 w-4 mr-2" />
+                    Name (Z to A)
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="items-desc">
+                    <ArrowDown className="h-4 w-4 mr-2" />
+                    Most Items
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="items-asc">
+                    <ArrowUp className="h-4 w-4 mr-2" />
+                    Least Items
+                  </DropdownMenuRadioItem>
+                </DropdownMenuRadioGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
@@ -445,35 +633,57 @@ export function KnowledgeSidebar({
                 <span className="text-sm">All Knowledge</span>
               </Button>
 
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragStart={handleDragStart}
-                onDragEnd={handleDragEnd}
-              >
-                <SortableContext
-                  items={rootCategories.map((c) => c.id)}
-                  strategy={verticalListSortingStrategy}
+              {/* Show message if filtering results in no categories */}
+              {localCategories.length === 0 && categories.length > 0 ? (
+                <div className="text-center py-8 px-4">
+                  <Search className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                  <p className="text-sm text-muted-foreground mb-3">
+                    No categories match your filters
+                  </p>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() =>
+                      setFilterOption({
+                        showEmpty: true,
+                        searchQuery: "",
+                      })
+                    }
+                  >
+                    Clear Filters
+                  </Button>
+                </div>
+              ) : (
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragStart={handleDragStart}
+                  onDragEnd={handleDragEnd}
                 >
-                  <Accordion type="multiple" className="w-full">
-                    {rootCategories.map((category) => renderCategory(category))}
-                  </Accordion>
-                </SortableContext>
+                  <SortableContext
+                    items={rootCategories.map((c) => c.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <Accordion type="multiple" className="w-full">
+                      {rootCategories.map((category) => renderCategory(category))}
+                    </Accordion>
+                  </SortableContext>
 
-                <DragOverlay>
-                  {activeId && activeCategory ? (
-                    <div className="bg-background border rounded-md shadow-lg p-2 opacity-90">
-                      <div className="flex items-center">
-                        <Folder
-                          className="h-4 w-4 mr-2"
-                          style={{ color: activeCategory.color || undefined }}
-                        />
-                        <span className="text-sm">{activeCategory.name}</span>
+                  <DragOverlay>
+                    {activeId && activeCategory ? (
+                      <div className="bg-background border rounded-md shadow-lg p-2 opacity-90">
+                        <div className="flex items-center">
+                          <Folder
+                            className="h-4 w-4 mr-2"
+                            style={{ color: activeCategory.color || undefined }}
+                          />
+                          <span className="text-sm">{activeCategory.name}</span>
+                        </div>
                       </div>
-                    </div>
-                  ) : null}
-                </DragOverlay>
-              </DndContext>
+                    ) : null}
+                  </DragOverlay>
+                </DndContext>
+              )}
             </>
           )}
         </ScrollArea>

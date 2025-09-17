@@ -53,6 +53,7 @@ export {
 } from "./components/dropdown-menu";
 export { Input } from "./components/input";
 export { Label } from "./components/label";
+export { Popover, PopoverContent, PopoverTrigger } from "./components/popover";
 export { Progress } from "./components/progress";
 export { ScrollArea, ScrollBar } from "./components/scroll-area";
 export {
