@@ -16,6 +16,23 @@ import {
   Separator,
 } from "@consulting-platform/ui";
 import {
+  closestCenter,
+  DndContext,
+  type DragEndEvent,
+  DragOverlay,
+  type DragStartEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import {
   BookOpen,
   Calendar,
   ChevronRight,
@@ -23,6 +40,7 @@ import {
   FileText,
   Filter,
   Folder,
+  GripVertical,
   Hash,
   Loader2,
   MoreHorizontal,
@@ -33,7 +51,7 @@ import {
   Users,
 } from "lucide-react";
 import type React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { trpc } from "@/app/providers/trpc-provider";
 import { CategoryDialog } from "./knowledge/category-dialog";
 
@@ -54,6 +72,186 @@ const iconMap: { [key: string]: React.ComponentType<any> } = {
   ChevronRight,
 };
 
+interface SortableCategoryProps {
+  category: any;
+  level: number;
+  isSelected: boolean;
+  onCategorySelect: (id: string) => void;
+  onEditCategory: (category: any, e: React.MouseEvent) => void;
+  onDeleteCategory: (id: string, e: React.MouseEvent) => void;
+  children?: React.ReactNode;
+  hasChildren: boolean;
+}
+
+function SortableCategory({
+  category,
+  level,
+  isSelected,
+  onCategorySelect,
+  onEditCategory,
+  onDeleteCategory,
+  children,
+  hasChildren,
+}: SortableCategoryProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: category.id,
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  const renderCategoryIcon = (iconName?: string | null, color?: string | null) => {
+    const Icon = iconName && iconMap[iconName] ? iconMap[iconName] : Folder;
+    return <Icon className="h-4 w-4 mr-2 flex-shrink-0" style={{ color: color || undefined }} />;
+  };
+
+  // For categories with children, we use Accordion
+  if (hasChildren) {
+    return (
+      <div ref={setNodeRef} style={style}>
+        <AccordionItem value={category.id} className="border-none">
+          <div className="relative group">
+            <div className="flex items-center">
+              {/* Drag handle */}
+              <div
+                {...attributes}
+                {...listeners}
+                className="p-1 hover:bg-accent rounded cursor-grab active:cursor-grabbing"
+              >
+                <GripVertical className="h-3 w-3 text-muted-foreground" />
+              </div>
+
+              <div className="flex-1 flex items-center">
+                {/* Category button that can be clicked even with children */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={cn(
+                    "flex-1 justify-start px-2 py-1.5 h-auto font-normal",
+                    isSelected && "bg-accent"
+                  )}
+                  onClick={() => onCategorySelect(category.id)}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center">
+                      {renderCategoryIcon(category.icon, category.color)}
+                      <span className="text-sm font-medium">{category.name}</span>
+                    </div>
+                    {category.item_count > 0 && (
+                      <span className="text-xs text-muted-foreground mr-2">
+                        {category.item_count}
+                      </span>
+                    )}
+                  </div>
+                </Button>
+
+                {/* Accordion trigger just for expand/collapse */}
+                <AccordionTrigger className="px-2 py-1.5 hover:bg-transparent [&[data-state=open]>svg]:rotate-90" />
+              </div>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 opacity-0 group-hover:opacity-100"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <MoreHorizontal className="h-3 w-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={(e: React.MouseEvent) => onEditCategory(category, e)}>
+                    <Edit className="mr-2 h-4 w-4" />
+                    Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    className="text-destructive"
+                    onClick={(e: React.MouseEvent) => onDeleteCategory(category.id, e)}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+          <AccordionContent className="pb-1">
+            <div className="ml-6">{children}</div>
+          </AccordionContent>
+        </AccordionItem>
+      </div>
+    );
+  }
+
+  // For categories without children
+  return (
+    <div ref={setNodeRef} style={style} className="relative group">
+      <div className="flex items-center">
+        {/* Drag handle */}
+        <div
+          {...attributes}
+          {...listeners}
+          className="p-1 hover:bg-accent rounded cursor-grab active:cursor-grabbing"
+        >
+          <GripVertical className="h-3 w-3 text-muted-foreground" />
+        </div>
+
+        <Button
+          variant="ghost"
+          size="sm"
+          className={cn(
+            "flex-1 justify-start px-2 py-1.5 h-auto font-normal",
+            isSelected && "bg-accent"
+          )}
+          onClick={() => onCategorySelect(category.id)}
+        >
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center">
+              {level === 0 && renderCategoryIcon(category.icon, category.color)}
+              <span className="text-sm">{category.name}</span>
+            </div>
+            {category.item_count > 0 && (
+              <span className="text-xs text-muted-foreground">{category.item_count}</span>
+            )}
+          </div>
+        </Button>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 opacity-0 group-hover:opacity-100"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <MoreHorizontal className="h-3 w-3" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={(e: React.MouseEvent) => onEditCategory(category, e)}>
+              <Edit className="mr-2 h-4 w-4" />
+              Edit
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="text-destructive"
+              onClick={(e: React.MouseEvent) => onDeleteCategory(category.id, e)}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </div>
+  );
+}
+
 export function KnowledgeSidebar({
   selectedCategory,
   onCategorySelect,
@@ -61,11 +259,28 @@ export function KnowledgeSidebar({
 }: KnowledgeSidebarProps) {
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<any>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [localCategories, setLocalCategories] = useState<any[]>([]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  );
 
   const utils = trpc.useUtils();
 
   // Fetch categories from API
   const { data: categories = [], isLoading } = trpc.knowledge.getCategories.useQuery();
+
+  // Update position mutation
+  const updatePositionMutation = trpc.knowledge.updateCategory.useMutation({
+    onSuccess: () => {
+      utils.knowledge.getCategories.invalidate();
+    },
+  });
 
   // Delete mutation
   const deleteMutation = trpc.knowledge.deleteCategory.useMutation({
@@ -78,10 +293,10 @@ export function KnowledgeSidebar({
     },
   });
 
-  const renderCategoryIcon = (iconName?: string | null, color?: string | null) => {
-    const Icon = iconName && iconMap[iconName] ? iconMap[iconName] : Folder;
-    return <Icon className="h-4 w-4 mr-2 flex-shrink-0" style={{ color: color || undefined }} />;
-  };
+  // Sync local categories with fetched data
+  useEffect(() => {
+    setLocalCategories(categories);
+  }, [categories]);
 
   const handleEditCategory = (category: any, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -101,12 +316,40 @@ export function KnowledgeSidebar({
     setCategoryDialogOpen(true);
   };
 
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const oldIndex = localCategories.findIndex((cat) => cat.id === active.id);
+      const newIndex = localCategories.findIndex((cat) => cat.id === over.id);
+
+      const newCategories = arrayMove(localCategories, oldIndex, newIndex);
+      setLocalCategories(newCategories);
+
+      // Update positions in the database
+      newCategories.forEach((cat, index) => {
+        if (cat.position !== index) {
+          updatePositionMutation.mutate({
+            id: cat.id,
+            position: index,
+          });
+        }
+      });
+    }
+
+    setActiveId(null);
+  };
+
   // Build category tree structure
   const buildCategoryTree = () => {
-    const rootCategories = categories.filter((cat) => !cat.parent_id);
-    const childMap = new Map<string, typeof categories>();
+    const rootCategories = localCategories.filter((cat) => !cat.parent_id);
+    const childMap = new Map<string, typeof localCategories>();
 
-    categories.forEach((cat) => {
+    localCategories.forEach((cat) => {
       if (cat.parent_id) {
         if (!childMap.has(cat.parent_id)) {
           childMap.set(cat.parent_id, []);
@@ -125,120 +368,27 @@ export function KnowledgeSidebar({
     const hasChildren = children.length > 0;
     const isSelected = selectedCategory === category.id;
 
-    if (hasChildren) {
-      return (
-        <AccordionItem key={category.id} value={category.id} className="border-none">
-          <div className="relative group">
-            <AccordionTrigger
-              className={cn(
-                "hover:bg-accent hover:text-accent-foreground px-2 py-1.5 rounded-md pr-8",
-                isSelected && "bg-accent"
-              )}
-              onClick={(e) => {
-                if (!hasChildren) {
-                  e.preventDefault();
-                  onCategorySelect?.(category.id);
-                }
-              }}
-            >
-              <div className="flex items-center justify-between w-full">
-                <div className="flex items-center">
-                  {renderCategoryIcon(category.icon, category.color)}
-                  <span className="text-sm font-medium">{category.name}</span>
-                </div>
-                {category.item_count > 0 && (
-                  <span className="text-xs text-muted-foreground mr-2">{category.item_count}</span>
-                )}
-              </div>
-            </AccordionTrigger>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute right-1 top-1 h-6 w-6 opacity-0 group-hover:opacity-100"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <MoreHorizontal className="h-3 w-3" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onClick={(e: React.MouseEvent) => handleEditCategory(category, e)}
-                >
-                  <Edit className="mr-2 h-4 w-4" />
-                  Edit
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  className="text-destructive"
-                  onClick={(e: React.MouseEvent) => handleDeleteCategory(category.id, e)}
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-          <AccordionContent className="pb-1">
-            <div className="ml-4">
-              {children.map((child: any) => renderCategory(child, level + 1))}
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-      );
-    }
-
     return (
-      <div key={category.id} className="relative group">
-        <Button
-          variant="ghost"
-          size="sm"
-          className={cn(
-            "w-full justify-start px-2 py-1.5 h-auto font-normal pr-8",
-            isSelected && "bg-accent"
-          )}
-          onClick={() => onCategorySelect?.(category.id)}
-        >
-          <div className="flex items-center justify-between w-full">
-            <div className="flex items-center">
-              {level === 0 && renderCategoryIcon(category.icon, category.color)}
-              <span className="text-sm">{category.name}</span>
-            </div>
-            {category.item_count > 0 && (
-              <span className="text-xs text-muted-foreground">{category.item_count}</span>
-            )}
-          </div>
-        </Button>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute right-1 top-0.5 h-6 w-6 opacity-0 group-hover:opacity-100"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <MoreHorizontal className="h-3 w-3" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={(e: React.MouseEvent) => handleEditCategory(category, e)}>
-              <Edit className="mr-2 h-4 w-4" />
-              Edit
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className="text-destructive"
-              onClick={(e: React.MouseEvent) => handleDeleteCategory(category.id, e)}
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+      <SortableCategory
+        key={category.id}
+        category={category}
+        level={level}
+        isSelected={isSelected}
+        onCategorySelect={onCategorySelect || (() => {})}
+        onEditCategory={handleEditCategory}
+        onDeleteCategory={handleDeleteCategory}
+        hasChildren={hasChildren}
+      >
+        {hasChildren && (
+          <SortableContext items={children.map((c) => c.id)} strategy={verticalListSortingStrategy}>
+            {children.map((child: any) => renderCategory(child, level + 1))}
+          </SortableContext>
+        )}
+      </SortableCategory>
     );
   };
+
+  const activeCategory = localCategories.find((cat) => cat.id === activeId);
 
   return (
     <>
@@ -274,7 +424,7 @@ export function KnowledgeSidebar({
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
-          ) : categories.length === 0 ? (
+          ) : localCategories.length === 0 ? (
             <div className="text-center py-8 px-4">
               <Folder className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
               <p className="text-sm text-muted-foreground mb-3">No categories yet</p>
@@ -294,9 +444,36 @@ export function KnowledgeSidebar({
                 <Folder className="h-4 w-4 mr-2" />
                 <span className="text-sm">All Knowledge</span>
               </Button>
-              <Accordion type="multiple" className="w-full">
-                {rootCategories.map((category) => renderCategory(category))}
-              </Accordion>
+
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragStart={handleDragStart}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={rootCategories.map((c) => c.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <Accordion type="multiple" className="w-full">
+                    {rootCategories.map((category) => renderCategory(category))}
+                  </Accordion>
+                </SortableContext>
+
+                <DragOverlay>
+                  {activeId && activeCategory ? (
+                    <div className="bg-background border rounded-md shadow-lg p-2 opacity-90">
+                      <div className="flex items-center">
+                        <Folder
+                          className="h-4 w-4 mr-2"
+                          style={{ color: activeCategory.color || undefined }}
+                        />
+                        <span className="text-sm">{activeCategory.name}</span>
+                      </div>
+                    </div>
+                  ) : null}
+                </DragOverlay>
+              </DndContext>
             </>
           )}
         </ScrollArea>
