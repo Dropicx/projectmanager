@@ -37,7 +37,7 @@ export default function AnalyticsPage() {
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="p-6 space-y-8">
       {/* Page Header */}
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
@@ -113,8 +113,8 @@ export default function AnalyticsPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentActivity.map((activity, index) => (
-                <div key={index} className="flex items-center justify-between">
+              {recentActivity.map((activity) => (
+                <div key={activity.project} className="flex items-center justify-between">
                   <span className="text-sm font-medium">{activity.project}</span>
                   <div className="flex items-center gap-2">
                     <span

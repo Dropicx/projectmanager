@@ -21,10 +21,15 @@ import {
   Settings,
   Shield,
 } from "lucide-react";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { AIUsageDashboard } from "@/components/settings/ai-usage-dashboard";
 
 export default function SettingsPage() {
+  const orgNameId = useId();
+  const orgEmailId = useId();
+  const timezoneId = useId();
+  const languageId = useId();
+
   const [settings, setSettings] = useState({
     organizationName: "Consailt Inc.",
     organizationEmail: "admin@consailt.com",
@@ -84,7 +89,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="p-6 space-y-8">
       {/* Page Header */}
       <div className="flex justify-between items-start">
         <div>
@@ -108,26 +113,26 @@ export default function SettingsPage() {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="org-name">Organization Name</Label>
+              <Label htmlFor={orgNameId}>Organization Name</Label>
               <Input
-                id="org-name"
+                id={orgNameId}
                 value={settings.organizationName}
                 onChange={(e) => setSettings({ ...settings, organizationName: e.target.value })}
               />
             </div>
             <div>
-              <Label htmlFor="org-email">Organization Email</Label>
+              <Label htmlFor={orgEmailId}>Organization Email</Label>
               <Input
-                id="org-email"
+                id={orgEmailId}
                 type="email"
                 value={settings.organizationEmail}
                 onChange={(e) => setSettings({ ...settings, organizationEmail: e.target.value })}
               />
             </div>
             <div>
-              <Label htmlFor="timezone">Timezone</Label>
+              <Label htmlFor={timezoneId}>Timezone</Label>
               <select
-                id="timezone"
+                id={timezoneId}
                 className="w-full px-3 py-2 border rounded-lg"
                 value={settings.timezone}
                 onChange={(e) => setSettings({ ...settings, timezone: e.target.value })}
@@ -142,9 +147,9 @@ export default function SettingsPage() {
               </select>
             </div>
             <div>
-              <Label htmlFor="language">Language</Label>
+              <Label htmlFor={languageId}>Language</Label>
               <select
-                id="language"
+                id={languageId}
                 className="w-full px-3 py-2 border rounded-lg"
                 value={settings.language}
                 onChange={(e) => setSettings({ ...settings, language: e.target.value })}

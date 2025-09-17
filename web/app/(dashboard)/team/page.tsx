@@ -82,7 +82,7 @@ export default function TeamPage() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="p-6 space-y-8">
       {/* Page Header */}
       <div className="flex justify-between items-start">
         <div>
@@ -219,13 +219,13 @@ export default function TeamPage() {
                     </td>
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-2">
-                        <button className="p-1 hover:bg-gray-100 rounded">
+                        <button type="button" className="p-1 hover:bg-gray-100 rounded">
                           <Edit className="h-4 w-4 text-gray-600" />
                         </button>
-                        <button className="p-1 hover:bg-gray-100 rounded">
+                        <button type="button" className="p-1 hover:bg-gray-100 rounded">
                           <Mail className="h-4 w-4 text-gray-600" />
                         </button>
-                        <button className="p-1 hover:bg-gray-100 rounded">
+                        <button type="button" className="p-1 hover:bg-gray-100 rounded">
                           <MoreVertical className="h-4 w-4 text-gray-600" />
                         </button>
                       </div>
