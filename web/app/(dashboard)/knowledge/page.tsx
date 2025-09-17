@@ -319,7 +319,7 @@ export default function KnowledgePage() {
         <aside
           className={cn(
             "border-r flex-shrink-0 transition-all duration-300 bg-background",
-            isSidebarOpen ? "w-64" : "w-0 overflow-hidden",
+            isSidebarOpen ? "w-64" : "w-0",
             "lg:w-64 lg:overflow-visible"
           )}
         >
@@ -330,8 +330,8 @@ export default function KnowledgePage() {
           />
         </aside>
 
-        <main className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex-1 overflow-auto p-6 space-y-6">
+        <main className="flex-1 flex flex-col">
+          <div className="flex-1 p-6 space-y-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Button
