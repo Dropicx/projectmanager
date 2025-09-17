@@ -16,7 +16,8 @@ import {
   Menu,
   ChevronLeft,
   Hash,
-  Sparkles
+  Sparkles,
+  Bell
 } from 'lucide-react'
 
 const UserButton = dynamic(
