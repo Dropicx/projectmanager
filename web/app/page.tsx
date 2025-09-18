@@ -54,8 +54,12 @@ export default function HomePage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative px-6 py-20 lg:py-32">
-        <div className="max-w-7xl mx-auto">
+      <section className="relative px-6 py-20 lg:py-32 overflow-hidden">
+        {/* Animated background elements */}
+        <div className="absolute inset-0 bg-gradient-to-br from-tekhelet-100/30 via-transparent to-teal-100/30"></div>
+        <div className="absolute top-20 right-20 w-72 h-72 bg-tekhelet-500/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-20 left-20 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center">
             <div className="inline-flex items-center px-4 py-2 rounded-full bg-teal-100 text-teal-700 text-sm font-medium mb-8">
               <span className="w-2 h-2 bg-teal-500 rounded-full mr-2 animate-pulse"></span>
@@ -114,8 +118,12 @@ export default function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section className="px-6 py-20 bg-white/50 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto">
+      <section className="px-6 py-20 bg-white/50 backdrop-blur-sm relative overflow-hidden">
+        {/* Gradient overlay for smooth transition */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/20 to-white/50 pointer-events-none"></div>
+        {/* Decorative wave pattern */}
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-tekhelet-500/30 to-transparent"></div>
+        <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-black mb-6">
               AI-Powered Intelligence
@@ -127,8 +135,9 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Add staggered animation classes */}
             {/* AI Orchestration */}
-            <div className="bg-white p-8 rounded-2xl shadow-lg border border-coolGray-200 hover:shadow-xl transition-shadow">
+            <div className="bg-white p-8 rounded-2xl shadow-lg border border-coolGray-200 hover:shadow-xl hover:scale-105 transition-all duration-300 ease-in-out group">
               <div className="w-12 h-12 bg-gradient-to-r from-tekhelet-500 to-teal-500 rounded-lg flex items-center justify-center mb-6">
                 <svg
                   className="w-6 h-6 text-white"
@@ -165,7 +174,7 @@ export default function HomePage() {
             </div>
 
             {/* Knowledge Management */}
-            <div className="bg-white p-8 rounded-2xl shadow-lg border border-coolGray-200 hover:shadow-xl transition-shadow">
+            <div className="bg-white p-8 rounded-2xl shadow-lg border border-coolGray-200 hover:shadow-xl hover:scale-105 transition-all duration-300 ease-in-out group">
               <div className="w-12 h-12 bg-gradient-to-r from-teal-500 to-maize-500 rounded-lg flex items-center justify-center mb-6">
                 <svg
                   className="w-6 h-6 text-white"
@@ -196,7 +205,7 @@ export default function HomePage() {
             </div>
 
             {/* Privacy & Security */}
-            <div className="bg-white p-8 rounded-2xl shadow-lg border border-coolGray-200 hover:shadow-xl transition-shadow">
+            <div className="bg-white p-8 rounded-2xl shadow-lg border border-coolGray-200 hover:shadow-xl hover:scale-105 transition-all duration-300 ease-in-out group">
               <div className="w-12 h-12 bg-gradient-to-r from-maize-500 to-satinSheenGold-500 rounded-lg flex items-center justify-center mb-6">
                 <svg
                   className="w-6 h-6 text-white"
@@ -226,7 +235,7 @@ export default function HomePage() {
             </div>
 
             {/* Real-time Insights */}
-            <div className="bg-white p-8 rounded-2xl shadow-lg border border-coolGray-200 hover:shadow-xl transition-shadow">
+            <div className="bg-white p-8 rounded-2xl shadow-lg border border-coolGray-200 hover:shadow-xl hover:scale-105 transition-all duration-300 ease-in-out group">
               <div className="w-12 h-12 bg-gradient-to-r from-satinSheenGold-500 to-tekhelet-500 rounded-lg flex items-center justify-center mb-6">
                 <svg
                   className="w-6 h-6 text-white"
@@ -257,7 +266,7 @@ export default function HomePage() {
             </div>
 
             {/* Cost Optimization */}
-            <div className="bg-white p-8 rounded-2xl shadow-lg border border-coolGray-200 hover:shadow-xl transition-shadow">
+            <div className="bg-white p-8 rounded-2xl shadow-lg border border-coolGray-200 hover:shadow-xl hover:scale-105 transition-all duration-300 ease-in-out group">
               <div className="w-12 h-12 bg-gradient-to-r from-tekhelet-500 to-maize-500 rounded-lg flex items-center justify-center mb-6">
                 <svg
                   className="w-6 h-6 text-white"
@@ -287,7 +296,7 @@ export default function HomePage() {
             </div>
 
             {/* Collaboration */}
-            <div className="bg-white p-8 rounded-2xl shadow-lg border border-coolGray-200 hover:shadow-xl transition-shadow">
+            <div className="bg-white p-8 rounded-2xl shadow-lg border border-coolGray-200 hover:shadow-xl hover:scale-105 transition-all duration-300 ease-in-out group">
               <div className="w-12 h-12 bg-gradient-to-r from-teal-500 to-satinSheenGold-500 rounded-lg flex items-center justify-center mb-6">
                 <svg
                   className="w-6 h-6 text-white"
@@ -320,8 +329,11 @@ export default function HomePage() {
       </section>
 
       {/* Stats Section */}
-      <section className="px-6 py-20 bg-gradient-to-r from-tekhelet-500 to-teal-500">
-        <div className="max-w-7xl mx-auto">
+      <section className="px-6 py-20 bg-gradient-to-r from-tekhelet-500 to-teal-500 relative overflow-hidden">
+        {/* Decorative elements for smooth transition */}
+        <div className="absolute top-0 left-0 w-full h-20 bg-gradient-to-b from-white/10 to-transparent"></div>
+        <div className="absolute bottom-0 left-0 w-full h-20 bg-gradient-to-t from-black/10 to-transparent"></div>
+        <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
               Trusted by Consultants Worldwide
@@ -354,8 +366,14 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="px-6 py-20 bg-gradient-to-br from-coolGray-900 to-tekhelet-100">
-        <div className="max-w-4xl mx-auto text-center">
+      <section className="px-6 py-20 bg-gradient-to-br from-coolGray-900 to-tekhelet-100 relative overflow-hidden">
+        {/* Smooth transition elements */}
+        <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-tekhelet-500/20 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent"></div>
+        {/* Decorative elements */}
+        <div className="absolute top-10 right-10 w-32 h-32 bg-tekhelet-500/20 rounded-full blur-2xl"></div>
+        <div className="absolute bottom-10 left-10 w-40 h-40 bg-teal-500/20 rounded-full blur-2xl"></div>
+        <div className="max-w-4xl mx-auto text-center relative z-10">
           <h2 className="text-4xl md:text-5xl font-bold text-black mb-6">
             Ready to Transform Your Consulting Practice?
           </h2>
