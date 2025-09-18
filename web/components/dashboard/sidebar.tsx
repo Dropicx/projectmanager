@@ -94,12 +94,12 @@ export function DashboardSidebar() {
               />
             </div>
           ) : (
-            <div className="flex items-center">
+            <div className="flex items-center justify-center w-full h-full py-4">
               <Image
                 src="/logos/smalllogo.png"
                 alt="Consailt Logo"
-                width={80}
-                height={80}
+                width={50}
+                height={50}
                 className="object-contain"
                 priority
               />
