@@ -12,13 +12,13 @@ interface GlobalButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement
 const GlobalButton = forwardRef<HTMLButtonElement, GlobalButtonProps>(
   ({ className, variant = "primary", size = "md", children, ...props }, ref) => {
     const baseClasses =
-      "relative overflow-hidden font-medium transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-xl";
+      "relative overflow-hidden font-normal transition-all duration-300 ease-in-out transform hover:scale-102 focus:outline-none focus:ring-1 focus:ring-offset-1 rounded-lg";
 
     const variantClasses = {
       primary:
-        "bg-gradient-to-r from-tekhelet-400 via-tekhelet-500 to-tekhelet-600 text-white shadow-md hover:shadow-lg hover:shadow-tekhelet-500/20 border border-tekhelet-300/30 backdrop-blur-sm hover:from-tekhelet-500 hover:via-tekhelet-600 hover:to-tekhelet-700",
+        "bg-gradient-to-r from-tekhelet-200/80 via-tekhelet-300/90 to-tekhelet-400/80 text-tekhelet-800 shadow-sm hover:shadow-md hover:shadow-tekhelet-200/30 border border-tekhelet-200/40 backdrop-blur-md hover:from-tekhelet-300/90 hover:via-tekhelet-400/90 hover:to-tekhelet-500/90",
       secondary:
-        "bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 text-white shadow-md hover:shadow-lg hover:shadow-teal-500/20 border border-teal-300/30 backdrop-blur-sm hover:from-teal-500 hover:via-teal-600 hover:to-teal-700",
+        "bg-gradient-to-r from-teal-200/80 via-teal-300/90 to-teal-400/80 text-teal-800 shadow-sm hover:shadow-md hover:shadow-teal-200/30 border border-teal-200/40 backdrop-blur-md hover:from-teal-300/90 hover:via-teal-400/90 hover:to-teal-500/90",
     };
 
     const sizeClasses = {
@@ -35,13 +35,13 @@ const GlobalButton = forwardRef<HTMLButtonElement, GlobalButtonProps>(
         {...props}
       >
         {/* Animated background effect */}
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1200 ease-out" />
 
         {/* Button content */}
         <span className="relative z-10 flex items-center justify-center gap-2">{children}</span>
 
         {/* Shine effect */}
-        <div className="absolute inset-0 rounded-inherit bg-gradient-to-r from-transparent via-white/15 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300" />
+        <div className="absolute inset-0 rounded-inherit bg-gradient-to-r from-transparent via-white/8 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-500" />
       </Button>
     );
   }
