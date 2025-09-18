@@ -86,10 +86,11 @@ export default function HomePage() {
               </h1>
 
               <p className="text-xl md:text-2xl text-black mb-12 max-w-4xl mx-auto leading-relaxed">
-                Join the new generation of{" "}
-                <span className="font-semibold text-tekhelet-600">consailors</span> - consultants
-                who harness AI to navigate complex projects with confidence. Let intelligent
-                automation be your compass, guiding you to success on every voyage.
+                Stop juggling Google, ChatGPT, news feeds, and security alerts. Join the new
+                generation of <span className="font-semibold text-tekhelet-600">consailors</span> -
+                consultants who have everything in one unified platform. Knowledge base, project
+                planning, risk analysis, and AI-powered insights - all sailing together toward
+                project success.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
@@ -124,6 +125,142 @@ export default function HomePage() {
                   <div className="w-2 h-2 bg-teal-500 rounded-full mr-2"></div>
                   Enterprise-Grade Compass
                 </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Problem/Solution Card */}
+          <div className="backdrop-blur-md bg-white/20 border border-white/30 rounded-3xl p-8 md:p-12 mb-20 shadow-2xl">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl md:text-5xl font-bold text-black mb-6">
+                From Chaos to Smooth Sailing
+              </h2>
+              <p className="text-xl text-black max-w-4xl mx-auto mb-12">
+                Tired of juggling multiple tools? Consailt brings everything together in one unified
+                platform.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+              {/* Problem Side */}
+              <div className="space-y-6">
+                <h3 className="text-2xl font-bold text-red-600 mb-6">The Old Way (Chaos)</h3>
+                <div className="space-y-4">
+                  <div className="flex items-start space-x-3">
+                    <div className="w-6 h-6 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                      <span className="text-red-600 text-sm">✗</span>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-black">Scattered Tools</p>
+                      <p className="text-gray-600 text-sm">
+                        Google, ChatGPT, news feeds, security alerts - all separate
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <div className="w-6 h-6 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                      <span className="text-red-600 text-sm">✗</span>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-black">Context Switching</p>
+                      <p className="text-gray-600 text-sm">
+                        Constantly jumping between platforms, losing focus
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <div className="w-6 h-6 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                      <span className="text-red-600 text-sm">✗</span>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-black">Knowledge Silos</p>
+                      <p className="text-gray-600 text-sm">
+                        Information scattered across different systems
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <div className="w-6 h-6 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                      <span className="text-red-600 text-sm">✗</span>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-black">Manual Work</p>
+                      <p className="text-gray-600 text-sm">Time-consuming research and analysis</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Solution Side */}
+              <div className="space-y-6">
+                <h3 className="text-2xl font-bold text-tekhelet-600 mb-6">
+                  The Consailt Way (Smooth Sailing)
+                </h3>
+                <div className="space-y-4">
+                  <div className="flex items-start space-x-3">
+                    <div className="w-6 h-6 bg-teal-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                      <span className="text-teal-600 text-sm">✓</span>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-black">Unified Platform</p>
+                      <p className="text-gray-600 text-sm">
+                        Everything in one place - knowledge, AI, news, security
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <div className="w-6 h-6 bg-teal-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                      <span className="text-teal-600 text-sm">✓</span>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-black">AI-Powered Integration</p>
+                      <p className="text-gray-600 text-sm">
+                        Intelligent connections between all your tools
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <div className="w-6 h-6 bg-teal-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                      <span className="text-teal-600 text-sm">✓</span>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-black">Centralized Knowledge</p>
+                      <p className="text-gray-600 text-sm">
+                        One searchable knowledge base for everything
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <div className="w-6 h-6 bg-teal-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                      <span className="text-teal-600 text-sm">✓</span>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-black">Automated Intelligence</p>
+                      <p className="text-gray-600 text-sm">
+                        AI handles research, analysis, and insights
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-12 text-center">
+              <div className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-tekhelet-500 to-teal-500 rounded-full text-white font-semibold">
+                <svg
+                  className="w-5 h-5 mr-2"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                  aria-label="Checkmark"
+                >
+                  <title>Checkmark</title>
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                One Platform. All Tools. Smooth Sailing.
               </div>
             </div>
           </div>
@@ -198,15 +335,16 @@ export default function HomePage() {
                     />
                   </svg>
                 </div>
-                <h3 className="text-2xl font-bold text-black mb-4">Knowledge Compass</h3>
+                <h3 className="text-2xl font-bold text-black mb-4">All-in-One Command Center</h3>
                 <p className="text-black mb-4">
-                  Your central navigation hub with semantic search, automated charting, and
-                  intelligent course plotting for every project.
+                  Replace Google, ChatGPT, news feeds, and security alerts with one unified
+                  platform. Everything you need to consail projects successfully.
                 </p>
                 <ul className="text-sm text-black space-y-1">
-                  <li>• Vector-based semantic search</li>
-                  <li>• Automated content categorization</li>
-                  <li>• Template-based knowledge capture</li>
+                  <li>• Integrated AI chat (replaces ChatGPT)</li>
+                  <li>• Smart search (replaces Google)</li>
+                  <li>• News & security monitoring</li>
+                  <li>• Project planning & risk analysis</li>
                 </ul>
               </div>
 
@@ -373,8 +511,9 @@ export default function HomePage() {
                 Ready to Set Sail with AI?
               </h2>
               <p className="text-xl text-black mb-12">
-                Join the consailor community and experience smooth sailing through every project.
-                Start your free trial today - no credit card required.
+                Stop juggling multiple tools and start consailing with confidence. One platform, all
+                your needs, smooth sailing ahead. Start your free trial today - no credit card
+                required.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
