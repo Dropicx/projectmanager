@@ -12,6 +12,7 @@ import { Button } from "@consulting-platform/ui";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { GlobalButton } from "@/components/GlobalButton";
 
 export default function HomePage() {
   const { isSignedIn } = useUser();
@@ -63,12 +64,9 @@ export default function HomePage() {
                 </Button>
               </SignInButton>
               <SignUpButton mode="modal">
-                <Button
-                  size="lg"
-                  className="bg-tekhelet-500 hover:bg-tekhelet-600 text-white px-6 py-3 text-base"
-                >
+                <GlobalButton size="md" variant="primary">
                   Get Started
-                </Button>
+                </GlobalButton>
               </SignUpButton>
             </div>
           </nav>
@@ -99,20 +97,13 @@ export default function HomePage() {
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
                 <SignUpButton mode="modal">
-                  <Button
-                    size="lg"
-                    className="bg-tekhelet-500 hover:bg-tekhelet-600 text-white px-8 py-4 text-lg"
-                  >
+                  <GlobalButton size="lg" variant="primary">
                     Start Free Trial
-                  </Button>
+                  </GlobalButton>
                 </SignUpButton>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="border-tekhelet-500 text-tekhelet-500 hover:bg-tekhelet-50 px-8 py-4 text-lg"
-                >
+                <GlobalButton size="lg" variant="secondary">
                   Watch Demo
-                </Button>
+                </GlobalButton>
               </div>
 
               {/* Trust Indicators */}
@@ -522,20 +513,13 @@ export default function HomePage() {
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
                 <SignUpButton mode="modal">
-                  <Button
-                    size="lg"
-                    className="bg-tekhelet-500 hover:bg-tekhelet-600 text-white px-12 py-4 text-lg"
-                  >
+                  <GlobalButton size="xl" variant="primary">
                     Set Sail Now
-                  </Button>
+                  </GlobalButton>
                 </SignUpButton>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="border-coolGray-300 text-coolGray-700 hover:bg-coolGray-50 px-12 py-4 text-lg"
-                >
+                <GlobalButton size="xl" variant="secondary">
                   Schedule Demo
-                </Button>
+                </GlobalButton>
               </div>
 
               <div className="text-sm text-black">

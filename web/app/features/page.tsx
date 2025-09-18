@@ -4,6 +4,8 @@ import { SignInButton, SignUpButton } from "@clerk/nextjs";
 import { Button } from "@consulting-platform/ui";
 import Image from "next/image";
 import Link from "next/link";
+import { GlobalButton } from "@/components/GlobalButton";
+import { ModernButton } from "@/components/ModernButton";
 import Footer from "../../components/Footer";
 
 export default function FeaturesPage() {
@@ -48,12 +50,9 @@ export default function FeaturesPage() {
                 </Button>
               </SignInButton>
               <SignUpButton mode="modal">
-                <Button
-                  size="lg"
-                  className="bg-tekhelet-500 hover:bg-tekhelet-600 text-white px-6 py-3 text-base"
-                >
+                <ModernButton size="md" variant="primary">
                   Get Started
-                </Button>
+                </ModernButton>
               </SignUpButton>
             </div>
           </nav>
@@ -277,21 +276,14 @@ export default function FeaturesPage() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <SignUpButton mode="modal">
-                  <Button
-                    size="lg"
-                    className="bg-tekhelet-500 hover:bg-tekhelet-600 text-white px-8 py-4 text-lg"
-                  >
+                  <ModernButton size="lg" variant="primary">
                     Start Free Trial
-                  </Button>
+                  </ModernButton>
                 </SignUpButton>
                 <Link href="/pricing">
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="border-tekhelet-500 text-tekhelet-500 hover:bg-tekhelet-50 px-8 py-4 text-lg"
-                  >
+                  <ModernButton size="lg" variant="outline">
                     View Pricing
-                  </Button>
+                  </ModernButton>
                 </Link>
               </div>
             </div>

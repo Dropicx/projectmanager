@@ -5,6 +5,7 @@ import { Button } from "@consulting-platform/ui";
 import Image from "next/image";
 import Link from "next/link";
 import { useId } from "react";
+import { GlobalButton } from "@/components/GlobalButton";
 import Footer from "../../components/Footer";
 
 export default function ContactPage() {
@@ -56,12 +57,9 @@ export default function ContactPage() {
                 </Button>
               </SignInButton>
               <SignUpButton mode="modal">
-                <Button
-                  size="lg"
-                  className="bg-tekhelet-500 hover:bg-tekhelet-600 text-white px-6 py-3 text-base"
-                >
+                <GlobalButton size="md" variant="primary">
                   Get Started
-                </Button>
+                </GlobalButton>
               </SignUpButton>
             </div>
           </nav>
