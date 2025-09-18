@@ -48,7 +48,7 @@ export default function PricingPage() {
                 <Button
                   variant="ghost"
                   size="lg"
-                  className="text-black hover:text-tekhelet-500 hover:bg-tekhelet-50 font-medium px-6 py-3 text-base"
+                  className="text-white hover:text-tekhelet-200 hover:bg-tekhelet-50 font-medium px-6 py-3 text-base"
                 >
                   Sign In
                 </Button>
