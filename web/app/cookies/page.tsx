@@ -9,7 +9,12 @@ import Footer from "../../components/Footer";
 
 export default function CookiesPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-teal-200/40 via-white via-tekhelet-200/30 via-maize-200/35 via-satinSheenGold-200/30 to-coolGray-200/40">
+    <div
+      className="min-h-screen bg-cover bg-center bg-no-repeat bg-fixed"
+      style={{
+        backgroundImage: "url('/background/gradient01.jpg')",
+      }}
+    >
       {/* Main Section with integrated header */}
       <section className="relative min-h-screen px-6 pt-8 pb-20 lg:pt-12 lg:pb-32 overflow-hidden">
         {/* Animated floating elements */}
