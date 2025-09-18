@@ -1,36 +1,20 @@
 /**
- * Home Page - Landing Page and Authentication Gateway
+ * Home Page - Modern Landing Page for Consailt
  *
- * This is the main landing page that serves as the entry point for the application.
- * It provides:
- *
- * - Marketing content showcasing platform features
- * - Authentication buttons for sign-in and sign-up
- * - Automatic redirection for authenticated users
- * - Feature highlights and value propositions
- *
- * The page uses Clerk for authentication and automatically redirects
- * authenticated users to the dashboard to avoid showing the landing page
- * to users who are already logged in.
+ * A comprehensive marketing landing page showcasing Consailt's AI-powered
+ * consulting platform with modern design, compelling copy, and clear CTAs.
  */
 
 "use client";
 
 import { SignInButton, SignUpButton, useUser } from "@clerk/nextjs";
 import { Button } from "@consulting-platform/ui";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-/**
- * Home Page Component
- *
- * Renders the landing page with marketing content and authentication options.
- * Automatically redirects authenticated users to the dashboard.
- *
- * @returns JSX element representing the landing page
- */
 export default function HomePage() {
-  const { isSignedIn, user } = useUser();
+  const { isSignedIn } = useUser();
   const router = useRouter();
 
   // Redirect authenticated users to dashboard
@@ -41,58 +25,388 @@ export default function HomePage() {
   }, [isSignedIn, router]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="container mx-auto px-4 py-16">
-        {/* Hero Section */}
-        <div className="text-center">
-          <h1 className="text-6xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-6">
-            Consailt
-          </h1>
-          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            AI-powered consulting platform that transforms how teams manage projects, gain insights,
-            and collaborate with intelligent recommendations.
-          </p>
-
-          {/* Authentication Buttons */}
-          <div className="flex gap-4 justify-center">
+    <div className="min-h-screen bg-gradient-to-br from-coolGray-900 via-tekhelet-100 to-teal-100">
+      {/* Navigation */}
+      <nav className="relative z-50 px-6 py-4">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <Image
+              src="/logos/smalllogo.png"
+              alt="Consailt Logo"
+              width={40}
+              height={40}
+              className="w-10 h-10"
+            />
+            <span className="text-2xl font-bold text-tekhelet-500">Consailt</span>
+          </div>
+          <div className="flex items-center space-x-4">
             <SignInButton mode="modal">
-              <Button size="lg">Sign In</Button>
+              <Button variant="ghost" className="text-coolGray-600 hover:text-tekhelet-500">
+                Sign In
+              </Button>
             </SignInButton>
             <SignUpButton mode="modal">
-              <Button variant="outline" size="lg">
+              <Button className="bg-tekhelet-500 hover:bg-tekhelet-600 text-white">
                 Get Started
               </Button>
             </SignUpButton>
           </div>
         </div>
+      </nav>
 
-        {/* Feature Highlights */}
-        <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="bg-white p-8 rounded-xl shadow-lg">
-            <h3 className="text-2xl font-semibold mb-4">AI-Powered Insights</h3>
-            <p className="text-gray-600">
-              Get intelligent project analysis, risk assessment, and recommendations powered by
-              multiple AI models including Claude, Nova, and Mistral.
-            </p>
-          </div>
+      {/* Hero Section */}
+      <section className="relative px-6 py-20 lg:py-32">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center">
+            <div className="inline-flex items-center px-4 py-2 rounded-full bg-teal-100 text-teal-700 text-sm font-medium mb-8">
+              <span className="w-2 h-2 bg-teal-500 rounded-full mr-2 animate-pulse"></span>
+              AI-Powered Consulting Platform
+            </div>
 
-          <div className="bg-white p-8 rounded-xl shadow-lg">
-            <h3 className="text-2xl font-semibold mb-4">Knowledge Management</h3>
-            <p className="text-gray-600">
-              Build and search your knowledge base with RAG capabilities, making institutional
-              knowledge easily accessible and actionable.
-            </p>
-          </div>
+            <h1 className="text-5xl md:text-7xl font-bold mb-8">
+              <span className="bg-gradient-to-r from-tekhelet-500 via-teal-500 to-maize-500 bg-clip-text text-transparent">
+                Transform Your
+              </span>
+              <br />
+              <span className="text-coolGray-800">Consulting Practice</span>
+            </h1>
 
-          <div className="bg-white p-8 rounded-xl shadow-lg">
-            <h3 className="text-2xl font-semibold mb-4">Real-time Collaboration</h3>
-            <p className="text-gray-600">
-              Work together seamlessly with real-time updates, notifications, and collaborative
-              project management tools.
+            <p className="text-xl md:text-2xl text-coolGray-600 mb-12 max-w-4xl mx-auto leading-relaxed">
+              The AI-native knowledge base that captures, organizes, and amplifies your expertise.
+              Make institutional knowledge accessible, searchable, and actionable through
+              intelligent automation.
             </p>
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+              <SignUpButton mode="modal">
+                <Button
+                  size="lg"
+                  className="bg-tekhelet-500 hover:bg-tekhelet-600 text-white px-8 py-4 text-lg"
+                >
+                  Start Free Trial
+                </Button>
+              </SignUpButton>
+              <Button
+                variant="outline"
+                size="lg"
+                className="border-tekhelet-500 text-tekhelet-500 hover:bg-tekhelet-50 px-8 py-4 text-lg"
+              >
+                Watch Demo
+              </Button>
+            </div>
+
+            {/* Trust Indicators */}
+            <div className="flex flex-wrap items-center justify-center gap-8 text-coolGray-500 text-sm">
+              <div className="flex items-center">
+                <div className="w-2 h-2 bg-teal-500 rounded-full mr-2"></div>
+                Zero-Data Retention
+              </div>
+              <div className="flex items-center">
+                <div className="w-2 h-2 bg-teal-500 rounded-full mr-2"></div>
+                GDPR Compliant
+              </div>
+              <div className="flex items-center">
+                <div className="w-2 h-2 bg-teal-500 rounded-full mr-2"></div>
+                Enterprise Security
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="px-6 py-20 bg-white/50 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-coolGray-800 mb-6">
+              AI-Powered Intelligence
+            </h2>
+            <p className="text-xl text-coolGray-600 max-w-3xl mx-auto">
+              Harness the power of multiple AI models to transform how you capture, organize, and
+              leverage knowledge
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* AI Orchestration */}
+            <div className="bg-white p-8 rounded-2xl shadow-lg border border-coolGray-200 hover:shadow-xl transition-shadow">
+              <div className="w-12 h-12 bg-gradient-to-r from-tekhelet-500 to-teal-500 rounded-lg flex items-center justify-center mb-6">
+                <svg
+                  className="w-6 h-6 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-label="AI Brain Icon"
+                >
+                  <title>AI Brain Icon</title>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-bold text-coolGray-800 mb-4">Multi-Model AI</h3>
+              <p className="text-coolGray-600 mb-4">
+                Intelligent model selection across Claude, Nova, Mistral, and Llama for optimal cost
+                and performance.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <span className="px-3 py-1 bg-teal-100 text-teal-700 rounded-full text-sm">
+                  Claude 3.7
+                </span>
+                <span className="px-3 py-1 bg-teal-100 text-teal-700 rounded-full text-sm">
+                  Nova Pro
+                </span>
+                <span className="px-3 py-1 bg-teal-100 text-teal-700 rounded-full text-sm">
+                  Mistral Large
+                </span>
+              </div>
+            </div>
+
+            {/* Knowledge Management */}
+            <div className="bg-white p-8 rounded-2xl shadow-lg border border-coolGray-200 hover:shadow-xl transition-shadow">
+              <div className="w-12 h-12 bg-gradient-to-r from-teal-500 to-maize-500 rounded-lg flex items-center justify-center mb-6">
+                <svg
+                  className="w-6 h-6 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-label="Knowledge Base Icon"
+                >
+                  <title>Knowledge Base Icon</title>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-bold text-coolGray-800 mb-4">Smart Knowledge Base</h3>
+              <p className="text-coolGray-600 mb-4">
+                Centralized repository with semantic search, automated categorization, and RAG
+                capabilities.
+              </p>
+              <ul className="text-sm text-coolGray-600 space-y-1">
+                <li>• Vector-based semantic search</li>
+                <li>• Automated content categorization</li>
+                <li>• Template-based knowledge capture</li>
+              </ul>
+            </div>
+
+            {/* Privacy & Security */}
+            <div className="bg-white p-8 rounded-2xl shadow-lg border border-coolGray-200 hover:shadow-xl transition-shadow">
+              <div className="w-12 h-12 bg-gradient-to-r from-maize-500 to-satinSheenGold-500 rounded-lg flex items-center justify-center mb-6">
+                <svg
+                  className="w-6 h-6 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-label="Security Lock Icon"
+                >
+                  <title>Security Lock Icon</title>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-bold text-coolGray-800 mb-4">Privacy-First</h3>
+              <p className="text-coolGray-600 mb-4">
+                Zero-data retention AI with client sanitization and enterprise-grade security.
+              </p>
+              <ul className="text-sm text-coolGray-600 space-y-1">
+                <li>• Zero-data retention AI</li>
+                <li>• Client sanitization</li>
+                <li>• GDPR & SOC2 compliant</li>
+              </ul>
+            </div>
+
+            {/* Real-time Insights */}
+            <div className="bg-white p-8 rounded-2xl shadow-lg border border-coolGray-200 hover:shadow-xl transition-shadow">
+              <div className="w-12 h-12 bg-gradient-to-r from-satinSheenGold-500 to-tekhelet-500 rounded-lg flex items-center justify-center mb-6">
+                <svg
+                  className="w-6 h-6 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-label="Analytics Chart Icon"
+                >
+                  <title>Analytics Chart Icon</title>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-bold text-coolGray-800 mb-4">Automated Insights</h3>
+              <p className="text-coolGray-600 mb-4">
+                AI-generated insights, pattern recognition, and trend analysis across your knowledge
+                base.
+              </p>
+              <ul className="text-sm text-coolGray-600 space-y-1">
+                <li>• Pattern recognition</li>
+                <li>• Trend analysis</li>
+                <li>• Predictive insights</li>
+              </ul>
+            </div>
+
+            {/* Cost Optimization */}
+            <div className="bg-white p-8 rounded-2xl shadow-lg border border-coolGray-200 hover:shadow-xl transition-shadow">
+              <div className="w-12 h-12 bg-gradient-to-r from-tekhelet-500 to-maize-500 rounded-lg flex items-center justify-center mb-6">
+                <svg
+                  className="w-6 h-6 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-label="Dollar Cost Icon"
+                >
+                  <title>Dollar Cost Icon</title>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-bold text-coolGray-800 mb-4">Cost Optimized</h3>
+              <p className="text-coolGray-600 mb-4">
+                Smart routing to minimize AI costs while maintaining quality with usage tracking.
+              </p>
+              <ul className="text-sm text-coolGray-600 space-y-1">
+                <li>• Under $0.001 per query average</li>
+                <li>• Usage monitoring</li>
+                <li>• Cost alerts</li>
+              </ul>
+            </div>
+
+            {/* Collaboration */}
+            <div className="bg-white p-8 rounded-2xl shadow-lg border border-coolGray-200 hover:shadow-xl transition-shadow">
+              <div className="w-12 h-12 bg-gradient-to-r from-teal-500 to-satinSheenGold-500 rounded-lg flex items-center justify-center mb-6">
+                <svg
+                  className="w-6 h-6 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-label="Team Collaboration Icon"
+                >
+                  <title>Team Collaboration Icon</title>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-bold text-coolGray-800 mb-4">Team Collaboration</h3>
+              <p className="text-coolGray-600 mb-4">
+                Real-time collaboration with shared knowledge bases and team insights.
+              </p>
+              <ul className="text-sm text-coolGray-600 space-y-1">
+                <li>• Shared knowledge bases</li>
+                <li>• Real-time updates</li>
+                <li>• Team analytics</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="px-6 py-20 bg-gradient-to-r from-tekhelet-500 to-teal-500">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+              Trusted by Consultants Worldwide
+            </h2>
+            <p className="text-xl text-tekhelet-100 max-w-3xl mx-auto">
+              Join thousands of consultants who have transformed their practice with AI-powered
+              knowledge management
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div className="text-center">
+              <div className="text-5xl font-bold text-white mb-2">80%</div>
+              <div className="text-tekhelet-100">Faster Knowledge Retrieval</div>
+            </div>
+            <div className="text-center">
+              <div className="text-5xl font-bold text-white mb-2">70%</div>
+              <div className="text-tekhelet-100">More Insights Generated</div>
+            </div>
+            <div className="text-center">
+              <div className="text-5xl font-bold text-white mb-2">90%</div>
+              <div className="text-tekhelet-100">Reduced Knowledge Silos</div>
+            </div>
+            <div className="text-center">
+              <div className="text-5xl font-bold text-white mb-2">100%</div>
+              <div className="text-tekhelet-100">Data Privacy Guaranteed</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="px-6 py-20 bg-gradient-to-br from-coolGray-900 to-tekhelet-100">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-4xl md:text-5xl font-bold text-coolGray-800 mb-6">
+            Ready to Transform Your Consulting Practice?
+          </h2>
+          <p className="text-xl text-coolGray-600 mb-12">
+            Start your free trial today and experience the power of AI-native knowledge management.
+            No credit card required.
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+            <SignUpButton mode="modal">
+              <Button
+                size="lg"
+                className="bg-tekhelet-500 hover:bg-tekhelet-600 text-white px-12 py-4 text-lg"
+              >
+                Start Free Trial
+              </Button>
+            </SignUpButton>
+            <Button
+              variant="outline"
+              size="lg"
+              className="border-coolGray-300 text-coolGray-700 hover:bg-coolGray-50 px-12 py-4 text-lg"
+            >
+              Schedule Demo
+            </Button>
+          </div>
+
+          <div className="text-sm text-coolGray-500">
+            <p>✓ 14-day free trial • ✓ No setup fees • ✓ Cancel anytime</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="px-6 py-12 bg-coolGray-900">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row items-center justify-between">
+            <div className="flex items-center space-x-3 mb-4 md:mb-0">
+              <Image
+                src="/logos/smalllogo.png"
+                alt="Consailt Logo"
+                width={32}
+                height={32}
+                className="w-8 h-8"
+              />
+              <span className="text-xl font-bold text-white">Consailt</span>
+            </div>
+            <div className="text-coolGray-400 text-sm">© 2024 Consailt. All rights reserved.</div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
