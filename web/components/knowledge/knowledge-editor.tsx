@@ -127,12 +127,11 @@ export function KnowledgeEditor({
     editorProps: {
       attributes: {
         class: cn(
-          "prose prose-base dark:prose-invert max-w-none focus:outline-none",
-          // Headings with proper sizes and weights - make them more prominent
-          "prose-headings:tracking-tight prose-headings:text-foreground",
-          "prose-h1:text-4xl prose-h1:font-bold prose-h1:mb-4 prose-h1:mt-6 prose-h1:text-foreground",
-          "prose-h2:text-3xl prose-h2:font-semibold prose-h2:mb-3 prose-h2:mt-5 prose-h2:text-foreground/90",
-          "prose-h3:text-2xl prose-h3:font-medium prose-h3:mb-2 prose-h3:mt-4 prose-h3:text-foreground/80",
+          "prose prose-sm sm:prose-base lg:prose-lg dark:prose-invert max-w-none focus:outline-none",
+          // Force heading styles - use !important to override any prose defaults
+          "[&_h1]:!text-4xl [&_h1]:!font-bold [&_h1]:!mb-4 [&_h1]:!mt-6 [&_h1]:!leading-tight",
+          "[&_h2]:!text-3xl [&_h2]:!font-semibold [&_h2]:!mb-3 [&_h2]:!mt-5 [&_h2]:!leading-tight",
+          "[&_h3]:!text-2xl [&_h3]:!font-medium [&_h3]:!mb-2 [&_h3]:!mt-4 [&_h3]:!leading-tight",
           // Text spacing
           "prose-p:my-3 prose-p:leading-7",
           // Lists
