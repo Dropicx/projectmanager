@@ -220,9 +220,9 @@ export default function CareersPage() {
                           <span>{job.department}</span>
                         </div>
                       </div>
-                      <Button className="mt-4 md:mt-0 bg-tekhelet-500 hover:bg-tekhelet-600 text-white">
+                      <GlobalButton className="mt-4 md:mt-0" variant="primary">
                         Apply Now
-                      </Button>
+                      </GlobalButton>
                     </div>
                     <p className="text-gray-600">{job.description}</p>
                   </div>

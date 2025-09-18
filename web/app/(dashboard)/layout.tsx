@@ -4,6 +4,7 @@ import { SignInButton, useUser } from "@clerk/nextjs";
 import { Button, cn } from "@consulting-platform/ui";
 import { Loader2 } from "lucide-react";
 import { DashboardSidebar } from "@/components/dashboard/sidebar";
+import { GlobalButton } from "@/components/GlobalButton";
 import { SidebarProvider, useSidebar } from "@/contexts/sidebar-context";
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
@@ -34,9 +35,9 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
             </p>
           </div>
           <SignInButton mode="modal">
-            <Button className="w-full bg-tekhelet-500 hover:bg-tekhelet-600 text-white">
+            <GlobalButton className="w-full" variant="primary">
               Sign In to Dashboard
-            </Button>
+            </GlobalButton>
           </SignInButton>
         </div>
       </div>

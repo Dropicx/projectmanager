@@ -146,9 +146,7 @@ export default function BlogPage() {
                     <span>•</span>
                     <span>AI & Technology</span>
                   </div>
-                  <Button className="bg-tekhelet-500 hover:bg-tekhelet-600 text-white">
-                    Read More
-                  </Button>
+                  <GlobalButton variant="primary">Read More</GlobalButton>
                 </div>
                 <div className="bg-gradient-to-br from-tekhelet-500 to-teal-500 rounded-2xl h-64 flex items-center justify-center">
                   <svg
@@ -222,9 +220,7 @@ export default function BlogPage() {
                     placeholder="Enter your email"
                     className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-tekhelet-500 focus:border-transparent bg-white/50 backdrop-blur-sm"
                   />
-                  <Button className="bg-tekhelet-500 hover:bg-tekhelet-600 text-white px-6">
-                    Subscribe
-                  </Button>
+                  <GlobalButton variant="primary">Subscribe</GlobalButton>
                 </div>
               </div>
             </div>
