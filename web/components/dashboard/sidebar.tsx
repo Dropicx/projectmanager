@@ -87,8 +87,8 @@ export function DashboardSidebar() {
               <Image
                 src="/logos/biglogo.png"
                 alt="Consailt Logo"
-                width={180}
-                height={60}
+                width={220}
+                height={80}
                 className="object-contain"
                 priority
               />
@@ -98,8 +98,8 @@ export function DashboardSidebar() {
               <Image
                 src="/logos/smalllogo.png"
                 alt="Consailt Logo"
-                width={40}
-                height={40}
+                width={60}
+                height={60}
                 className="object-contain"
                 priority
               />
