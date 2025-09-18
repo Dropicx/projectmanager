@@ -52,10 +52,15 @@ export function KnowledgeDetailView({ knowledgeId, onBack, onDelete }: Knowledge
   const utils = trpc.useUtils();
 
   // Fetch knowledge item details
-  const { data: item, isLoading } = trpc.knowledge.getById.useQuery(
+  const {
+    data: item,
+    isLoading,
+    refetch,
+  } = trpc.knowledge.getById.useQuery(
     { id: knowledgeId },
     {
       enabled: !!knowledgeId,
+      refetchOnWindowFocus: false,
     }
   );
 
@@ -89,10 +94,18 @@ export function KnowledgeDetailView({ knowledgeId, onBack, onDelete }: Knowledge
 
   // Update mutation
   const updateMutation = trpc.knowledge.updateGeneral.useMutation({
-    onSuccess: () => {
-      utils.knowledge.getById.invalidate({ id: knowledgeId });
-      utils.knowledge.list.invalidate();
-      utils.knowledge.getCategories.invalidate();
+    onSuccess: async (updatedData) => {
+      // Invalidate and wait for fresh data
+      await Promise.all([
+        utils.knowledge.getById.invalidate({ id: knowledgeId }),
+        utils.knowledge.list.invalidate(),
+        utils.knowledge.getCategories.invalidate(),
+      ]);
+
+      // Manually refetch to ensure we have the latest data
+      await refetch();
+
+      // Exit edit mode after successful update
       setIsEditMode(false);
     },
   });

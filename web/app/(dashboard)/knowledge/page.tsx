@@ -478,13 +478,13 @@ export default function KnowledgePage() {
   };
 
   return (
-    <div className="min-h-full bg-background">
-      <div className="flex min-h-full">
+    <div className="h-[calc(100vh-4rem)] bg-background overflow-hidden">
+      <div className="flex h-full">
         <aside
           className={cn(
-            "border-r flex-shrink-0 transition-all duration-300 bg-background h-full",
+            "border-r flex-shrink-0 transition-all duration-300 bg-background h-full overflow-hidden",
             isSidebarOpen ? "w-64" : "w-0",
-            "lg:w-64 lg:overflow-visible"
+            "lg:w-64"
           )}
         >
           <KnowledgeSidebar
@@ -494,8 +494,8 @@ export default function KnowledgePage() {
           />
         </aside>
 
-        <main className="flex-1 flex flex-col bg-background min-h-full">
-          <div className="flex-1 p-6 space-y-6 bg-background">
+        <main className="flex-1 flex flex-col bg-background h-full overflow-hidden">
+          <div className="flex-1 p-6 space-y-6 bg-background overflow-y-auto">
             {!selectedKnowledgeId && (
               <div className="flex items-center gap-3">
                 <Button

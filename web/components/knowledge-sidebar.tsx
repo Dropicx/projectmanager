@@ -455,8 +455,8 @@ export function KnowledgeSidebar({
 
   return (
     <>
-      <div className="h-full flex flex-col bg-background border-r">
-        <div className="p-4 space-y-2">
+      <div className="h-full flex flex-col bg-background">
+        <div className="p-4 space-y-2 flex-shrink-0">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">Knowledge Base</h2>
           </div>
@@ -604,9 +604,9 @@ export function KnowledgeSidebar({
           </div>
         </div>
 
-        <Separator />
+        <Separator className="flex-shrink-0" />
 
-        <ScrollArea className="flex-1 px-2 py-2">
+        <ScrollArea className="flex-1 overflow-y-auto px-2 py-2">
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -687,9 +687,9 @@ export function KnowledgeSidebar({
           )}
         </ScrollArea>
 
-        <Separator />
+        <Separator className="flex-shrink-0" />
 
-        <div className="p-4">
+        <div className="p-4 flex-shrink-0">
           <Button variant="ghost" size="sm" className="w-full justify-start" onClick={() => {}}>
             <Settings className="h-4 w-4 mr-2" />
             Settings
