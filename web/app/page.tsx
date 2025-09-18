@@ -26,7 +26,12 @@ export default function HomePage() {
   }, [isSignedIn, router]);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div
+      className="min-h-screen bg-cover bg-center bg-no-repeat bg-fixed"
+      style={{
+        backgroundImage: "url('/background/gradient01.jpg')",
+      }}
+    >
       {/* Main Section with integrated header */}
       <section className="relative min-h-screen px-6 pt-8 pb-20 lg:pt-12 lg:pb-32 overflow-hidden">
         <div className="max-w-7xl mx-auto relative z-10">
