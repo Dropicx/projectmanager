@@ -4,14 +4,15 @@ import { SignInButton, SignUpButton } from "@clerk/nextjs";
 import { Button } from "@consulting-platform/ui";
 import Image from "next/image";
 import Link from "next/link";
+import Footer from "../../components/Footer";
 
 export default function PricingPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-teal-200/40 via-white via-tekhelet-200/30 via-maize-200/35 via-satinSheenGold-200/30 to-coolGray-200/40">
+    <div className="min-h-screen bg-gradient-to-b from-tekhelet-200/40 via-white via-tekhelet-200/30 via-maize-200/35 via-satinSheenGold-200/30 to-coolGray-200/40">
       {/* Main Section with integrated header */}
       <section className="relative min-h-screen px-6 pt-8 pb-20 lg:pt-12 lg:pb-32 overflow-hidden">
         {/* Animated floating elements */}
-        <div className="absolute top-20 right-20 w-72 h-72 bg-teal-400/40 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute top-20 right-20 w-72 h-72 bg-tekhelet-400/40 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute bottom-20 left-20 w-96 h-96 bg-tekhelet-400/35 rounded-full blur-3xl animate-pulse delay-1000"></div>
         <div className="absolute top-1/2 left-1/4 w-64 h-64 bg-maize-400/30 rounded-full blur-3xl animate-pulse delay-500"></div>
         <div className="absolute top-1/3 right-1/3 w-80 h-80 bg-satinSheenGold-400/25 rounded-full blur-3xl animate-pulse delay-1500"></div>
@@ -20,7 +21,7 @@ export default function PricingPage() {
 
         {/* Flowing background elements */}
         <div className="absolute inset-0 bg-gradient-to-r from-tekhelet-200/30 via-transparent to-maize-200/40"></div>
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-200/20 via-transparent to-satinSheenGold-200/25"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-tekhelet-200/20 via-transparent to-satinSheenGold-200/25"></div>
 
         <div className="max-w-7xl mx-auto relative z-10">
           {/* Integrated Navigation */}
@@ -61,7 +62,7 @@ export default function PricingPage() {
           <div className="backdrop-blur-md bg-white/20 border border-white/30 rounded-3xl p-8 md:p-12 mb-20 shadow-2xl">
             <div className="text-center mb-16">
               <h1 className="text-5xl md:text-7xl font-bold mb-8">
-                <span className="bg-gradient-to-r from-tekhelet-500 via-teal-500 to-maize-500 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-tekhelet-500 via-tekhelet-400 to-maize-500 bg-clip-text text-transparent">
                   Pricing
                 </span>
               </h1>
@@ -83,7 +84,7 @@ export default function PricingPage() {
                 <ul className="space-y-4 mb-8">
                   <li className="flex items-center">
                     <svg
-                      className="w-5 h-5 text-teal-500 mr-3"
+                      className="w-5 h-5 text-tekhelet-500 mr-3"
                       fill="currentColor"
                       viewBox="0 0 20 20"
                       aria-label="Checkmark"
@@ -99,7 +100,7 @@ export default function PricingPage() {
                   </li>
                   <li className="flex items-center">
                     <svg
-                      className="w-5 h-5 text-teal-500 mr-3"
+                      className="w-5 h-5 text-tekhelet-500 mr-3"
                       fill="currentColor"
                       viewBox="0 0 20 20"
                       aria-label="Checkmark"
@@ -115,7 +116,7 @@ export default function PricingPage() {
                   </li>
                   <li className="flex items-center">
                     <svg
-                      className="w-5 h-5 text-teal-500 mr-3"
+                      className="w-5 h-5 text-tekhelet-500 mr-3"
                       fill="currentColor"
                       viewBox="0 0 20 20"
                       aria-label="Checkmark"
@@ -131,7 +132,7 @@ export default function PricingPage() {
                   </li>
                   <li className="flex items-center">
                     <svg
-                      className="w-5 h-5 text-teal-500 mr-3"
+                      className="w-5 h-5 text-tekhelet-500 mr-3"
                       fill="currentColor"
                       viewBox="0 0 20 20"
                       aria-label="Checkmark"
@@ -168,7 +169,7 @@ export default function PricingPage() {
                 <ul className="space-y-4 mb-8">
                   <li className="flex items-center">
                     <svg
-                      className="w-5 h-5 text-teal-500 mr-3"
+                      className="w-5 h-5 text-tekhelet-500 mr-3"
                       fill="currentColor"
                       viewBox="0 0 20 20"
                       aria-label="Checkmark"
@@ -184,7 +185,7 @@ export default function PricingPage() {
                   </li>
                   <li className="flex items-center">
                     <svg
-                      className="w-5 h-5 text-teal-500 mr-3"
+                      className="w-5 h-5 text-tekhelet-500 mr-3"
                       fill="currentColor"
                       viewBox="0 0 20 20"
                       aria-label="Checkmark"
@@ -200,7 +201,7 @@ export default function PricingPage() {
                   </li>
                   <li className="flex items-center">
                     <svg
-                      className="w-5 h-5 text-teal-500 mr-3"
+                      className="w-5 h-5 text-tekhelet-500 mr-3"
                       fill="currentColor"
                       viewBox="0 0 20 20"
                       aria-label="Checkmark"
@@ -216,7 +217,7 @@ export default function PricingPage() {
                   </li>
                   <li className="flex items-center">
                     <svg
-                      className="w-5 h-5 text-teal-500 mr-3"
+                      className="w-5 h-5 text-tekhelet-500 mr-3"
                       fill="currentColor"
                       viewBox="0 0 20 20"
                       aria-label="Checkmark"
@@ -232,7 +233,7 @@ export default function PricingPage() {
                   </li>
                   <li className="flex items-center">
                     <svg
-                      className="w-5 h-5 text-teal-500 mr-3"
+                      className="w-5 h-5 text-tekhelet-500 mr-3"
                       fill="currentColor"
                       viewBox="0 0 20 20"
                       aria-label="Checkmark"
@@ -248,7 +249,7 @@ export default function PricingPage() {
                   </li>
                   <li className="flex items-center">
                     <svg
-                      className="w-5 h-5 text-teal-500 mr-3"
+                      className="w-5 h-5 text-tekhelet-500 mr-3"
                       fill="currentColor"
                       viewBox="0 0 20 20"
                       aria-label="Checkmark"
@@ -280,7 +281,7 @@ export default function PricingPage() {
                 <ul className="space-y-4 mb-8">
                   <li className="flex items-center">
                     <svg
-                      className="w-5 h-5 text-teal-500 mr-3"
+                      className="w-5 h-5 text-tekhelet-500 mr-3"
                       fill="currentColor"
                       viewBox="0 0 20 20"
                       aria-label="Checkmark"
@@ -296,7 +297,7 @@ export default function PricingPage() {
                   </li>
                   <li className="flex items-center">
                     <svg
-                      className="w-5 h-5 text-teal-500 mr-3"
+                      className="w-5 h-5 text-tekhelet-500 mr-3"
                       fill="currentColor"
                       viewBox="0 0 20 20"
                       aria-label="Checkmark"
@@ -312,7 +313,7 @@ export default function PricingPage() {
                   </li>
                   <li className="flex items-center">
                     <svg
-                      className="w-5 h-5 text-teal-500 mr-3"
+                      className="w-5 h-5 text-tekhelet-500 mr-3"
                       fill="currentColor"
                       viewBox="0 0 20 20"
                       aria-label="Checkmark"
@@ -328,7 +329,7 @@ export default function PricingPage() {
                   </li>
                   <li className="flex items-center">
                     <svg
-                      className="w-5 h-5 text-teal-500 mr-3"
+                      className="w-5 h-5 text-tekhelet-500 mr-3"
                       fill="currentColor"
                       viewBox="0 0 20 20"
                       aria-label="Checkmark"
@@ -344,7 +345,7 @@ export default function PricingPage() {
                   </li>
                   <li className="flex items-center">
                     <svg
-                      className="w-5 h-5 text-teal-500 mr-3"
+                      className="w-5 h-5 text-tekhelet-500 mr-3"
                       fill="currentColor"
                       viewBox="0 0 20 20"
                       aria-label="Checkmark"
@@ -409,22 +410,7 @@ export default function PricingPage() {
           </div>
 
           {/* Footer Content Card */}
-          <div className="backdrop-blur-md bg-white/20 border border-white/30 rounded-3xl p-8 md:p-12 shadow-2xl">
-            <div className="flex flex-col md:flex-row items-center justify-between">
-              <div className="flex items-center mb-4 md:mb-0">
-                <Link href="/">
-                  <Image
-                    src="/logos/logofooter.png"
-                    alt="Consailt Logo"
-                    width={320}
-                    height={96}
-                    className="h-20 w-auto"
-                  />
-                </Link>
-              </div>
-              <div className="text-gray-500 text-sm">© 2025 Consailt. All rights reserved.</div>
-            </div>
-          </div>
+          <Footer />
         </div>
       </section>
     </div>

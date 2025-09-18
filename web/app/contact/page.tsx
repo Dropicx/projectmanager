@@ -5,6 +5,7 @@ import { Button } from "@consulting-platform/ui";
 import Image from "next/image";
 import Link from "next/link";
 import { useId } from "react";
+import Footer from "../../components/Footer";
 
 export default function ContactPage() {
   const firstNameId = useId();
@@ -64,7 +65,6 @@ export default function ContactPage() {
               </SignUpButton>
             </div>
           </nav>
-
           {/* Page Content Card */}
           <div className="backdrop-blur-md bg-white/20 border border-white/30 rounded-3xl p-8 md:p-12 mb-20 shadow-2xl">
             <div className="text-center mb-16">
@@ -304,24 +304,8 @@ export default function ContactPage() {
               </div>
             </div>
           </div>
-
           {/* Footer Content Card */}
-          <div className="backdrop-blur-md bg-white/20 border border-white/30 rounded-3xl p-8 md:p-12 shadow-2xl">
-            <div className="flex flex-col md:flex-row items-center justify-between">
-              <div className="flex items-center mb-4 md:mb-0">
-                <Link href="/">
-                  <Image
-                    src="/logos/logofooter.png"
-                    alt="Consailt Logo"
-                    width={320}
-                    height={96}
-                    className="h-20 w-auto"
-                  />
-                </Link>
-              </div>
-              <div className="text-gray-500 text-sm">© 2025 Consailt. All rights reserved.</div>
-            </div>
-          </div>
+          <Footer />{" "}
         </div>
       </section>
     </div>
