@@ -52,6 +52,11 @@ export const RSS_FEED_CATEGORIES = {
 
 export type FeedCategory = keyof typeof RSS_FEED_CATEGORIES;
 
+// Configuration for RSS feed fetching
+const RSS_FEED_CONFIG = {
+  maxArticlesPerFeed: 500, // Maximum number of articles to process per feed
+};
+
 export async function fetchAndStoreRSSFeed(feedCategory: FeedCategory = "general") {
   const feedConfig = RSS_FEED_CATEGORIES[feedCategory];
   const feedUrl = feedConfig.url;
@@ -61,7 +66,11 @@ export async function fetchAndStoreRSSFeed(feedCategory: FeedCategory = "general
     const feed = await parser.parseURL(feedUrl);
     const articles = [];
 
-    for (const item of feed.items) {
+    // Limit the number of articles to process
+    const itemsToProcess = feed.items.slice(0, RSS_FEED_CONFIG.maxArticlesPerFeed);
+    console.log(`Processing ${itemsToProcess.length} of ${feed.items.length} articles from feed`);
+
+    for (const item of itemsToProcess) {
       // Extract image URL from various possible sources
       let imageUrl = null;
       let thumbnailUrl = null;
@@ -181,7 +190,8 @@ export async function getRecentNewsArticles(
     .select()
     .from(news_articles)
     .where(whereClause)
-    .orderBy(desc(news_articles.published_at));
+    .orderBy(desc(news_articles.published_at))
+    .limit(1000); // Reasonable limit for UI display
 
   return articles as NewsArticle[];
 }
