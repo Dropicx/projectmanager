@@ -26,19 +26,19 @@ export default function HomePage() {
   }, [isSignedIn, router]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-tekhelet-200/30 via-teal-200/40 via-maize-300/50 via-satinSheenGold-300/45 to-coolGray-300/60">
+    <div className="min-h-screen bg-gradient-to-br from-white from-0% via-white via-50% via-tekhelet-100/15 via-65% via-teal-200/25 via-80% via-maize-300/35 via-90% via-satinSheenGold-300/40 to-coolGray-300/55 to-100%">
       {/* Main Section with integrated header */}
       <section className="relative min-h-screen px-6 pt-8 pb-20 lg:pt-12 lg:pb-32 overflow-hidden">
-        {/* Enhanced animated floating elements - avoiding top-left corner */}
-        <div className="absolute top-32 right-16 w-96 h-96 bg-tekhelet-500/60 rounded-full blur-3xl animate-pulse"></div>
+        {/* Enhanced animated floating elements - keeping very large white area clear */}
+        <div className="absolute top-48 right-8 w-96 h-96 bg-tekhelet-500/60 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute bottom-20 left-20 w-80 h-80 bg-teal-500/55 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/3 w-72 h-72 bg-maize-500/50 rounded-full blur-3xl animate-pulse delay-500"></div>
-        <div className="absolute top-1/3 right-1/4 w-88 h-88 bg-satinSheenGold-500/45 rounded-full blur-3xl animate-pulse delay-1500"></div>
-        <div className="absolute top-1/3 left-1/2 w-64 h-64 bg-coolGray-500/40 rounded-full blur-3xl animate-pulse delay-2000"></div>
-        <div className="absolute bottom-1/3 right-1/4 w-72 h-72 bg-tekhelet-400/50 rounded-full blur-3xl animate-pulse delay-3000"></div>
-        <div className="absolute top-3/4 left-1/2 w-56 h-56 bg-teal-400/45 rounded-full blur-3xl animate-pulse delay-4000"></div>
-        <div className="absolute bottom-1/4 right-1/2 w-80 h-80 bg-maize-400/40 rounded-full blur-3xl animate-pulse delay-5000"></div>
-        <div className="absolute top-1/4 right-1/2 w-48 h-48 bg-satinSheenGold-400/35 rounded-full blur-3xl animate-pulse delay-6000"></div>
+        <div className="absolute top-3/4 left-1/2 w-72 h-72 bg-maize-500/50 rounded-full blur-3xl animate-pulse delay-500"></div>
+        <div className="absolute top-2/3 right-1/6 w-88 h-88 bg-satinSheenGold-500/45 rounded-full blur-3xl animate-pulse delay-1500"></div>
+        <div className="absolute top-4/5 left-3/4 w-64 h-64 bg-coolGray-500/40 rounded-full blur-3xl animate-pulse delay-2000"></div>
+        <div className="absolute bottom-1/4 right-1/6 w-72 h-72 bg-tekhelet-400/50 rounded-full blur-3xl animate-pulse delay-3000"></div>
+        <div className="absolute bottom-1/6 left-1/2 w-56 h-56 bg-teal-400/45 rounded-full blur-3xl animate-pulse delay-4000"></div>
+        <div className="absolute bottom-1/3 right-1/3 w-80 h-80 bg-maize-400/40 rounded-full blur-3xl animate-pulse delay-5000"></div>
+        <div className="absolute top-1/2 right-1/4 w-48 h-48 bg-satinSheenGold-400/35 rounded-full blur-3xl animate-pulse delay-6000"></div>
 
         {/* Enhanced flowing background elements - respecting white top-left */}
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-tekhelet-200/30 to-maize-300/45"></div>
