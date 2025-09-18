@@ -33,9 +33,9 @@ export default function HomePage() {
             <Image
               src="/logos/biglogo.png"
               alt="Consailt Logo"
-              width={200}
-              height={60}
-              className="h-12 w-auto"
+              width={1200}
+              height={360}
+              className="h-48 w-auto"
             />
           </div>
           <div className="flex items-center space-x-4">
@@ -67,10 +67,10 @@ export default function HomePage() {
                 Transform Your
               </span>
               <br />
-              <span className="text-coolGray-800">Consulting Practice</span>
+              <span className="text-black">Consulting Practice</span>
             </h1>
 
-            <p className="text-xl md:text-2xl text-coolGray-600 mb-12 max-w-4xl mx-auto leading-relaxed">
+            <p className="text-xl md:text-2xl text-black mb-12 max-w-4xl mx-auto leading-relaxed">
               The AI-native knowledge base that captures, organizes, and amplifies your expertise.
               Make institutional knowledge accessible, searchable, and actionable through
               intelligent automation.
@@ -95,7 +95,7 @@ export default function HomePage() {
             </div>
 
             {/* Trust Indicators */}
-            <div className="flex flex-wrap items-center justify-center gap-8 text-coolGray-500 text-sm">
+            <div className="flex flex-wrap items-center justify-center gap-8 text-black text-sm">
               <div className="flex items-center">
                 <div className="w-2 h-2 bg-teal-500 rounded-full mr-2"></div>
                 Zero-Data Retention
@@ -117,10 +117,10 @@ export default function HomePage() {
       <section className="px-6 py-20 bg-white/50 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-coolGray-800 mb-6">
+            <h2 className="text-4xl md:text-5xl font-bold text-black mb-6">
               AI-Powered Intelligence
             </h2>
-            <p className="text-xl text-coolGray-600 max-w-3xl mx-auto">
+            <p className="text-xl text-black max-w-3xl mx-auto">
               Harness the power of multiple AI models to transform how you capture, organize, and
               leverage knowledge
             </p>
@@ -146,8 +146,8 @@ export default function HomePage() {
                   />
                 </svg>
               </div>
-              <h3 className="text-2xl font-bold text-coolGray-800 mb-4">Multi-Model AI</h3>
-              <p className="text-coolGray-600 mb-4">
+              <h3 className="text-2xl font-bold text-black mb-4">Multi-Model AI</h3>
+              <p className="text-black mb-4">
                 Intelligent model selection across Claude, Nova, Mistral, and Llama for optimal cost
                 and performance.
               </p>
@@ -183,12 +183,12 @@ export default function HomePage() {
                   />
                 </svg>
               </div>
-              <h3 className="text-2xl font-bold text-coolGray-800 mb-4">Smart Knowledge Base</h3>
-              <p className="text-coolGray-600 mb-4">
+              <h3 className="text-2xl font-bold text-black mb-4">Smart Knowledge Base</h3>
+              <p className="text-black mb-4">
                 Centralized repository with semantic search, automated categorization, and RAG
                 capabilities.
               </p>
-              <ul className="text-sm text-coolGray-600 space-y-1">
+              <ul className="text-sm text-black space-y-1">
                 <li>• Vector-based semantic search</li>
                 <li>• Automated content categorization</li>
                 <li>• Template-based knowledge capture</li>
@@ -214,11 +214,11 @@ export default function HomePage() {
                   />
                 </svg>
               </div>
-              <h3 className="text-2xl font-bold text-coolGray-800 mb-4">Privacy-First</h3>
-              <p className="text-coolGray-600 mb-4">
+              <h3 className="text-2xl font-bold text-black mb-4">Privacy-First</h3>
+              <p className="text-black mb-4">
                 Zero-data retention AI with client sanitization and enterprise-grade security.
               </p>
-              <ul className="text-sm text-coolGray-600 space-y-1">
+              <ul className="text-sm text-black space-y-1">
                 <li>• Zero-data retention AI</li>
                 <li>• Client sanitization</li>
                 <li>• GDPR & SOC2 compliant</li>
@@ -244,12 +244,12 @@ export default function HomePage() {
                   />
                 </svg>
               </div>
-              <h3 className="text-2xl font-bold text-coolGray-800 mb-4">Automated Insights</h3>
-              <p className="text-coolGray-600 mb-4">
+              <h3 className="text-2xl font-bold text-black mb-4">Automated Insights</h3>
+              <p className="text-black mb-4">
                 AI-generated insights, pattern recognition, and trend analysis across your knowledge
                 base.
               </p>
-              <ul className="text-sm text-coolGray-600 space-y-1">
+              <ul className="text-sm text-black space-y-1">
                 <li>• Pattern recognition</li>
                 <li>• Trend analysis</li>
                 <li>• Predictive insights</li>
@@ -275,11 +275,11 @@ export default function HomePage() {
                   />
                 </svg>
               </div>
-              <h3 className="text-2xl font-bold text-coolGray-800 mb-4">Cost Optimized</h3>
-              <p className="text-coolGray-600 mb-4">
+              <h3 className="text-2xl font-bold text-black mb-4">Cost Optimized</h3>
+              <p className="text-black mb-4">
                 Smart routing to minimize AI costs while maintaining quality with usage tracking.
               </p>
-              <ul className="text-sm text-coolGray-600 space-y-1">
+              <ul className="text-sm text-black space-y-1">
                 <li>• Under $0.001 per query average</li>
                 <li>• Usage monitoring</li>
                 <li>• Cost alerts</li>
@@ -305,11 +305,11 @@ export default function HomePage() {
                   />
                 </svg>
               </div>
-              <h3 className="text-2xl font-bold text-coolGray-800 mb-4">Team Collaboration</h3>
-              <p className="text-coolGray-600 mb-4">
+              <h3 className="text-2xl font-bold text-black mb-4">Team Collaboration</h3>
+              <p className="text-black mb-4">
                 Real-time collaboration with shared knowledge bases and team insights.
               </p>
-              <ul className="text-sm text-coolGray-600 space-y-1">
+              <ul className="text-sm text-black space-y-1">
                 <li>• Shared knowledge bases</li>
                 <li>• Real-time updates</li>
                 <li>• Team analytics</li>
@@ -356,10 +356,10 @@ export default function HomePage() {
       {/* CTA Section */}
       <section className="px-6 py-20 bg-gradient-to-br from-coolGray-900 to-tekhelet-100">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl md:text-5xl font-bold text-coolGray-800 mb-6">
+          <h2 className="text-4xl md:text-5xl font-bold text-black mb-6">
             Ready to Transform Your Consulting Practice?
           </h2>
-          <p className="text-xl text-coolGray-600 mb-12">
+          <p className="text-xl text-black mb-12">
             Start your free trial today and experience the power of AI-native knowledge management.
             No credit card required.
           </p>
@@ -382,7 +382,7 @@ export default function HomePage() {
             </Button>
           </div>
 
-          <div className="text-sm text-coolGray-500">
+          <div className="text-sm text-black">
             <p>✓ 14-day free trial • ✓ No setup fees • ✓ Cancel anytime</p>
           </div>
         </div>
@@ -394,14 +394,14 @@ export default function HomePage() {
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div className="flex items-center mb-4 md:mb-0">
               <Image
-                src="/logos/biglogo.png"
+                src="/logos/logofooter.png"
                 alt="Consailt Logo"
-                width={160}
-                height={48}
-                className="h-10 w-auto"
+                width={320}
+                height={96}
+                className="h-20 w-auto"
               />
             </div>
-            <div className="text-coolGray-400 text-sm">© 2024 Consailt. All rights reserved.</div>
+            <div className="text-coolGray-400 text-sm">© 2025 Consailt. All rights reserved.</div>
           </div>
         </div>
       </footer>
