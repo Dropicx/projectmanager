@@ -39,9 +39,6 @@ export function KnowledgeEditor({
       StarterKit.configure({
         heading: {
           levels: [1, 2, 3],
-          HTMLAttributes: {
-            class: "font-bold",
-          },
         },
         code: {
           HTMLAttributes: {
@@ -131,11 +128,11 @@ export function KnowledgeEditor({
       attributes: {
         class: cn(
           "prose prose-base dark:prose-invert max-w-none focus:outline-none",
-          // Headings with proper sizes and weights
-          "prose-headings:font-bold prose-headings:tracking-tight",
-          "prose-h1:text-3xl prose-h1:font-bold prose-h1:mb-4 prose-h1:mt-6",
-          "prose-h2:text-2xl prose-h2:font-semibold prose-h2:mb-3 prose-h2:mt-5",
-          "prose-h3:text-xl prose-h3:font-semibold prose-h3:mb-2 prose-h3:mt-4",
+          // Headings with proper sizes and weights - make them more prominent
+          "prose-headings:tracking-tight prose-headings:text-foreground",
+          "prose-h1:text-4xl prose-h1:font-bold prose-h1:mb-4 prose-h1:mt-6 prose-h1:text-foreground",
+          "prose-h2:text-3xl prose-h2:font-semibold prose-h2:mb-3 prose-h2:mt-5 prose-h2:text-foreground/90",
+          "prose-h3:text-2xl prose-h3:font-medium prose-h3:mb-2 prose-h3:mt-4 prose-h3:text-foreground/80",
           // Text spacing
           "prose-p:my-3 prose-p:leading-7",
           // Lists
