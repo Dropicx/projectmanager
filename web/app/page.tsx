@@ -74,21 +74,22 @@ export default function HomePage() {
             <div className="text-center">
               <div className="inline-flex items-center px-4 py-2 rounded-full bg-teal-100/80 text-teal-700 text-sm font-medium mb-8">
                 <span className="w-2 h-2 bg-teal-500 rounded-full mr-2 animate-pulse"></span>
-                AI-Powered Consulting Platform
+                Sailing to Success with AI
               </div>
 
               <h1 className="text-5xl md:text-7xl font-bold mb-8">
                 <span className="bg-gradient-to-r from-tekhelet-500 via-teal-500 to-maize-500 bg-clip-text text-transparent">
-                  Transform Your
+                  Sail Through Projects
                 </span>
                 <br />
-                <span className="text-black">Consulting Practice</span>
+                <span className="text-black">with the Wind of AI</span>
               </h1>
 
               <p className="text-xl md:text-2xl text-black mb-12 max-w-4xl mx-auto leading-relaxed">
-                The AI-native knowledge base that captures, organizes, and amplifies your expertise.
-                Make institutional knowledge accessible, searchable, and actionable through
-                intelligent automation.
+                Join the new generation of{" "}
+                <span className="font-semibold text-tekhelet-600">consailors</span> - consultants
+                who harness AI to navigate complex projects with confidence. Let intelligent
+                automation be your compass, guiding you to success on every voyage.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
@@ -113,15 +114,15 @@ export default function HomePage() {
               <div className="flex flex-wrap items-center justify-center gap-8 text-black text-sm">
                 <div className="flex items-center">
                   <div className="w-2 h-2 bg-teal-500 rounded-full mr-2"></div>
-                  Zero-Data Retention
+                  Smooth Sailing Guaranteed
                 </div>
                 <div className="flex items-center">
                   <div className="w-2 h-2 bg-teal-500 rounded-full mr-2"></div>
-                  GDPR Compliant
+                  AI-Powered Navigation
                 </div>
                 <div className="flex items-center">
                   <div className="w-2 h-2 bg-teal-500 rounded-full mr-2"></div>
-                  Enterprise Security
+                  Enterprise-Grade Compass
                 </div>
               </div>
             </div>
@@ -131,11 +132,11 @@ export default function HomePage() {
           <div className="backdrop-blur-md bg-white/20 border border-white/30 rounded-3xl p-8 md:p-12 mb-20 shadow-2xl">
             <div className="text-center mb-16">
               <h2 className="text-4xl md:text-5xl font-bold text-black mb-6">
-                AI-Powered Intelligence
+                Your AI Navigation System
               </h2>
               <p className="text-xl text-black max-w-3xl mx-auto">
-                Harness the power of multiple AI models to transform how you capture, organize, and
-                leverage knowledge
+                Equip your consulting vessel with cutting-edge AI tools that chart the course to
+                project success. Navigate complex challenges with confidence and precision.
               </p>
             </div>
 
@@ -160,10 +161,10 @@ export default function HomePage() {
                     />
                   </svg>
                 </div>
-                <h3 className="text-2xl font-bold text-black mb-4">Multi-Model AI</h3>
+                <h3 className="text-2xl font-bold text-black mb-4">AI Wind Selection</h3>
                 <p className="text-black mb-4">
-                  Intelligent model selection across Claude, Nova, Mistral, and Llama for optimal
-                  cost and performance.
+                  Smart routing across Claude, Nova, Mistral, and Llama models - choosing the
+                  perfect wind for every consulting voyage.
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <span className="px-3 py-1 bg-teal-100 text-teal-700 rounded-full text-sm">
@@ -197,10 +198,10 @@ export default function HomePage() {
                     />
                   </svg>
                 </div>
-                <h3 className="text-2xl font-bold text-black mb-4">Smart Knowledge Base</h3>
+                <h3 className="text-2xl font-bold text-black mb-4">Knowledge Compass</h3>
                 <p className="text-black mb-4">
-                  Centralized repository with semantic search, automated categorization, and RAG
-                  capabilities.
+                  Your central navigation hub with semantic search, automated charting, and
+                  intelligent course plotting for every project.
                 </p>
                 <ul className="text-sm text-black space-y-1">
                   <li>• Vector-based semantic search</li>
@@ -228,9 +229,10 @@ export default function HomePage() {
                     />
                   </svg>
                 </div>
-                <h3 className="text-2xl font-bold text-black mb-4">Privacy-First</h3>
+                <h3 className="text-2xl font-bold text-black mb-4">Secure Harbor</h3>
                 <p className="text-black mb-4">
-                  Zero-data retention AI with client sanitization and enterprise-grade security.
+                  Your data stays in safe waters with zero-retention AI, client sanitization, and
+                  enterprise-grade security protocols.
                 </p>
                 <ul className="text-sm text-black space-y-1">
                   <li>• Zero-data retention AI</li>
@@ -336,29 +338,29 @@ export default function HomePage() {
           <div className="backdrop-blur-md bg-white/20 border border-white/30 rounded-3xl p-8 md:p-12 mb-20 shadow-2xl">
             <div className="text-center">
               <h2 className="text-4xl md:text-5xl font-bold text-black mb-6">
-                Trusted by Consultants Worldwide
+                Trusted by Consailors Worldwide
               </h2>
               <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-16">
-                Join thousands of consultants who have transformed their practice with AI-powered
-                knowledge management
+                Join thousands of consailors who have charted new courses to success with AI-powered
+                project navigation
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                 <div className="text-center">
                   <div className="text-5xl font-bold text-tekhelet-500 mb-2">80%</div>
-                  <div className="text-gray-600">Faster Knowledge Retrieval</div>
+                  <div className="text-gray-600">Faster Course Navigation</div>
                 </div>
                 <div className="text-center">
                   <div className="text-5xl font-bold text-tekhelet-500 mb-2">70%</div>
-                  <div className="text-gray-600">More Insights Generated</div>
+                  <div className="text-gray-600">Smoother Sailing</div>
                 </div>
                 <div className="text-center">
                   <div className="text-5xl font-bold text-tekhelet-500 mb-2">90%</div>
-                  <div className="text-gray-600">Reduced Knowledge Silos</div>
+                  <div className="text-gray-600">Reduced Project Storms</div>
                 </div>
                 <div className="text-center">
                   <div className="text-5xl font-bold text-tekhelet-500 mb-2">100%</div>
-                  <div className="text-gray-600">Data Privacy Guaranteed</div>
+                  <div className="text-gray-600">Safe Harbor Guaranteed</div>
                 </div>
               </div>
             </div>
@@ -368,11 +370,11 @@ export default function HomePage() {
           <div className="backdrop-blur-md bg-white/20 border border-white/30 rounded-3xl p-8 md:p-12 mb-20 shadow-2xl">
             <div className="text-center">
               <h2 className="text-4xl md:text-5xl font-bold text-black mb-6">
-                Ready to Transform Your Consulting Practice?
+                Ready to Set Sail with AI?
               </h2>
               <p className="text-xl text-black mb-12">
-                Start your free trial today and experience the power of AI-native knowledge
-                management. No credit card required.
+                Join the consailor community and experience smooth sailing through every project.
+                Start your free trial today - no credit card required.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
@@ -381,7 +383,7 @@ export default function HomePage() {
                     size="lg"
                     className="bg-tekhelet-500 hover:bg-tekhelet-600 text-white px-12 py-4 text-lg"
                   >
-                    Start Free Trial
+                    Set Sail Now
                   </Button>
                 </SignUpButton>
                 <Button
@@ -394,7 +396,7 @@ export default function HomePage() {
               </div>
 
               <div className="text-sm text-black">
-                <p>✓ 14-day free trial • ✓ No setup fees • ✓ Cancel anytime</p>
+                <p>✓ 14-day free voyage • ✓ No setup fees • ✓ Cancel anytime</p>
               </div>
             </div>
           </div>
@@ -414,7 +416,8 @@ export default function HomePage() {
                   />
                 </div>
                 <p className="text-gray-600 text-sm mb-4">
-                  AI-native knowledge management platform for modern consulting practices.
+                  The AI-powered navigation system for consailors - sailing through projects with
+                  the wind of artificial intelligence.
                 </p>
                 <div className="flex space-x-4">
                   <a
@@ -611,10 +614,10 @@ export default function HomePage() {
                   © 2025 Consailt. All rights reserved.
                 </div>
                 <div className="flex items-center space-x-6 text-sm text-gray-500">
-                  <span>Made with ❤️ for consultants</span>
+                  <span>Made with ❤️ for consailors</span>
                   <div className="flex items-center space-x-2">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span>All systems operational</span>
+                    <span>Smooth sailing ahead</span>
                   </div>
                 </div>
               </div>
