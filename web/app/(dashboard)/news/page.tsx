@@ -151,10 +151,34 @@ export default function NewsPage() {
               {selectedCategory === "all"
                 ? `Displaying all articles from the last ${daysBack} days`
                 : `Displaying ${categoryLabels[selectedCategory]} from the last ${daysBack} days`}
-              {debouncedSearchQuery && ` matching "${debouncedSearchQuery}"`}
+              {debouncedSearchQuery &&
+                filteredArticles &&
+                ` • Found ${filteredArticles.length} matching "${debouncedSearchQuery}"`}
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
+            {/* Search Bar */}
+            <div className="relative w-64">
+              <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground h-3 w-3" />
+              <Input
+                type="text"
+                placeholder="Search articles..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-8 pl-7 pr-7 text-sm"
+              />
+              {searchQuery && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-0 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
+                >
+                  ×
+                </Button>
+              )}
+            </div>
+
             {/* Category Selector */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -214,34 +238,6 @@ export default function NewsPage() {
             </Button>
           </div>
         </div>
-
-        {/* Search Bar */}
-        <div className="relative max-w-2xl mx-auto">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <Input
-            type="text"
-            placeholder={`Search in ${categoryLabels[selectedCategory].toLowerCase()}...`}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 pr-4"
-          />
-          {searchQuery && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setSearchQuery("")}
-              className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 px-2"
-            >
-              Clear
-            </Button>
-          )}
-        </div>
-        {debouncedSearchQuery && filteredArticles && (
-          <p className="text-sm text-muted-foreground text-center mt-2">
-            Found {filteredArticles.length} {filteredArticles.length === 1 ? "article" : "articles"}{" "}
-            matching your search
-          </p>
-        )}
       </div>
 
       {!filteredArticles || filteredArticles.length === 0 ? (
