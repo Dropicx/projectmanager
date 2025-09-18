@@ -5,7 +5,6 @@ import { Button } from "@consulting-platform/ui";
 import Image from "next/image";
 import Link from "next/link";
 import { GlobalButton } from "@/components/GlobalButton";
-import { ModernButton } from "@/components/ModernButton";
 import Footer from "../../components/Footer";
 
 export default function PricingPage() {
@@ -50,9 +49,9 @@ export default function PricingPage() {
                 </Button>
               </SignInButton>
               <SignUpButton mode="modal">
-                <ModernButton size="md" variant="primary">
+                <GlobalButton size="md" variant="primary">
                   Get Started
-                </ModernButton>
+                </GlobalButton>
               </SignUpButton>
             </div>
           </nav>
@@ -147,9 +146,9 @@ export default function PricingPage() {
                   </li>
                 </ul>
                 <SignUpButton mode="modal">
-                  <ModernButton className="w-full" variant="primary">
+                  <GlobalButton className="w-full" variant="primary">
                     Start Free Trial
-                  </ModernButton>
+                  </GlobalButton>
                 </SignUpButton>
               </div>
 
@@ -264,9 +263,9 @@ export default function PricingPage() {
                   </li>
                 </ul>
                 <SignUpButton mode="modal">
-                  <ModernButton className="w-full" variant="primary">
+                  <GlobalButton className="w-full" variant="primary">
                     Start Free Trial
-                  </ModernButton>
+                  </GlobalButton>
                 </SignUpButton>
               </div>
 
@@ -360,9 +359,9 @@ export default function PricingPage() {
                   </li>
                 </ul>
                 <Link href="/contact">
-                  <Button className="w-full bg-gray-600 hover:bg-gray-700 text-white">
+                  <GlobalButton className="w-full" variant="secondary">
                     Contact Sales
-                  </Button>
+                  </GlobalButton>
                 </Link>
               </div>
             </div>

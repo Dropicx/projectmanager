@@ -5,7 +5,6 @@ import { Button } from "@consulting-platform/ui";
 import Image from "next/image";
 import Link from "next/link";
 import { GlobalButton } from "@/components/GlobalButton";
-import { ModernButton } from "@/components/ModernButton";
 import Footer from "../../components/Footer";
 
 export default function FeaturesPage() {
@@ -50,9 +49,9 @@ export default function FeaturesPage() {
                 </Button>
               </SignInButton>
               <SignUpButton mode="modal">
-                <ModernButton size="md" variant="primary">
+                <GlobalButton size="md" variant="primary">
                   Get Started
-                </ModernButton>
+                </GlobalButton>
               </SignUpButton>
             </div>
           </nav>
@@ -276,14 +275,14 @@ export default function FeaturesPage() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <SignUpButton mode="modal">
-                  <ModernButton size="lg" variant="primary">
+                  <GlobalButton size="lg" variant="primary">
                     Start Free Trial
-                  </ModernButton>
+                  </GlobalButton>
                 </SignUpButton>
                 <Link href="/pricing">
-                  <ModernButton size="lg" variant="outline">
+                  <GlobalButton size="lg" variant="secondary">
                     View Pricing
-                  </ModernButton>
+                  </GlobalButton>
                 </Link>
               </div>
             </div>

@@ -290,20 +290,13 @@ export default function CareersPage() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link href="/contact">
-                  <Button
-                    size="lg"
-                    className="bg-tekhelet-500 hover:bg-tekhelet-600 text-white px-8 py-4 text-lg"
-                  >
+                  <GlobalButton size="lg" variant="primary">
                     Contact Us
-                  </Button>
+                  </GlobalButton>
                 </Link>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="border-tekhelet-500 text-tekhelet-500 hover:bg-tekhelet-50 px-8 py-4 text-lg"
-                >
+                <GlobalButton size="lg" variant="secondary">
                   View All Jobs
-                </Button>
+                </GlobalButton>
               </div>
             </div>
           </div>
