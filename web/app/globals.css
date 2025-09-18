@@ -10,19 +10,19 @@
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 84% 4.9%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96%;
+    --primary: 179 80% 27%; /* Teal #0e7c7b */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 279 62% 27%; /* Tekhelet #521a70 */
+    --secondary-foreground: 0 0% 100%;
+    --muted: 245 14% 69%; /* Cool Gray #a6a4ba */
+    --muted-foreground: 245 14% 40%;
+    --accent: 51 99% 63%; /* Maize #fee343 */
     --accent-foreground: 222.2 84% 4.9%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    --ring: 179 80% 27%; /* Teal ring */
     --radius: 0.5rem;
   }
 
@@ -33,19 +33,19 @@
     --card-foreground: 210 40% 98%;
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 84% 4.9%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --primary: 179 89% 49%; /* Teal lighter for dark mode */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 279 77% 44%; /* Tekhelet lighter for dark mode */
+    --secondary-foreground: 0 0% 100%;
+    --muted: 245 14% 30%; /* Cool Gray darker for dark mode */
+    --muted-foreground: 245 14% 69%;
+    --accent: 51 74% 70%; /* Maize slightly muted for dark mode */
+    --accent-foreground: 222.2 84% 4.9%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 94.1%;
+    --ring: 179 89% 49%; /* Teal ring for dark mode */
   }
 }
 

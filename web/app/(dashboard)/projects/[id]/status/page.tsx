@@ -34,7 +34,7 @@ export default function ProjectStatusPage() {
   const { data: project } = api.projects.getById.useQuery({ id: projectId });
 
   // Fetch knowledge entries
-  const { data: recentEntries, refetch: refetchEntries } = api.knowledge.getByProject.useQuery({
+  const { data: recentEntries } = api.knowledge.getByProject.useQuery({
     projectId: projectId,
     limit: 10,
   });
@@ -59,11 +59,11 @@ export default function ProjectStatusPage() {
       case "completed":
         return <CheckCircle className="h-5 w-5 text-green-600" />;
       case "active":
-        return <Activity className="h-5 w-5 text-blue-600" />;
+        return <Activity className="h-5 w-5 text-teal-600" />;
       case "on-hold":
         return <Clock className="h-5 w-5 text-yellow-600" />;
       case "planning":
-        return <Target className="h-5 w-5 text-purple-600" />;
+        return <Target className="h-5 w-5 text-tekhelet-600" />;
       default:
         return <AlertCircle className="h-5 w-5 text-gray-600" />;
     }
@@ -74,11 +74,11 @@ export default function ProjectStatusPage() {
       case "completed":
         return "bg-green-100 text-green-800 border-green-200";
       case "active":
-        return "bg-blue-100 text-blue-800 border-blue-200";
+        return "bg-teal-100 text-teal-800 border-teal-200";
       case "on-hold":
         return "bg-yellow-100 text-yellow-800 border-yellow-200";
       case "planning":
-        return "bg-purple-100 text-purple-800 border-purple-200";
+        return "bg-tekhelet-100 text-tekhelet-800 border-tekhelet-200";
       default:
         return "bg-gray-100 text-gray-800 border-gray-200";
     }
@@ -124,7 +124,7 @@ export default function ProjectStatusPage() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-medium">Knowledge Entries</CardTitle>
-              <Brain className="h-5 w-5 text-indigo-600" />
+              <Brain className="h-5 w-5 text-teal-600" />
             </div>
           </CardHeader>
           <CardContent>
@@ -170,7 +170,7 @@ export default function ProjectStatusPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
-              <Brain className="h-5 w-5 text-indigo-600" />
+              <Brain className="h-5 w-5 text-teal-600" />
               AI-Generated Status Summary
             </CardTitle>
             {statusData?.lastUpdated && (
@@ -209,7 +209,7 @@ export default function ProjectStatusPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Activity className="h-5 w-5 text-blue-600" />
+            <Activity className="h-5 w-5 text-teal-600" />
             Recent Activity
           </CardTitle>
         </CardHeader>
@@ -219,8 +219,8 @@ export default function ProjectStatusPage() {
               {recentEntries.map((entry: any) => {
                 const entryType = (entry.metadata as any)?.type || "note";
                 const typeConfigs: Record<string, { color: string; icon: string }> = {
-                  note: { color: "bg-blue-100 text-blue-700", icon: "📝" },
-                  meeting: { color: "bg-purple-100 text-purple-700", icon: "👥" },
+                  note: { color: "bg-teal-100 text-teal-700", icon: "📝" },
+                  meeting: { color: "bg-tekhelet-100 text-tekhelet-700", icon: "👥" },
                   decision: { color: "bg-yellow-100 text-yellow-700", icon: "💡" },
                   feedback: { color: "bg-green-100 text-green-700", icon: "💬" },
                   task_update: { color: "bg-orange-100 text-orange-700", icon: "✅" },
