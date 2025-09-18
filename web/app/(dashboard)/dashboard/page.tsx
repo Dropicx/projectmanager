@@ -96,7 +96,7 @@ export default function DashboardPage() {
         <Card className="bg-gradient-to-br from-indigo-50 to-white">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Knowledge Entries</CardTitle>
-            <Database className="h-4 w-4 text-teal-600" />
+            <Database className="h-4 w-4 text-tekhelet-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{knowledgeStats.totalNotes}</div>
@@ -224,7 +224,7 @@ export default function DashboardPage() {
         <Card className="border-indigo-200 bg-gradient-to-br from-indigo-50/50 to-white">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Brain className="h-5 w-5 text-teal-600" />
+              <Brain className="h-5 w-5 text-tekhelet-600" />
               AI Assistant
             </CardTitle>
             <CardDescription>Get insights from your knowledge</CardDescription>

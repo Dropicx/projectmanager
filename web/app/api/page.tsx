@@ -1,3 +1,5 @@
+"use client";
+
 import { SignInButton, SignUpButton } from "@clerk/nextjs";
 import { Button } from "@consulting-platform/ui";
 import Image from "next/image";

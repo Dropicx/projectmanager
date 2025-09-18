@@ -25,11 +25,11 @@ export default function HomePage() {
   }, [isSignedIn, router]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-teal-200/40 via-white via-tekhelet-200/30 via-maize-200/35 via-satinSheenGold-200/30 to-coolGray-200/40">
+    <div className="min-h-screen bg-gradient-to-b from-tekhelet-200/40 via-white via-tekhelet-200/30 via-maize-200/35 via-satinSheenGold-200/30 to-coolGray-200/40">
       {/* Main Section with integrated header */}
       <section className="relative min-h-screen px-6 pt-8 pb-20 lg:pt-12 lg:pb-32 overflow-hidden">
         {/* Animated floating elements */}
-        <div className="absolute top-20 right-20 w-72 h-72 bg-teal-400/40 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute top-20 right-20 w-72 h-72 bg-tekhelet-400/40 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute bottom-20 left-20 w-96 h-96 bg-tekhelet-400/35 rounded-full blur-3xl animate-pulse delay-1000"></div>
         <div className="absolute top-1/2 left-1/4 w-64 h-64 bg-maize-400/30 rounded-full blur-3xl animate-pulse delay-500"></div>
         <div className="absolute top-1/3 right-1/3 w-80 h-80 bg-satinSheenGold-400/25 rounded-full blur-3xl animate-pulse delay-1500"></div>
@@ -38,7 +38,7 @@ export default function HomePage() {
 
         {/* Flowing background elements */}
         <div className="absolute inset-0 bg-gradient-to-r from-tekhelet-200/30 via-transparent to-maize-200/40"></div>
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-200/20 via-transparent to-satinSheenGold-200/25"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-tekhelet-200/20 via-transparent to-satinSheenGold-200/25"></div>
 
         <div className="max-w-7xl mx-auto relative z-10">
           {/* Integrated Navigation */}
@@ -76,13 +76,13 @@ export default function HomePage() {
           {/* Hero Content Card */}
           <div className="backdrop-blur-md bg-white/20 border border-white/30 rounded-3xl p-8 md:p-12 mb-20 shadow-2xl">
             <div className="text-center">
-              <div className="inline-flex items-center px-4 py-2 rounded-full bg-teal-100/80 text-teal-700 text-sm font-medium mb-8">
-                <span className="w-2 h-2 bg-teal-500 rounded-full mr-2 animate-pulse"></span>
+              <div className="inline-flex items-center px-4 py-2 rounded-full bg-tekhelet-100/80 text-tekhelet-700 text-sm font-medium mb-8">
+                <span className="w-2 h-2 bg-tekhelet-500 rounded-full mr-2 animate-pulse"></span>
                 Sailing to Success with AI
               </div>
 
               <h1 className="text-5xl md:text-7xl font-bold mb-8">
-                <span className="bg-gradient-to-r from-tekhelet-500 via-teal-500 to-maize-500 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-tekhelet-500 via-tekhelet-400 to-maize-500 bg-clip-text text-transparent">
                   Sail Through Projects
                 </span>
                 <br />
@@ -118,15 +118,15 @@ export default function HomePage() {
               {/* Trust Indicators */}
               <div className="flex flex-wrap items-center justify-center gap-8 text-black text-sm">
                 <div className="flex items-center">
-                  <div className="w-2 h-2 bg-teal-500 rounded-full mr-2"></div>
+                  <div className="w-2 h-2 bg-tekhelet-500 rounded-full mr-2"></div>
                   Smooth Sailing Guaranteed
                 </div>
                 <div className="flex items-center">
-                  <div className="w-2 h-2 bg-teal-500 rounded-full mr-2"></div>
+                  <div className="w-2 h-2 bg-tekhelet-500 rounded-full mr-2"></div>
                   AI-Powered Navigation
                 </div>
                 <div className="flex items-center">
-                  <div className="w-2 h-2 bg-teal-500 rounded-full mr-2"></div>
+                  <div className="w-2 h-2 bg-tekhelet-500 rounded-full mr-2"></div>
                   Enterprise-Grade Compass
                 </div>
               </div>
@@ -202,8 +202,8 @@ export default function HomePage() {
                 </h3>
                 <div className="space-y-4">
                   <div className="flex items-start space-x-3">
-                    <div className="w-6 h-6 bg-teal-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                      <span className="text-teal-600 text-sm">✓</span>
+                    <div className="w-6 h-6 bg-tekhelet-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                      <span className="text-tekhelet-600 text-sm">✓</span>
                     </div>
                     <div>
                       <p className="font-semibold text-black">Unified Platform</p>
@@ -213,8 +213,8 @@ export default function HomePage() {
                     </div>
                   </div>
                   <div className="flex items-start space-x-3">
-                    <div className="w-6 h-6 bg-teal-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                      <span className="text-teal-600 text-sm">✓</span>
+                    <div className="w-6 h-6 bg-tekhelet-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                      <span className="text-tekhelet-600 text-sm">✓</span>
                     </div>
                     <div>
                       <p className="font-semibold text-black">AI-Powered Integration</p>
@@ -224,8 +224,8 @@ export default function HomePage() {
                     </div>
                   </div>
                   <div className="flex items-start space-x-3">
-                    <div className="w-6 h-6 bg-teal-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                      <span className="text-teal-600 text-sm">✓</span>
+                    <div className="w-6 h-6 bg-tekhelet-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                      <span className="text-tekhelet-600 text-sm">✓</span>
                     </div>
                     <div>
                       <p className="font-semibold text-black">Centralized Knowledge</p>
@@ -235,8 +235,8 @@ export default function HomePage() {
                     </div>
                   </div>
                   <div className="flex items-start space-x-3">
-                    <div className="w-6 h-6 bg-teal-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                      <span className="text-teal-600 text-sm">✓</span>
+                    <div className="w-6 h-6 bg-tekhelet-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                      <span className="text-tekhelet-600 text-sm">✓</span>
                     </div>
                     <div>
                       <p className="font-semibold text-black">Automated Intelligence</p>
@@ -250,7 +250,7 @@ export default function HomePage() {
             </div>
 
             <div className="mt-12 text-center">
-              <div className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-tekhelet-500 to-teal-500 rounded-full text-white font-semibold">
+              <div className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-tekhelet-500 to-tekhelet-400 rounded-full text-white font-semibold">
                 <svg
                   className="w-5 h-5 mr-2"
                   fill="currentColor"
@@ -285,7 +285,7 @@ export default function HomePage() {
               {/* Add staggered animation classes */}
               {/* AI Orchestration */}
               <div className="backdrop-blur-md bg-white/20 border border-white/30 p-8 rounded-2xl shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 ease-in-out group">
-                <div className="w-12 h-12 bg-gradient-to-r from-tekhelet-500 to-teal-500 rounded-lg flex items-center justify-center mb-6">
+                <div className="w-12 h-12 bg-gradient-to-r from-tekhelet-500 to-tekhelet-400 rounded-lg flex items-center justify-center mb-6">
                   <svg
                     className="w-6 h-6 text-white"
                     fill="none"
@@ -308,13 +308,13 @@ export default function HomePage() {
                   wind for every consulting voyage.
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  <span className="px-3 py-1 bg-teal-100 text-teal-700 rounded-full text-sm">
+                  <span className="px-3 py-1 bg-tekhelet-100 text-tekhelet-700 rounded-full text-sm">
                     Claude 3.7
                   </span>
-                  <span className="px-3 py-1 bg-teal-100 text-teal-700 rounded-full text-sm">
+                  <span className="px-3 py-1 bg-tekhelet-100 text-tekhelet-700 rounded-full text-sm">
                     Nova Pro
                   </span>
-                  <span className="px-3 py-1 bg-teal-100 text-teal-700 rounded-full text-sm">
+                  <span className="px-3 py-1 bg-tekhelet-100 text-tekhelet-700 rounded-full text-sm">
                     Mistral Large
                   </span>
                 </div>
@@ -322,7 +322,7 @@ export default function HomePage() {
 
               {/* Knowledge Management */}
               <div className="backdrop-blur-md bg-white/20 border border-white/30 p-8 rounded-2xl shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 ease-in-out group">
-                <div className="w-12 h-12 bg-gradient-to-r from-teal-500 to-maize-500 rounded-lg flex items-center justify-center mb-6">
+                <div className="w-12 h-12 bg-gradient-to-r from-tekhelet-500 to-maize-500 rounded-lg flex items-center justify-center mb-6">
                   <svg
                     className="w-6 h-6 text-white"
                     fill="none"
@@ -446,7 +446,7 @@ export default function HomePage() {
 
               {/* Collaboration */}
               <div className="backdrop-blur-md bg-white/20 border border-white/30 p-8 rounded-2xl shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 ease-in-out group">
-                <div className="w-12 h-12 bg-gradient-to-r from-teal-500 to-satinSheenGold-500 rounded-lg flex items-center justify-center mb-6">
+                <div className="w-12 h-12 bg-gradient-to-r from-tekhelet-500 to-satinSheenGold-500 rounded-lg flex items-center justify-center mb-6">
                   <svg
                     className="w-6 h-6 text-white"
                     fill="none"
