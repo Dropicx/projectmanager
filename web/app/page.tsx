@@ -26,25 +26,9 @@ export default function HomePage() {
   }, [isSignedIn, router]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white from-0% via-white via-40% via-tekhelet-200/30 via-60% via-teal-300/40 via-75% via-maize-400/50 via-85% via-satinSheenGold-400/45 to-coolGray-400/60 to-100%">
+    <div className="min-h-screen bg-white">
       {/* Main Section with integrated header */}
       <section className="relative min-h-screen px-6 pt-8 pb-20 lg:pt-12 lg:pb-32 overflow-hidden">
-        {/* Colorful floating elements using true site colors */}
-        <div className="absolute top-48 right-8 w-96 h-96 bg-tekhelet-500/70 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 left-20 w-80 h-80 bg-teal-500/65 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-3/4 left-1/2 w-72 h-72 bg-maize-500/60 rounded-full blur-3xl animate-pulse delay-500"></div>
-        <div className="absolute top-2/3 right-1/6 w-88 h-88 bg-satinSheenGold-500/55 rounded-full blur-3xl animate-pulse delay-1500"></div>
-        <div className="absolute top-4/5 left-3/4 w-64 h-64 bg-coolGray-500/50 rounded-full blur-3xl animate-pulse delay-2000"></div>
-        <div className="absolute bottom-1/4 right-1/6 w-72 h-72 bg-tekhelet-400/60 rounded-full blur-3xl animate-pulse delay-3000"></div>
-        <div className="absolute bottom-1/6 left-1/2 w-56 h-56 bg-teal-400/55 rounded-full blur-3xl animate-pulse delay-4000"></div>
-        <div className="absolute bottom-1/3 right-1/3 w-80 h-80 bg-maize-400/50 rounded-full blur-3xl animate-pulse delay-5000"></div>
-        <div className="absolute top-1/2 right-1/4 w-48 h-48 bg-satinSheenGold-400/45 rounded-full blur-3xl animate-pulse delay-6000"></div>
-
-        {/* Enhanced flowing background elements - respecting white top-left */}
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-tekhelet-200/30 to-maize-300/45"></div>
-        <div className="absolute inset-0 bg-gradient-to-br from-transparent via-satinSheenGold-200/25 to-coolGray-200/30"></div>
-        <div className="absolute inset-0 bg-gradient-to-tl from-transparent via-teal-200/20 to-satinSheenGold-300/35"></div>
-
         <div className="max-w-7xl mx-auto relative z-10">
           {/* Integrated Navigation */}
           <nav className="flex items-center justify-between mb-20">
