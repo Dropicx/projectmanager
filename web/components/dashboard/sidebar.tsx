@@ -10,6 +10,8 @@ import {
   LayoutDashboard,
   Menu,
   Newspaper,
+  Pin,
+  PinOff,
   Search,
   Settings,
   Sparkles,
@@ -40,10 +42,12 @@ export function DashboardSidebar() {
   const pathname = usePathname();
   const { isMobileOpen, setIsMobileOpen } = useSidebar();
   const [isHovered, setIsHovered] = useState(false);
+  const [isPinned, setIsPinned] = useState(false);
 
-  // Desktop: always collapsed unless hovered
-  const isCollapsed = !isHovered;
+  // Desktop: collapsed unless hovered or pinned
+  const isCollapsed = !isPinned && !isHovered;
   const toggleMobile = () => setIsMobileOpen(!isMobileOpen);
+  const togglePin = () => setIsPinned(!isPinned);
 
   return (
     <>
@@ -81,9 +85,9 @@ export function DashboardSidebar() {
         )}
       >
         {/* Header with branding */}
-        <div className="flex h-30 items-center justify-between px-4 border-b border-white/10">
+        <div className="flex h-30 items-center justify-between px-4 border-b border-white/10 relative">
           {!isCollapsed ? (
-            <div className="flex items-center">
+            <div className="flex items-center flex-1">
               <Image
                 src="/logos/biglogo.png"
                 alt="Consailt Logo"
@@ -104,6 +108,22 @@ export function DashboardSidebar() {
                 priority
               />
             </div>
+          )}
+
+          {/* Pin button - only visible when sidebar is expanded on desktop */}
+          {!isCollapsed && (
+            <button
+              type="button"
+              onClick={togglePin}
+              className="hidden lg:block p-1.5 rounded-md hover:bg-white/10 transition-colors"
+              title={isPinned ? "Unpin sidebar" : "Pin sidebar"}
+            >
+              {isPinned ? (
+                <Pin className="h-5 w-5 text-white" />
+              ) : (
+                <PinOff className="h-5 w-5 text-white/70" />
+              )}
+            </button>
           )}
 
           {/* Mobile close button */}
@@ -150,7 +170,8 @@ export function DashboardSidebar() {
                     href={item.href}
                     onClick={() => setIsMobileOpen(false)}
                     className={cn(
-                      "group flex items-center gap-x-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all",
+                      "group flex items-center gap-x-3 rounded-lg text-sm font-medium transition-all",
+                      isCollapsed ? "lg:justify-center lg:px-2 lg:py-2 px-3 py-2.5" : "px-3 py-2.5",
                       isActive
                         ? "bg-white/20 text-white shadow-md"
                         : "text-white/80 hover:text-white hover:bg-white/10"
