@@ -478,24 +478,20 @@ export default function KnowledgePage() {
   };
 
   return (
-    <div className="h-[calc(100vh-4rem)] bg-background overflow-hidden">
-      <div className="flex h-full">
-        <aside
-          className={cn(
-            "border-r flex-shrink-0 transition-all duration-300 bg-background h-full overflow-hidden",
-            isSidebarOpen ? "w-64" : "w-0",
-            "lg:w-64"
-          )}
-        >
-          <KnowledgeSidebar
-            selectedCategory={selectedCategory}
-            onCategorySelect={setSelectedCategory}
-            onSearch={setSearchQuery}
-          />
-        </aside>
+    <div className="flex h-screen">
+      {/* Knowledge Sidebar - Fixed left sidebar */}
+      <aside className="w-64 border-r bg-background flex-shrink-0 sticky top-0 h-screen overflow-hidden">
+        <KnowledgeSidebar
+          selectedCategory={selectedCategory}
+          onCategorySelect={setSelectedCategory}
+          onSearch={setSearchQuery}
+        />
+      </aside>
 
-        <main className="flex-1 flex flex-col bg-background h-full overflow-hidden">
-          <div className="flex-1 p-6 space-y-6 bg-background overflow-y-auto">
+      {/* Main Content - Scrollable */}
+      <main className="flex-1 bg-background h-screen overflow-hidden">
+        <div className="h-full overflow-y-auto">
+          <div className="p-6 space-y-6">
             {!selectedKnowledgeId && (
               <div className="flex items-center gap-3">
                 <Button
@@ -558,8 +554,8 @@ export default function KnowledgePage() {
               )}
             </div>
           </div>
-        </main>
-      </div>
+        </div>
+      </main>
 
       <AddKnowledgeDialog
         open={addDialogOpen}
