@@ -62,14 +62,23 @@ export async function fetchAndStoreRSSFeed(feedCategory: FeedCategory = "general
   const feedConfig = RSS_FEED_CATEGORIES[feedCategory];
   const feedUrl = feedConfig.url;
   try {
-    console.log(`Fetching RSS feed from: ${feedUrl}`);
+    console.log(`[RSS Parser] Fetching feed: ${feedCategory}`);
+    console.log(`[RSS Parser]   URL: ${feedUrl}`);
+    console.log(`[RSS Parser]   Description: ${feedConfig.description}`);
 
+    const fetchStart = Date.now();
     const feed = await parser.parseURL(feedUrl);
+    const fetchDuration = ((Date.now() - fetchStart) / 1000).toFixed(2);
+
     const articles = [];
 
     // Limit the number of articles to process
     const itemsToProcess = feed.items.slice(0, RSS_FEED_CONFIG.maxArticlesPerFeed);
-    console.log(`Processing ${itemsToProcess.length} of ${feed.items.length} articles from feed`);
+    console.log(`[RSS Parser]   Feed fetched in ${fetchDuration}s`);
+    console.log(`[RSS Parser]   Total articles in feed: ${feed.items.length}`);
+    console.log(
+      `[RSS Parser]   Articles to process: ${itemsToProcess.length} (limit: ${RSS_FEED_CONFIG.maxArticlesPerFeed})`
+    );
 
     for (const item of itemsToProcess) {
       // Extract image URL from various possible sources
@@ -151,7 +160,10 @@ export async function fetchAndStoreRSSFeed(feedCategory: FeedCategory = "general
       }
     }
 
-    console.log(`RSS feed sync completed. Inserted: ${insertedCount}, Skipped: ${skippedCount}`);
+    console.log(`[RSS Parser]   Database operations completed`);
+    console.log(`[RSS Parser]     • New articles inserted: ${insertedCount}`);
+    console.log(`[RSS Parser]     • Duplicate articles skipped: ${skippedCount}`);
+    console.log(`[RSS Parser]   Feed sync completed for: ${feedCategory}`);
 
     return {
       success: true,
@@ -160,7 +172,7 @@ export async function fetchAndStoreRSSFeed(feedCategory: FeedCategory = "general
       totalFetched: articles.length,
     };
   } catch (error) {
-    console.error("Error fetching RSS feed:", error);
+    console.error(`[RSS Parser] ❌ Error fetching RSS feed for ${feedCategory}:`, error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
@@ -224,7 +236,8 @@ export async function cleanupOldArticles(): Promise<{ deletedCount: number }> {
   cutoffDate.setDate(cutoffDate.getDate() - RSS_FEED_CONFIG.maxArticleAgeInDays);
 
   try {
-    console.log(`Cleaning up articles older than ${cutoffDate.toISOString()}`);
+    console.log(`[RSS Cleanup] Checking for articles older than ${cutoffDate.toISOString()}`);
+    console.log(`[RSS Cleanup] Retention policy: ${RSS_FEED_CONFIG.maxArticleAgeInDays} days`);
 
     // Get count of articles to delete for logging
     const articlesToDelete = await db
@@ -235,17 +248,20 @@ export async function cleanupOldArticles(): Promise<{ deletedCount: number }> {
     const deletedCount = articlesToDelete.length;
 
     if (deletedCount > 0) {
+      console.log(`[RSS Cleanup] Found ${deletedCount} articles to delete`);
       // Delete old articles
       await db.delete(news_articles).where(lt(news_articles.published_at, cutoffDate));
 
-      console.log(`Deleted ${deletedCount} articles older than 1 year`);
+      console.log(`[RSS Cleanup] ✅ Successfully deleted ${deletedCount} articles`);
     } else {
-      console.log("No old articles to clean up");
+      console.log(
+        "[RSS Cleanup] No old articles to clean up - database is within retention period"
+      );
     }
 
     return { deletedCount };
   } catch (error) {
-    console.error("Error cleaning up old articles:", error);
+    console.error("[RSS Cleanup] ❌ Error cleaning up old articles:", error);
     return { deletedCount: 0 };
   }
 }
@@ -254,19 +270,28 @@ export async function cleanupOldArticles(): Promise<{ deletedCount: number }> {
 export async function syncAllRssFeeds() {
   const results = [];
   const categories = Object.keys(RSS_FEED_CATEGORIES) as FeedCategory[];
-  console.log(`Starting sync of ${categories.length} RSS feeds: ${categories.join(", ")}`);
+  console.log(`[RSS Sync] Starting sync of ${categories.length} RSS feeds`);
+  console.log(`[RSS Sync] Categories to sync: ${categories.join(", ")}`);
+  console.log(`[RSS Sync] Max articles per feed: ${RSS_FEED_CONFIG.maxArticlesPerFeed}`);
+  console.log(`[RSS Sync] Article retention period: ${RSS_FEED_CONFIG.maxArticleAgeInDays} days`);
 
   for (const category of categories) {
-    console.log(`Syncing feed category: ${category}`);
+    console.log(`[RSS Sync] Processing category: ${category}`);
     const result = await fetchAndStoreRSSFeed(category);
     results.push({ category, ...result });
   }
 
   // Clean up old articles after syncing
-  console.log("Starting cleanup of old articles...");
+  console.log(`[RSS Sync] Starting database cleanup...`);
+  const cleanupStart = Date.now();
   const cleanupResult = await cleanupOldArticles();
-  console.log(`Cleanup completed. Deleted ${cleanupResult.deletedCount} old articles`);
+  const cleanupDuration = ((Date.now() - cleanupStart) / 1000).toFixed(2);
+  console.log(`[RSS Sync] Cleanup completed in ${cleanupDuration}s`);
+  console.log(`[RSS Sync]   • Articles deleted: ${cleanupResult.deletedCount}`);
+  console.log(
+    `[RSS Sync]   • Cutoff date: Articles older than ${RSS_FEED_CONFIG.maxArticleAgeInDays} days`
+  );
 
-  console.log(`Completed sync of ${results.length} RSS feeds`);
+  console.log(`[RSS Sync] All feeds synced successfully`);
   return results;
 }

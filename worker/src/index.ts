@@ -229,22 +229,47 @@ const _dailyInsightsJob = new CronJob(
 const _dailyRssSyncJob = new CronJob(
   "0 8 * * *", // Run at 8 AM daily
   async () => {
-    console.log("Running daily RSS feed sync...");
+    console.log("========================================");
+    console.log("[RSS SYNC] Starting scheduled daily RSS feed sync");
+    console.log(`[RSS SYNC] Timestamp: ${new Date().toISOString()}`);
+    console.log("========================================");
 
     try {
+      const startTime = Date.now();
       const results = await syncAllRssFeeds();
-      console.log("RSS sync completed for all feeds:");
+      const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+
+      console.log("========================================");
+      console.log("[RSS SYNC] Daily sync completed successfully");
+      console.log(`[RSS SYNC] Total duration: ${duration} seconds`);
+      console.log("[RSS SYNC] Results by feed:");
+
+      let totalInserted = 0;
+      let totalSkipped = 0;
+      let totalFetched = 0;
+
       for (const result of results) {
         if (result.success) {
-          console.log(
-            `  - ${result.category}: Inserted ${result.insertedCount}, Skipped ${result.skippedCount}`
-          );
+          console.log(`[RSS SYNC]   - ${result.category}:`);
+          console.log(`[RSS SYNC]     • Fetched: ${result.totalFetched} articles`);
+          console.log(`[RSS SYNC]     • Inserted: ${result.insertedCount} new`);
+          console.log(`[RSS SYNC]     • Skipped: ${result.skippedCount} duplicates`);
+          totalInserted += result.insertedCount || 0;
+          totalSkipped += result.skippedCount || 0;
+          totalFetched += result.totalFetched || 0;
         } else {
-          console.error(`  - ${result.category}: Failed - ${result.error}`);
+          console.log(`[RSS SYNC]   - ${result.category}: FAILED - ${result.error}`);
         }
       }
+
+      console.log("[RSS SYNC] Summary:");
+      console.log(`[RSS SYNC]   • Total articles fetched: ${totalFetched}`);
+      console.log(`[RSS SYNC]   • Total new articles: ${totalInserted}`);
+      console.log(`[RSS SYNC]   • Total duplicates skipped: ${totalSkipped}`);
+      console.log("========================================\n");
     } catch (error) {
-      console.error("Error during RSS sync:", error);
+      console.error("[RSS SYNC] ❌ Daily sync failed:", error);
+      console.error("========================================\n");
     }
   },
   null,
@@ -253,18 +278,49 @@ const _dailyRssSyncJob = new CronJob(
 );
 
 // Run RSS sync immediately on startup for all feeds
-syncAllRssFeeds().then((results: any) => {
-  console.log("Initial RSS sync completed for all feeds:");
-  for (const result of results) {
-    if (result.success) {
-      console.log(
-        `  - ${result.category}: Inserted ${result.insertedCount}, Skipped ${result.skippedCount}`
-      );
-    } else {
-      console.error(`  - ${result.category}: Failed - ${result.error}`);
+console.log("========================================");
+console.log("[RSS SYNC] Starting initial RSS feed sync on startup");
+console.log(`[RSS SYNC] Timestamp: ${new Date().toISOString()}`);
+console.log("========================================");
+
+const rssStartTime = Date.now();
+syncAllRssFeeds()
+  .then((results: any) => {
+    const duration = ((Date.now() - rssStartTime) / 1000).toFixed(2);
+
+    console.log("========================================");
+    console.log("[RSS SYNC] Initial sync completed successfully");
+    console.log(`[RSS SYNC] Total duration: ${duration} seconds`);
+    console.log("[RSS SYNC] Results by feed:");
+
+    let totalInserted = 0;
+    let totalSkipped = 0;
+    let totalFetched = 0;
+
+    for (const result of results) {
+      if (result.success) {
+        console.log(`[RSS SYNC]   - ${result.category}:`);
+        console.log(`[RSS SYNC]     • Fetched: ${result.totalFetched} articles`);
+        console.log(`[RSS SYNC]     • Inserted: ${result.insertedCount} new`);
+        console.log(`[RSS SYNC]     • Skipped: ${result.skippedCount} duplicates`);
+        totalInserted += result.insertedCount || 0;
+        totalSkipped += result.skippedCount || 0;
+        totalFetched += result.totalFetched || 0;
+      } else {
+        console.log(`[RSS SYNC]   - ${result.category}: FAILED - ${result.error}`);
+      }
     }
-  }
-});
+
+    console.log("[RSS SYNC] Summary:");
+    console.log(`[RSS SYNC]   • Total articles fetched: ${totalFetched}`);
+    console.log(`[RSS SYNC]   • Total new articles: ${totalInserted}`);
+    console.log(`[RSS SYNC]   • Total duplicates skipped: ${totalSkipped}`);
+    console.log("========================================\n");
+  })
+  .catch((error) => {
+    console.error("[RSS SYNC] ❌ Initial sync failed:", error);
+    console.error("========================================\n");
+  });
 
 const _weeklyRiskAssessmentJob = new CronJob(
   "0 10 * * 1", // Run at 10 AM every Monday
