@@ -53,14 +53,20 @@ export default function HomePage() {
         </div>
       </nav>
 
-      {/* Hero Section */}
+      {/* Hero + Features Section */}
       <section className="relative px-6 py-20 lg:py-32 overflow-hidden">
         {/* Animated floating elements */}
         <div className="absolute top-20 right-20 w-72 h-72 bg-teal-200/30 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute bottom-20 left-20 w-96 h-96 bg-tekhelet-200/25 rounded-full blur-3xl animate-pulse delay-1000"></div>
         <div className="absolute top-1/2 left-1/4 w-64 h-64 bg-maize-200/20 rounded-full blur-3xl animate-pulse delay-500"></div>
+        <div className="absolute top-1/3 right-1/3 w-80 h-80 bg-satinSheenGold-200/15 rounded-full blur-3xl animate-pulse delay-1500"></div>
+
+        {/* Flowing background elements */}
+        <div className="absolute inset-0 bg-gradient-to-r from-tekhelet-100/20 via-transparent to-maize-100/30"></div>
+
         <div className="max-w-7xl mx-auto relative z-10">
-          <div className="text-center">
+          {/* Hero Content */}
+          <div className="text-center mb-20">
             <div className="inline-flex items-center px-4 py-2 rounded-full bg-teal-100 text-teal-700 text-sm font-medium mb-8">
               <span className="w-2 h-2 bg-teal-500 rounded-full mr-2 animate-pulse"></span>
               AI-Powered Consulting Platform
@@ -99,7 +105,7 @@ export default function HomePage() {
             </div>
 
             {/* Trust Indicators */}
-            <div className="flex flex-wrap items-center justify-center gap-8 text-black text-sm">
+            <div className="flex flex-wrap items-center justify-center gap-8 text-black text-sm mb-20">
               <div className="flex items-center">
                 <div className="w-2 h-2 bg-teal-500 rounded-full mr-2"></div>
                 Zero-Data Retention
@@ -114,16 +120,8 @@ export default function HomePage() {
               </div>
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* Features Section */}
-      <section className="px-6 py-20 relative">
-        {/* Flowing background elements */}
-        <div className="absolute inset-0 bg-gradient-to-r from-tekhelet-100/20 via-transparent to-maize-100/30"></div>
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-tekhelet-200/20 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-maize-200/25 rounded-full blur-3xl"></div>
-        <div className="max-w-7xl mx-auto relative z-10">
+          {/* Features Content */}
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-black mb-6">
               AI-Powered Intelligence
