@@ -73,9 +73,16 @@ export default clerkMiddleware(async (auth, req) => {
     try {
       const { userId } = await auth();
       if (!userId) {
+        // For dashboard routes, let the client-side handle the redirect
+        // This prevents server-side errors and allows for better UX
+        if (req.nextUrl.pathname.startsWith("/dashboard")) {
+          return NextResponse.next();
+        }
+
+        // For other protected routes, redirect to sign-in
         const signInUrl = new URL("/sign-in", req.url);
         signInUrl.searchParams.set("redirect_url", req.url);
-        return Response.redirect(signInUrl);
+        return NextResponse.redirect(signInUrl);
       }
     } catch (error: any) {
       // Handle Clerk errors gracefully
@@ -94,8 +101,13 @@ export default clerkMiddleware(async (auth, req) => {
         );
       }
 
+      // For dashboard routes, let client-side handle the error
+      if (req.nextUrl.pathname.startsWith("/dashboard")) {
+        return NextResponse.next();
+      }
+
       // For other errors, redirect to sign-in
-      return Response.redirect(new URL("/sign-in", req.url));
+      return NextResponse.redirect(new URL("/sign-in", req.url));
     }
   }
 });
