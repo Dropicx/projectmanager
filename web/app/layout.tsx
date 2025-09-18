@@ -27,6 +27,10 @@ export const metadata: Metadata = {
   title: "Consailt - AI-Powered Consulting Platform",
   description:
     "Enterprise consulting project management platform with AI-powered insights and intelligent recommendations",
+  icons: {
+    icon: "/logos/favicon.svg",
+    shortcut: "/logos/favicon.svg",
+  },
 };
 
 /**

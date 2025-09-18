@@ -15,6 +15,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -70,7 +71,7 @@ export function DashboardSidebar() {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         className={cn(
-          "h-screen lg:h-full lg:min-h-screen flex flex-col bg-gradient-to-b from-indigo-600 to-indigo-700 text-white shadow-xl transition-all duration-300 fixed lg:sticky lg:top-0 z-50",
+          "h-screen lg:h-full lg:min-h-screen flex flex-col bg-[#0E7C7B] text-white shadow-xl transition-all duration-300 fixed lg:sticky lg:top-0 z-50",
           // Desktop width - always starts collapsed, expands on hover
           isCollapsed ? "lg:w-20" : "lg:w-72",
           // Mobile/tablet visibility
@@ -80,45 +81,60 @@ export function DashboardSidebar() {
         )}
       >
         {/* Header with branding */}
-        <div className="flex h-20 items-center justify-between px-4 border-b border-indigo-500/30">
+        <div className="flex h-20 items-center justify-between px-4 border-b border-white/10">
           {!isCollapsed ? (
-            <div className="flex flex-col">
-              <h1 className="text-2xl font-bold text-white">Consailt</h1>
-              <p className="text-xs text-indigo-200">AI-Powered Consulting</p>
+            <div className="flex items-center">
+              <Image
+                src="/logos/biglogo.png"
+                alt="Consailt Logo"
+                width={180}
+                height={60}
+                className="object-contain"
+                priority
+              />
             </div>
           ) : (
-            <span className="text-2xl font-bold text-white mx-auto lg:block">C</span>
+            <div className="mx-auto">
+              <Image
+                src="/logos/smalllogo.png"
+                alt="Consailt Logo"
+                width={40}
+                height={40}
+                className="object-contain"
+                priority
+              />
+            </div>
           )}
 
           {/* Mobile close button */}
           <button
             type="button"
             onClick={toggleMobile}
-            className="lg:hidden p-1.5 rounded-md hover:bg-indigo-500/30"
+            className="lg:hidden p-1.5 rounded-md hover:bg-white/10"
           >
-            <ChevronLeft className="h-5 w-5 text-indigo-200" />
+            <ChevronLeft className="h-5 w-5 text-white/80" />
           </button>
         </div>
 
         {/* Search bar or icon */}
-        <div className="px-4 py-3 border-b border-indigo-500/30">
+        <div className="px-4 py-3 border-b border-white/10">
           {!isCollapsed ? (
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-indigo-300" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/60" />
               <input
                 type="search"
                 placeholder="Search projects..."
-                className="w-full pl-10 pr-3 py-2 bg-indigo-500/20 border border-indigo-400/30 rounded-lg text-sm text-white placeholder-indigo-300 focus:outline-none focus:bg-indigo-500/30 focus:border-indigo-400/50"
+                className="w-full pl-10 pr-3 py-2 bg-white/10 border border-white/20 rounded-lg text-sm text-white placeholder-white/50 focus:outline-none focus:bg-white/15 focus:border-white/30"
               />
             </div>
           ) : (
             <button
               type="button"
               onClick={() => setIsHovered(true)}
-              className="w-full flex justify-center items-center py-2 hover:bg-indigo-500/20 rounded-lg transition-colors"
+              className="w-full flex justify-center items-center py-2 hover:bg-white/10 rounded-lg transition-colors"
               title="Search"
             >
-              <Search className="h-5 w-5 text-indigo-300" />
+              <Search className="h-5 w-5 text-white/60" />
             </button>
           )}
         </div>
@@ -137,14 +153,14 @@ export function DashboardSidebar() {
                       "group flex items-center gap-x-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all",
                       isActive
                         ? "bg-white/20 text-white shadow-md"
-                        : "text-indigo-100 hover:text-white hover:bg-indigo-500/20"
+                        : "text-white/80 hover:text-white hover:bg-white/10"
                     )}
                     title={isCollapsed ? item.name : undefined}
                   >
                     <item.icon
                       className={cn(
                         "h-6 w-6 shrink-0",
-                        isActive ? "text-white" : "text-indigo-200 group-hover:text-white"
+                        isActive ? "text-white" : "text-white/70 group-hover:text-white"
                       )}
                     />
                     <span className={cn("transition-all", isCollapsed && "lg:hidden")}>
@@ -158,7 +174,7 @@ export function DashboardSidebar() {
         </nav>
 
         {/* User section at bottom */}
-        <div className="border-t border-indigo-500/30 p-4">
+        <div className="border-t border-white/10 p-4">
           <div className={cn("flex items-center", isCollapsed ? "lg:justify-center" : "gap-3")}>
             <UserButton
               appearance={{
@@ -176,9 +192,9 @@ export function DashboardSidebar() {
             {!isCollapsed && (
               <button
                 type="button"
-                className="ml-auto p-2 rounded-lg hover:bg-indigo-500/30 transition-colors"
+                className="ml-auto p-2 rounded-lg hover:bg-white/10 transition-colors"
               >
-                <Bell className="h-5 w-5 text-indigo-200" />
+                <Bell className="h-5 w-5 text-white/70" />
               </button>
             )}
           </div>
