@@ -94,7 +94,7 @@ export function DashboardSidebar() {
               />
             </div>
           ) : (
-            <div className="mx-auto">
+            <div className="flex items-center">
               <Image
                 src="/logos/smalllogo.png"
                 alt="Consailt Logo"
