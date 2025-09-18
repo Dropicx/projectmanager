@@ -66,8 +66,7 @@ export function DashboardSidebar() {
       )}
 
       {/* Sidebar */}
-      <div
-        role="navigation"
+      <nav
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         className={cn(
@@ -101,9 +100,9 @@ export function DashboardSidebar() {
           </button>
         </div>
 
-        {/* Search bar (expanded only) */}
-        {!isCollapsed && (
-          <div className="px-4 py-3 border-b border-indigo-500/30">
+        {/* Search bar or icon */}
+        <div className="px-4 py-3 border-b border-indigo-500/30">
+          {!isCollapsed ? (
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-indigo-300" />
               <input
@@ -112,8 +111,17 @@ export function DashboardSidebar() {
                 className="w-full pl-10 pr-3 py-2 bg-indigo-500/20 border border-indigo-400/30 rounded-lg text-sm text-white placeholder-indigo-300 focus:outline-none focus:bg-indigo-500/30 focus:border-indigo-400/50"
               />
             </div>
-          </div>
-        )}
+          ) : (
+            <button
+              type="button"
+              onClick={() => setIsHovered(true)}
+              className="w-full flex justify-center items-center py-2 hover:bg-indigo-500/20 rounded-lg transition-colors"
+              title="Search"
+            >
+              <Search className="h-5 w-5 text-indigo-300" />
+            </button>
+          )}
+        </div>
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-4">
@@ -175,7 +183,7 @@ export function DashboardSidebar() {
             )}
           </div>
         </div>
-      </div>
+      </nav>
     </>
   );
 }

@@ -192,7 +192,7 @@ export default function KnowledgePage() {
               <h3 className="text-sm font-medium text-muted-foreground mb-3">Knowledge Items</h3>
             )}
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {knowledgeItems.map((item: any) => {
+              {knowledgeItems.map((item) => {
                 const Icon = getTypeIcon(item.type || "guide");
                 const displayType = mapBackendType(item.type || "guide");
                 return (
@@ -329,7 +329,7 @@ export default function KnowledgePage() {
               <h3 className="text-sm font-medium text-muted-foreground mb-3">Knowledge Items</h3>
             )}
             <div className="space-y-3">
-              {knowledgeItems.map((item: any) => {
+              {knowledgeItems.map((item) => {
                 const Icon = getTypeIcon(item.type || "guide");
                 const displayType = mapBackendType(item.type || "guide");
                 return (
@@ -420,13 +420,13 @@ export default function KnowledgePage() {
     }
 
     const groupedByDate = knowledgeItems.reduce(
-      (acc: any, item: any) => {
+      (acc, item) => {
         const date = item.createdAt ? formatDate(item.createdAt) : "Unknown";
         if (!acc[date]) acc[date] = [];
         acc[date].push(item);
         return acc;
       },
-      {} as Record<string, any[]>
+      {} as Record<string, typeof knowledgeItems>
     );
 
     return (
@@ -439,7 +439,7 @@ export default function KnowledgePage() {
               <div className="flex-1 h-px bg-border" />
             </div>
             <div className="space-y-3 ml-7">
-              {(items as any[]).map((item: any) => {
+              {items.map((item) => {
                 const Icon = getTypeIcon(item.type || "guide");
                 const displayType = mapBackendType(item.type || "guide");
                 return (
@@ -478,11 +478,11 @@ export default function KnowledgePage() {
   };
 
   return (
-    <div className="h-full">
-      <div className="flex h-full bg-white">
+    <div className="min-h-full bg-background">
+      <div className="flex min-h-full">
         <aside
           className={cn(
-            "border-r flex-shrink-0 transition-all duration-300 bg-background",
+            "border-r flex-shrink-0 transition-all duration-300 bg-background h-full",
             isSidebarOpen ? "w-64" : "w-0",
             "lg:w-64 lg:overflow-visible"
           )}
@@ -494,8 +494,8 @@ export default function KnowledgePage() {
           />
         </aside>
 
-        <main className="flex-1 flex flex-col">
-          <div className="flex-1 p-6 space-y-6">
+        <main className="flex-1 flex flex-col bg-background min-h-full">
+          <div className="flex-1 p-6 space-y-6 bg-background">
             {!selectedKnowledgeId && (
               <div className="flex items-center gap-3">
                 <Button
