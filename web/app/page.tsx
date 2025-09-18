@@ -27,7 +27,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-teal-100/30 via-white via-tekhelet-100/20 via-maize-100/25 via-satinSheenGold-100/20 to-coolGray-100/30">
       {/* Main Section with integrated header */}
-      <section className="relative min-h-screen px-6 py-20 lg:py-32 overflow-hidden">
+      <section className="relative min-h-screen px-6 pt-8 pb-20 lg:pt-12 lg:pb-32 overflow-hidden">
         {/* Animated floating elements */}
         <div className="absolute top-20 right-20 w-72 h-72 bg-teal-200/30 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute bottom-20 left-20 w-96 h-96 bg-tekhelet-200/25 rounded-full blur-3xl animate-pulse delay-1000"></div>
