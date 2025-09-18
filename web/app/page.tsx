@@ -87,10 +87,10 @@ export default function HomePage() {
 
               <p className="text-xl md:text-2xl text-black mb-12 max-w-4xl mx-auto leading-relaxed">
                 Stop juggling Google, ChatGPT, news feeds, and security alerts. Join the new
-                generation of <span className="font-semibold text-tekhelet-600">consailors</span> -
+                generation of <span className="font-semibold text-tekhelet-600">consailors</span> —
                 consultants who have everything in one unified platform. Knowledge base, project
-                planning, risk analysis, and AI-powered insights - all sailing together toward
-                project success.
+                planning, risk analysis, and AI-powered insights all sailing together toward project
+                success.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
@@ -153,7 +153,7 @@ export default function HomePage() {
                     <div>
                       <p className="font-semibold text-black">Scattered Tools</p>
                       <p className="text-gray-600 text-sm">
-                        Google, ChatGPT, news feeds, security alerts - all separate
+                        Google, ChatGPT, news feeds, security alerts—all separate
                       </p>
                     </div>
                   </div>
@@ -204,7 +204,7 @@ export default function HomePage() {
                     <div>
                       <p className="font-semibold text-black">Unified Platform</p>
                       <p className="text-gray-600 text-sm">
-                        Everything in one place - knowledge, AI, news, security
+                        Everything in one place—knowledge, AI, news, security
                       </p>
                     </div>
                   </div>
@@ -300,8 +300,8 @@ export default function HomePage() {
                 </div>
                 <h3 className="text-2xl font-bold text-black mb-4">AI Wind Selection</h3>
                 <p className="text-black mb-4">
-                  Smart routing across Claude, Nova, Mistral, and Llama models - choosing the
-                  perfect wind for every consulting voyage.
+                  Smart routing across Claude, Nova, Mistral, and Llama models—choosing the perfect
+                  wind for every consulting voyage.
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <span className="px-3 py-1 bg-teal-100 text-teal-700 rounded-full text-sm">
@@ -343,8 +343,8 @@ export default function HomePage() {
                 <ul className="text-sm text-black space-y-1">
                   <li>• Integrated AI chat (replaces ChatGPT)</li>
                   <li>• Smart search (replaces Google)</li>
-                  <li>• News & security monitoring</li>
-                  <li>• Project planning & risk analysis</li>
+                  <li>• News and security monitoring</li>
+                  <li>• Project planning and risk analysis</li>
                 </ul>
               </div>
 
@@ -375,7 +375,7 @@ export default function HomePage() {
                 <ul className="text-sm text-black space-y-1">
                   <li>• Zero-data retention AI</li>
                   <li>• Client sanitization</li>
-                  <li>• GDPR & SOC2 compliant</li>
+                  <li>• GDPR and SOC2 compliant</li>
                 </ul>
               </div>
 
@@ -555,8 +555,8 @@ export default function HomePage() {
                   />
                 </div>
                 <p className="text-gray-600 text-sm mb-4">
-                  The AI-powered navigation system for consailors - sailing through projects with
-                  the wind of artificial intelligence.
+                  The AI-powered navigation system for consailors—sailing through projects with the
+                  wind of artificial intelligence.
                 </p>
                 <div className="flex space-x-4">
                   <a
