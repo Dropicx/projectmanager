@@ -25,7 +25,7 @@ export default function HomePage() {
   }, [isSignedIn, router]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-coolGray-900 via-tekhelet-100 to-teal-100">
+    <div className="min-h-screen bg-white">
       {/* Navigation */}
       <nav className="relative z-50 px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -54,11 +54,7 @@ export default function HomePage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative px-6 py-20 lg:py-32 overflow-hidden">
-        {/* Animated background elements */}
-        <div className="absolute inset-0 bg-gradient-to-br from-tekhelet-100/30 via-transparent to-teal-100/30"></div>
-        <div className="absolute top-20 right-20 w-72 h-72 bg-tekhelet-500/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 left-20 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+      <section className="relative px-6 py-20 lg:py-32 bg-white">
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center">
             <div className="inline-flex items-center px-4 py-2 rounded-full bg-teal-100 text-teal-700 text-sm font-medium mb-8">
@@ -118,11 +114,7 @@ export default function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section className="px-6 py-20 bg-white/50 backdrop-blur-sm relative overflow-hidden">
-        {/* Gradient overlay for smooth transition */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/20 to-white/50 pointer-events-none"></div>
-        {/* Decorative wave pattern */}
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-tekhelet-500/30 to-transparent"></div>
+      <section className="px-6 py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-black mb-6">
@@ -329,16 +321,13 @@ export default function HomePage() {
       </section>
 
       {/* Stats Section */}
-      <section className="px-6 py-20 bg-gradient-to-r from-tekhelet-500 to-teal-500 relative overflow-hidden">
-        {/* Decorative elements for smooth transition */}
-        <div className="absolute top-0 left-0 w-full h-20 bg-gradient-to-b from-white/10 to-transparent"></div>
-        <div className="absolute bottom-0 left-0 w-full h-20 bg-gradient-to-t from-black/10 to-transparent"></div>
+      <section className="px-6 py-20 bg-white">
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+            <h2 className="text-4xl md:text-5xl font-bold text-black mb-6">
               Trusted by Consultants Worldwide
             </h2>
-            <p className="text-xl text-tekhelet-100 max-w-3xl mx-auto">
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Join thousands of consultants who have transformed their practice with AI-powered
               knowledge management
             </p>
@@ -346,33 +335,27 @@ export default function HomePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="text-center">
-              <div className="text-5xl font-bold text-white mb-2">80%</div>
-              <div className="text-tekhelet-100">Faster Knowledge Retrieval</div>
+              <div className="text-5xl font-bold text-tekhelet-500 mb-2">80%</div>
+              <div className="text-gray-600">Faster Knowledge Retrieval</div>
             </div>
             <div className="text-center">
-              <div className="text-5xl font-bold text-white mb-2">70%</div>
-              <div className="text-tekhelet-100">More Insights Generated</div>
+              <div className="text-5xl font-bold text-tekhelet-500 mb-2">70%</div>
+              <div className="text-gray-600">More Insights Generated</div>
             </div>
             <div className="text-center">
-              <div className="text-5xl font-bold text-white mb-2">90%</div>
-              <div className="text-tekhelet-100">Reduced Knowledge Silos</div>
+              <div className="text-5xl font-bold text-tekhelet-500 mb-2">90%</div>
+              <div className="text-gray-600">Reduced Knowledge Silos</div>
             </div>
             <div className="text-center">
-              <div className="text-5xl font-bold text-white mb-2">100%</div>
-              <div className="text-tekhelet-100">Data Privacy Guaranteed</div>
+              <div className="text-5xl font-bold text-tekhelet-500 mb-2">100%</div>
+              <div className="text-gray-600">Data Privacy Guaranteed</div>
             </div>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="px-6 py-20 bg-gradient-to-br from-coolGray-900 to-tekhelet-100 relative overflow-hidden">
-        {/* Smooth transition elements */}
-        <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-tekhelet-500/20 to-transparent"></div>
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent"></div>
-        {/* Decorative elements */}
-        <div className="absolute top-10 right-10 w-32 h-32 bg-tekhelet-500/20 rounded-full blur-2xl"></div>
-        <div className="absolute bottom-10 left-10 w-40 h-40 bg-teal-500/20 rounded-full blur-2xl"></div>
+      <section className="px-6 py-20 bg-gray-50">
         <div className="max-w-4xl mx-auto text-center relative z-10">
           <h2 className="text-4xl md:text-5xl font-bold text-black mb-6">
             Ready to Transform Your Consulting Practice?
@@ -407,7 +390,7 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="px-6 py-12 bg-coolGray-900">
+      <footer className="px-6 py-12 bg-white border-t border-gray-200">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div className="flex items-center mb-4 md:mb-0">
@@ -419,7 +402,7 @@ export default function HomePage() {
                 className="h-20 w-auto"
               />
             </div>
-            <div className="text-coolGray-400 text-sm">© 2025 Consailt. All rights reserved.</div>
+            <div className="text-gray-500 text-sm">© 2025 Consailt. All rights reserved.</div>
           </div>
         </div>
       </footer>
