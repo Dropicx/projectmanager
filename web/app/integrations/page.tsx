@@ -179,21 +179,14 @@ export default function IntegrationsPage() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <SignUpButton mode="modal">
-                  <Button
-                    size="lg"
-                    className="bg-tekhelet-500 hover:bg-tekhelet-600 text-white px-8 py-4 text-lg"
-                  >
+                  <GlobalButton size="lg" variant="primary">
                     Start Integrating
-                  </Button>
+                  </GlobalButton>
                 </SignUpButton>
                 <Link href="/contact">
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="border-tekhelet-500 text-tekhelet-500 hover:bg-tekhelet-50 px-8 py-4 text-lg"
-                  >
+                  <GlobalButton size="lg" variant="secondary">
                     Request Custom Integration
-                  </Button>
+                  </GlobalButton>
                 </Link>
               </div>
             </div>

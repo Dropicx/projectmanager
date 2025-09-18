@@ -212,33 +212,33 @@ export default function ApiPage() {
                   <div className="text-2xl mb-2">🐍</div>
                   <h3 className="font-semibold text-black mb-2">Python</h3>
                   <p className="text-sm text-gray-600 mb-3">pip install consailt-python</p>
-                  <Button size="sm" variant="outline" className="text-xs">
+                  <GlobalButton size="sm" variant="secondary">
                     View Docs
-                  </Button>
+                  </GlobalButton>
                 </div>
                 <div className="text-center p-4 bg-white/10 rounded-lg">
                   <div className="text-2xl mb-2">🟨</div>
                   <h3 className="font-semibold text-black mb-2">JavaScript</h3>
                   <p className="text-sm text-gray-600 mb-3">npm install consailt-js</p>
-                  <Button size="sm" variant="outline" className="text-xs">
+                  <GlobalButton size="sm" variant="secondary">
                     View Docs
-                  </Button>
+                  </GlobalButton>
                 </div>
                 <div className="text-center p-4 bg-white/10 rounded-lg">
                   <div className="text-2xl mb-2">☕</div>
                   <h3 className="font-semibold text-black mb-2">Java</h3>
                   <p className="text-sm text-gray-600 mb-3">Maven/Gradle support</p>
-                  <Button size="sm" variant="outline" className="text-xs">
+                  <GlobalButton size="sm" variant="secondary">
                     View Docs
-                  </Button>
+                  </GlobalButton>
                 </div>
                 <div className="text-center p-4 bg-white/10 rounded-lg">
                   <div className="text-2xl mb-2">🦀</div>
                   <h3 className="font-semibold text-black mb-2">Rust</h3>
                   <p className="text-sm text-gray-600 mb-3">cargo add consailt</p>
-                  <Button size="sm" variant="outline" className="text-xs">
+                  <GlobalButton size="sm" variant="secondary">
                     View Docs
-                  </Button>
+                  </GlobalButton>
                 </div>
               </div>
             </div>
@@ -253,21 +253,14 @@ export default function ApiPage() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <SignUpButton mode="modal">
-                  <Button
-                    size="lg"
-                    className="bg-tekhelet-500 hover:bg-tekhelet-600 text-white px-8 py-4 text-lg"
-                  >
+                  <GlobalButton size="lg" variant="primary">
                     Get API Key
-                  </Button>
+                  </GlobalButton>
                 </SignUpButton>
                 <Link href="/contact">
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="border-tekhelet-500 text-tekhelet-500 hover:bg-tekhelet-50 px-8 py-4 text-lg"
-                  >
+                  <GlobalButton size="lg" variant="secondary">
                     Contact Sales
-                  </Button>
+                  </GlobalButton>
                 </Link>
               </div>
             </div>

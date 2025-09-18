@@ -266,20 +266,13 @@ export default function PartnersPage() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link href="/contact">
-                  <Button
-                    size="lg"
-                    className="bg-tekhelet-500 hover:bg-tekhelet-600 text-white px-8 py-4 text-lg"
-                  >
+                  <GlobalButton size="lg" variant="primary">
                     Contact Partnership Team
-                  </Button>
+                  </GlobalButton>
                 </Link>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="border-tekhelet-500 text-tekhelet-500 hover:bg-tekhelet-50 px-8 py-4 text-lg"
-                >
+                <GlobalButton size="lg" variant="secondary">
                   Download Partner Kit
-                </Button>
+                </GlobalButton>
               </div>
             </div>
           </div>

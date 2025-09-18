@@ -343,21 +343,14 @@ export default function SecurityPage() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link href="/contact">
-                  <Button
-                    size="lg"
-                    className="bg-tekhelet-500 hover:bg-tekhelet-600 text-white px-8 py-4 text-lg"
-                  >
+                  <GlobalButton size="lg" variant="primary">
                     Contact Security Team
-                  </Button>
+                  </GlobalButton>
                 </Link>
                 <Link href="/privacy">
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="border-tekhelet-500 text-tekhelet-500 hover:bg-tekhelet-50 px-8 py-4 text-lg"
-                  >
+                  <GlobalButton size="lg" variant="secondary">
                     Privacy Policy
-                  </Button>
+                  </GlobalButton>
                 </Link>
               </div>
             </div>

@@ -175,12 +175,9 @@ export default function ContactPage() {
                       placeholder="Tell us about your consulting needs..."
                     ></textarea>
                   </div>
-                  <Button
-                    type="submit"
-                    className="w-full bg-tekhelet-500 hover:bg-tekhelet-600 text-white py-3 text-lg"
-                  >
+                  <GlobalButton type="submit" size="lg" variant="primary" className="w-full">
                     Send Message
-                  </Button>
+                  </GlobalButton>
                 </form>
               </div>
 
