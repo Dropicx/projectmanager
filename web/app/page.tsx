@@ -56,13 +56,17 @@ export default function HomePage() {
               <SignInButton mode="modal">
                 <Button
                   variant="ghost"
-                  className="text-black hover:text-tekhelet-500 hover:bg-tekhelet-50 font-medium px-4 py-2"
+                  size="lg"
+                  className="text-black hover:text-tekhelet-500 hover:bg-tekhelet-50 font-medium px-6 py-3 text-base"
                 >
                   Sign In
                 </Button>
               </SignInButton>
               <SignUpButton mode="modal">
-                <Button className="bg-tekhelet-500 hover:bg-tekhelet-600 text-white">
+                <Button
+                  size="lg"
+                  className="bg-tekhelet-500 hover:bg-tekhelet-600 text-white px-6 py-3 text-base"
+                >
                   Get Started
                 </Button>
               </SignUpButton>
