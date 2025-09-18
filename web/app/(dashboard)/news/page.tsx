@@ -14,11 +14,19 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@consulting-platform/ui/components/dropdown-menu";
+import { Input } from "@consulting-platform/ui/components/input";
 import { Skeleton } from "@consulting-platform/ui/components/skeleton";
 import { format } from "date-fns";
-import { CalendarDays, ChevronDown, ExternalLink, Newspaper, RefreshCw } from "lucide-react";
+import {
+  CalendarDays,
+  ChevronDown,
+  ExternalLink,
+  Newspaper,
+  RefreshCw,
+  Search,
+} from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { trpc } from "@/app/providers/trpc-provider";
 
 type NewsCategory = "all" | "general" | "security" | "citizen";
@@ -33,6 +41,8 @@ const categoryLabels: Record<NewsCategory, string> = {
 export default function NewsPage() {
   const [daysBack, setDaysBack] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState<NewsCategory>("general");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
 
   const {
     data: articles,
@@ -46,7 +56,7 @@ export default function NewsPage() {
   const { data: feedCategories } = trpc.news.getFeedCategories.useQuery();
 
   // Function to strip HTML tags and clean up content
-  const stripHtml = (html: string): string => {
+  const stripHtml = useCallback((html: string): string => {
     // Remove HTML tags
     let text = html.replace(/<[^>]*>/g, "");
     // Decode HTML entities
@@ -60,7 +70,7 @@ export default function NewsPage() {
     // Remove extra whitespace
     text = text.replace(/\s+/g, " ").trim();
     return text;
-  };
+  }, []);
 
   const { mutate: syncRssFeed, isPending: isSyncing } = trpc.news.syncRssFeed.useMutation({
     onSuccess: () => {
@@ -71,6 +81,37 @@ export default function NewsPage() {
   const handleRefresh = () => {
     syncRssFeed({ category: selectedCategory });
   };
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Filter articles based on search query
+  const filteredArticles = useMemo(() => {
+    if (!articles || !debouncedSearchQuery) return articles;
+
+    const query = debouncedSearchQuery.toLowerCase();
+    return articles.filter((article) => {
+      const title = article.title?.toLowerCase() || "";
+      const description = stripHtml(article.description || "").toLowerCase();
+      const content = stripHtml(article.content || "").toLowerCase();
+      const author = article.author?.toLowerCase() || "";
+      const categories = (article.categories as string[])?.join(" ").toLowerCase() || "";
+
+      return (
+        title.includes(query) ||
+        description.includes(query) ||
+        content.includes(query) ||
+        author.includes(query) ||
+        categories.includes(query)
+      );
+    });
+  }, [articles, debouncedSearchQuery, stripHtml]);
 
   if (isLoading) {
     return (
@@ -100,7 +141,7 @@ export default function NewsPage() {
   return (
     <div className="container mx-auto p-6">
       <div className="mb-8">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-2">
               <Newspaper className="h-8 w-8" />
@@ -110,6 +151,7 @@ export default function NewsPage() {
               {selectedCategory === "all"
                 ? `Displaying all articles from the last ${daysBack} days`
                 : `Displaying ${categoryLabels[selectedCategory]} from the last ${daysBack} days`}
+              {debouncedSearchQuery && ` matching "${debouncedSearchQuery}"`}
             </p>
           </div>
           <div className="flex gap-2">
@@ -172,21 +214,53 @@ export default function NewsPage() {
             </Button>
           </div>
         </div>
+
+        {/* Search Bar */}
+        <div className="relative max-w-2xl mx-auto">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <Input
+            type="text"
+            placeholder={`Search in ${categoryLabels[selectedCategory].toLowerCase()}...`}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 pr-4"
+          />
+          {searchQuery && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSearchQuery("")}
+              className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 px-2"
+            >
+              Clear
+            </Button>
+          )}
+        </div>
+        {debouncedSearchQuery && filteredArticles && (
+          <p className="text-sm text-muted-foreground text-center mt-2">
+            Found {filteredArticles.length} {filteredArticles.length === 1 ? "article" : "articles"}{" "}
+            matching your search
+          </p>
+        )}
       </div>
 
-      {articles?.length === 0 ? (
+      {!filteredArticles || filteredArticles.length === 0 ? (
         <Card>
           <CardContent className="text-center py-12">
             <Newspaper className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            <p className="text-lg font-medium mb-2">No articles found</p>
+            <p className="text-lg font-medium mb-2">
+              {debouncedSearchQuery ? "No articles match your search" : "No articles found"}
+            </p>
             <p className="text-muted-foreground">
-              Try refreshing the feed or adjusting the date range
+              {debouncedSearchQuery
+                ? "Try different keywords or clear your search"
+                : "Try refreshing the feed or adjusting the date range"}
             </p>
           </CardContent>
         </Card>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 auto-rows-max">
-          {articles?.map((article) => (
+          {filteredArticles?.map((article) => (
             <Card
               key={article.id}
               className="overflow-hidden hover:shadow-lg transition-shadow flex flex-col"
