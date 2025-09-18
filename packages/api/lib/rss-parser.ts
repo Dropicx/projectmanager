@@ -11,11 +11,6 @@ const parser = new Parser({
       ["content:encoded", "contentEncoded"],
     ],
   },
-  timeout: 30000, // 30 second timeout
-  headers: {
-    "User-Agent": "Mozilla/5.0 (compatible; RSS-Parser/1.0)",
-    Accept: "application/rss+xml, application/xml, text/xml, */*",
-  },
 });
 
 export interface NewsArticle {
@@ -42,7 +37,7 @@ export const RSS_FEED_CATEGORIES = {
     name: "General IT News",
     url: "https://rss.the-morpheus.news/rss/high_rating",
     description: "Global IT news from governments, companies, and releases",
-    enabled: false, // Temporarily disabled due to malformed XML issues
+    enabled: true,
   },
   security: {
     name: "Security Advisories",
@@ -65,35 +60,6 @@ const RSS_FEED_CONFIG = {
   maxArticlesPerFeed: 500, // Maximum number of articles to process per feed
   maxArticleAgeInDays: 365, // Maximum age of articles to keep (1 year)
 };
-
-async function fetchWithRetry(
-  url: string,
-  maxRetries: number = 3,
-  retryDelay: number = 1000
-): Promise<any> {
-  let lastError: Error | null = null;
-
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    try {
-      console.log(`[RSS Parser]   Attempt ${attempt}/${maxRetries} to fetch feed`);
-      const feed = await parser.parseURL(url);
-      return feed;
-    } catch (error) {
-      lastError = error as Error;
-      console.log(
-        `[RSS Parser]   Attempt ${attempt} failed: ${lastError.message.substring(0, 100)}`
-      );
-
-      if (attempt < maxRetries) {
-        const delay = retryDelay * 2 ** (attempt - 1); // Exponential backoff
-        console.log(`[RSS Parser]   Retrying in ${delay}ms...`);
-        await new Promise((resolve) => setTimeout(resolve, delay));
-      }
-    }
-  }
-
-  throw lastError || new Error("Failed to fetch feed after retries");
-}
 
 export async function fetchAndStoreRSSFeed(feedCategory: FeedCategory = "general") {
   const feedConfig = RSS_FEED_CATEGORIES[feedCategory];
@@ -121,10 +87,12 @@ export async function fetchAndStoreRSSFeed(feedCategory: FeedCategory = "general
     let feed: any;
 
     try {
-      feed = await fetchWithRetry(feedUrl, 3, 1000);
+      // Try to fetch without retry logic first
+      console.log(`[RSS Parser]   Fetching feed...`);
+      feed = await parser.parseURL(feedUrl);
     } catch (parseError) {
       // If parsing fails, log detailed error and return gracefully
-      console.error(`[RSS Parser] ⚠️ Failed to parse feed after retries: ${feedCategory}`);
+      console.error(`[RSS Parser] ⚠️ Failed to parse feed: ${feedCategory}`);
       console.error(`[RSS Parser]   Error details: ${(parseError as Error).message}`);
       return {
         success: false,
