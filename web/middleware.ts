@@ -7,6 +7,22 @@ const isPublicRoute = createRouteMatcher([
   "/sign-in(.*)",
   "/sign-up(.*)",
   "/api/trpc(.*)", // Allow API routes for authenticated requests
+  // Footer pages - public access
+  "/features",
+  "/pricing",
+  "/about",
+  "/contact",
+  "/privacy",
+  "/terms",
+  "/api",
+  "/blog",
+  "/security",
+  "/cookies",
+  "/gdpr",
+  "/integrations",
+  "/changelog",
+  "/careers",
+  "/partners",
 ]);
 
 // Rate limit tracking (in-memory for simplicity)
