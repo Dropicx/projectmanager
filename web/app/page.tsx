@@ -29,15 +29,14 @@ export default function HomePage() {
       {/* Navigation */}
       <nav className="relative z-50 px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center">
             <Image
-              src="/logos/smalllogo.png"
+              src="/logos/biglogo.png"
               alt="Consailt Logo"
-              width={40}
-              height={40}
-              className="w-10 h-10"
+              width={200}
+              height={60}
+              className="h-12 w-auto"
             />
-            <span className="text-2xl font-bold text-tekhelet-500">Consailt</span>
           </div>
           <div className="flex items-center space-x-4">
             <SignInButton mode="modal">
@@ -393,15 +392,14 @@ export default function HomePage() {
       <footer className="px-6 py-12 bg-coolGray-900">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between">
-            <div className="flex items-center space-x-3 mb-4 md:mb-0">
+            <div className="flex items-center mb-4 md:mb-0">
               <Image
-                src="/logos/smalllogo.png"
+                src="/logos/biglogo.png"
                 alt="Consailt Logo"
-                width={32}
-                height={32}
-                className="w-8 h-8"
+                width={160}
+                height={48}
+                className="h-10 w-auto"
               />
-              <span className="text-xl font-bold text-white">Consailt</span>
             </div>
             <div className="text-coolGray-400 text-sm">© 2024 Consailt. All rights reserved.</div>
           </div>
