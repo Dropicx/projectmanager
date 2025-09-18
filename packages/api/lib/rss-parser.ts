@@ -11,6 +11,11 @@ const parser = new Parser({
       ["content:encoded", "contentEncoded"],
     ],
   },
+  timeout: 30000, // 30 second timeout
+  headers: {
+    "User-Agent": "Mozilla/5.0 (compatible; RSS-Parser/1.0)",
+    Accept: "application/rss+xml, application/xml, text/xml, */*",
+  },
 });
 
 export interface NewsArticle {
@@ -37,16 +42,19 @@ export const RSS_FEED_CATEGORIES = {
     name: "General IT News",
     url: "https://rss.the-morpheus.news/rss/high_rating",
     description: "Global IT news from governments, companies, and releases",
+    enabled: false, // Temporarily disabled due to malformed XML issues
   },
   security: {
     name: "Security Advisories",
     url: "https://wid.cert-bund.de/content/public/securityAdvisory/rss",
     description: "Security vulnerabilities and advisories from CERT-Bund",
+    enabled: true,
   },
   citizen: {
     name: "Citizen Security",
     url: "https://wid.cert-bund.de/content/public/buergercert/rss",
     description: "Security information for citizens from CERT-Bund",
+    enabled: true,
   },
 } as const;
 
@@ -58,19 +66,90 @@ const RSS_FEED_CONFIG = {
   maxArticleAgeInDays: 365, // Maximum age of articles to keep (1 year)
 };
 
+async function fetchWithRetry(
+  url: string,
+  maxRetries: number = 3,
+  retryDelay: number = 1000
+): Promise<any> {
+  let lastError: Error | null = null;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`[RSS Parser]   Attempt ${attempt}/${maxRetries} to fetch feed`);
+      const feed = await parser.parseURL(url);
+      return feed;
+    } catch (error) {
+      lastError = error as Error;
+      console.log(
+        `[RSS Parser]   Attempt ${attempt} failed: ${lastError.message.substring(0, 100)}`
+      );
+
+      if (attempt < maxRetries) {
+        const delay = retryDelay * 2 ** (attempt - 1); // Exponential backoff
+        console.log(`[RSS Parser]   Retrying in ${delay}ms...`);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+    }
+  }
+
+  throw lastError || new Error("Failed to fetch feed after retries");
+}
+
 export async function fetchAndStoreRSSFeed(feedCategory: FeedCategory = "general") {
   const feedConfig = RSS_FEED_CATEGORIES[feedCategory];
   const feedUrl = feedConfig.url;
+
+  // Check if feed is enabled
+  if (!feedConfig.enabled) {
+    console.log(`[RSS Parser] ⛔ Feed disabled: ${feedCategory}`);
+    console.log(`[RSS Parser]   Reason: Temporarily disabled for maintenance`);
+    return {
+      success: false,
+      error: "Feed is temporarily disabled",
+      insertedCount: 0,
+      skippedCount: 0,
+      totalFetched: 0,
+    };
+  }
+
   try {
     console.log(`[RSS Parser] Fetching feed: ${feedCategory}`);
     console.log(`[RSS Parser]   URL: ${feedUrl}`);
     console.log(`[RSS Parser]   Description: ${feedConfig.description}`);
 
     const fetchStart = Date.now();
-    const feed = await parser.parseURL(feedUrl);
+    let feed: any;
+
+    try {
+      feed = await fetchWithRetry(feedUrl, 3, 1000);
+    } catch (parseError) {
+      // If parsing fails, log detailed error and return gracefully
+      console.error(`[RSS Parser] ⚠️ Failed to parse feed after retries: ${feedCategory}`);
+      console.error(`[RSS Parser]   Error details: ${(parseError as Error).message}`);
+      return {
+        success: false,
+        error: `Feed parsing failed: ${(parseError as Error).message.substring(0, 200)}`,
+        insertedCount: 0,
+        skippedCount: 0,
+        totalFetched: 0,
+      };
+    }
+
     const fetchDuration = ((Date.now() - fetchStart) / 1000).toFixed(2);
 
     const articles = [];
+
+    // Validate feed has items
+    if (!feed || !feed.items || !Array.isArray(feed.items)) {
+      console.log(`[RSS Parser] ⚠️ Feed has no valid items for ${feedCategory}`);
+      return {
+        success: false,
+        error: "Feed contains no valid items",
+        insertedCount: 0,
+        skippedCount: 0,
+        totalFetched: 0,
+      };
+    }
 
     // Limit the number of articles to process
     const itemsToProcess = feed.items.slice(0, RSS_FEED_CONFIG.maxArticlesPerFeed);
@@ -81,59 +160,85 @@ export async function fetchAndStoreRSSFeed(feedCategory: FeedCategory = "general
     );
 
     for (const item of itemsToProcess) {
-      // Extract image URL from various possible sources
-      let imageUrl = null;
-      let thumbnailUrl = null;
+      try {
+        // Extract image URL from various possible sources
+        let imageUrl = null;
+        let thumbnailUrl = null;
 
-      // Check for media content
-      if ((item as any).mediaContent) {
-        const mediaContent = (item as any).mediaContent;
-        if (mediaContent.$ && mediaContent.$.url) {
-          imageUrl = mediaContent.$.url;
+        // Check for media content
+        if ((item as any).mediaContent) {
+          const mediaContent = (item as any).mediaContent;
+          if (mediaContent.$ && mediaContent.$.url) {
+            imageUrl = mediaContent.$.url;
+          }
         }
-      }
 
-      // Check for media thumbnail
-      if ((item as any).mediaThumbnail) {
-        const mediaThumbnail = (item as any).mediaThumbnail;
-        if (mediaThumbnail.$ && mediaThumbnail.$.url) {
-          thumbnailUrl = mediaThumbnail.$.url;
+        // Check for media thumbnail
+        if ((item as any).mediaThumbnail) {
+          const mediaThumbnail = (item as any).mediaThumbnail;
+          if (mediaThumbnail.$ && mediaThumbnail.$.url) {
+            thumbnailUrl = mediaThumbnail.$.url;
+          }
         }
-      }
 
-      // Check for enclosure (common for images)
-      if ((item as any).enclosure && (item as any).enclosure.url) {
-        if (!imageUrl) {
-          imageUrl = (item as any).enclosure.url;
+        // Check for enclosure (common for images)
+        if ((item as any).enclosure && (item as any).enclosure.url) {
+          if (!imageUrl) {
+            imageUrl = (item as any).enclosure.url;
+          }
         }
+
+        // Extract content
+        const content = (item as any).contentEncoded || item.content || item.contentSnippet || null;
+
+        // Prepare article data
+        const articleData = {
+          title: item.title || "Untitled",
+          description: item.contentSnippet || item.content || null,
+          content: content,
+          link: item.link || "",
+          image_url: imageUrl,
+          thumbnail_url: thumbnailUrl,
+          author: item.creator || null,
+          categories: item.categories || [],
+          tags: [],
+          source: feedUrl,
+          guid: item.guid || item.link || null,
+          published_at: item.pubDate ? new Date(item.pubDate) : new Date(),
+          metadata: {
+            feed_title: feed.title,
+            feed_description: feed.description,
+            feed_category: feedCategory,
+            feed_category_name: feedConfig.name,
+          },
+        };
+
+        // Validate required fields
+        if (!articleData.link || !articleData.title) {
+          console.log(
+            `[RSS Parser]   Skipping invalid article: missing link or title for "${articleData.title?.substring(
+              0,
+              50
+            )}"`
+          );
+          continue;
+        }
+
+        // Sanitize and limit text fields
+        articleData.title = articleData.title.substring(0, 500);
+        if (articleData.description) {
+          articleData.description = articleData.description.substring(0, 2000);
+        }
+        if (articleData.content) {
+          articleData.content = articleData.content.substring(0, 10000);
+        }
+
+        articles.push(articleData);
+      } catch (itemError) {
+        console.log(
+          `[RSS Parser]   Error processing item: ${(itemError as Error).message.substring(0, 100)}`
+        );
       }
-
-      // Extract content
-      const content = (item as any).contentEncoded || item.content || item.contentSnippet || null;
-
-      // Prepare article data
-      const articleData = {
-        title: item.title || "Untitled",
-        description: item.contentSnippet || item.content || null,
-        content: content,
-        link: item.link || "",
-        image_url: imageUrl,
-        thumbnail_url: thumbnailUrl,
-        author: item.creator || null,
-        categories: item.categories || [],
-        tags: [],
-        source: feedUrl,
-        guid: item.guid || item.link || null,
-        published_at: item.pubDate ? new Date(item.pubDate) : new Date(),
-        metadata: {
-          feed_title: feed.title,
-          feed_description: feed.description,
-          feed_category: feedCategory,
-          feed_category_name: feedConfig.name,
-        },
-      };
-
-      articles.push(articleData);
     }
 
     // Insert articles into database, handling duplicates
@@ -172,10 +277,13 @@ export async function fetchAndStoreRSSFeed(feedCategory: FeedCategory = "general
       totalFetched: articles.length,
     };
   } catch (error) {
-    console.error(`[RSS Parser] ❌ Error fetching RSS feed for ${feedCategory}:`, error);
+    console.error(`[RSS Parser] ❌ Unexpected error for ${feedCategory}:`, error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
+      insertedCount: 0,
+      skippedCount: 0,
+      totalFetched: 0,
     };
   }
 }
@@ -270,8 +378,14 @@ export async function cleanupOldArticles(): Promise<{ deletedCount: number }> {
 export async function syncAllRssFeeds() {
   const results = [];
   const categories = Object.keys(RSS_FEED_CATEGORIES) as FeedCategory[];
-  console.log(`[RSS Sync] Starting sync of ${categories.length} RSS feeds`);
-  console.log(`[RSS Sync] Categories to sync: ${categories.join(", ")}`);
+  const enabledCategories = categories.filter((cat) => RSS_FEED_CATEGORIES[cat].enabled);
+  const disabledCategories = categories.filter((cat) => !RSS_FEED_CATEGORIES[cat].enabled);
+
+  console.log(`[RSS Sync] Starting sync of ${enabledCategories.length} enabled RSS feeds`);
+  console.log(`[RSS Sync] Enabled categories: ${enabledCategories.join(", ") || "none"}`);
+  if (disabledCategories.length > 0) {
+    console.log(`[RSS Sync] Disabled categories: ${disabledCategories.join(", ")}`);
+  }
   console.log(`[RSS Sync] Max articles per feed: ${RSS_FEED_CONFIG.maxArticlesPerFeed}`);
   console.log(`[RSS Sync] Article retention period: ${RSS_FEED_CONFIG.maxArticleAgeInDays} days`);
 
