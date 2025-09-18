@@ -142,7 +142,7 @@ export default function HomePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {/* Add staggered animation classes */}
               {/* AI Orchestration */}
-              <div className="bg-white p-8 rounded-2xl shadow-lg border border-coolGray-200 hover:shadow-xl hover:scale-105 transition-all duration-300 ease-in-out group">
+              <div className="backdrop-blur-md bg-white/20 border border-white/30 p-8 rounded-2xl shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 ease-in-out group">
                 <div className="w-12 h-12 bg-gradient-to-r from-tekhelet-500 to-teal-500 rounded-lg flex items-center justify-center mb-6">
                   <svg
                     className="w-6 h-6 text-white"
@@ -179,7 +179,7 @@ export default function HomePage() {
               </div>
 
               {/* Knowledge Management */}
-              <div className="bg-white p-8 rounded-2xl shadow-lg border border-coolGray-200 hover:shadow-xl hover:scale-105 transition-all duration-300 ease-in-out group">
+              <div className="backdrop-blur-md bg-white/20 border border-white/30 p-8 rounded-2xl shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 ease-in-out group">
                 <div className="w-12 h-12 bg-gradient-to-r from-teal-500 to-maize-500 rounded-lg flex items-center justify-center mb-6">
                   <svg
                     className="w-6 h-6 text-white"
@@ -210,7 +210,7 @@ export default function HomePage() {
               </div>
 
               {/* Privacy & Security */}
-              <div className="bg-white p-8 rounded-2xl shadow-lg border border-coolGray-200 hover:shadow-xl hover:scale-105 transition-all duration-300 ease-in-out group">
+              <div className="backdrop-blur-md bg-white/20 border border-white/30 p-8 rounded-2xl shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 ease-in-out group">
                 <div className="w-12 h-12 bg-gradient-to-r from-maize-500 to-satinSheenGold-500 rounded-lg flex items-center justify-center mb-6">
                   <svg
                     className="w-6 h-6 text-white"
@@ -240,7 +240,7 @@ export default function HomePage() {
               </div>
 
               {/* Real-time Insights */}
-              <div className="bg-white p-8 rounded-2xl shadow-lg border border-coolGray-200 hover:shadow-xl hover:scale-105 transition-all duration-300 ease-in-out group">
+              <div className="backdrop-blur-md bg-white/20 border border-white/30 p-8 rounded-2xl shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 ease-in-out group">
                 <div className="w-12 h-12 bg-gradient-to-r from-satinSheenGold-500 to-tekhelet-500 rounded-lg flex items-center justify-center mb-6">
                   <svg
                     className="w-6 h-6 text-white"
@@ -271,7 +271,7 @@ export default function HomePage() {
               </div>
 
               {/* Cost Optimization */}
-              <div className="bg-white p-8 rounded-2xl shadow-lg border border-coolGray-200 hover:shadow-xl hover:scale-105 transition-all duration-300 ease-in-out group">
+              <div className="backdrop-blur-md bg-white/20 border border-white/30 p-8 rounded-2xl shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 ease-in-out group">
                 <div className="w-12 h-12 bg-gradient-to-r from-tekhelet-500 to-maize-500 rounded-lg flex items-center justify-center mb-6">
                   <svg
                     className="w-6 h-6 text-white"
@@ -301,7 +301,7 @@ export default function HomePage() {
               </div>
 
               {/* Collaboration */}
-              <div className="bg-white p-8 rounded-2xl shadow-lg border border-coolGray-200 hover:shadow-xl hover:scale-105 transition-all duration-300 ease-in-out group">
+              <div className="backdrop-blur-md bg-white/20 border border-white/30 p-8 rounded-2xl shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 ease-in-out group">
                 <div className="w-12 h-12 bg-gradient-to-r from-teal-500 to-satinSheenGold-500 rounded-lg flex items-center justify-center mb-6">
                   <svg
                     className="w-6 h-6 text-white"
