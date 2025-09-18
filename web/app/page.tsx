@@ -51,7 +51,10 @@ export default function HomePage() {
             </div>
             <div className="flex items-center space-x-4">
               <SignInButton mode="modal">
-                <Button variant="ghost" className="text-coolGray-600 hover:text-tekhelet-500">
+                <Button
+                  variant="ghost"
+                  className="text-black hover:text-tekhelet-500 hover:bg-tekhelet-50 font-medium px-4 py-2"
+                >
                   Sign In
                 </Button>
               </SignInButton>
