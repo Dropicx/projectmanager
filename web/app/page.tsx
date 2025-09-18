@@ -25,7 +25,7 @@ export default function HomePage() {
   }, [isSignedIn, router]);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gradient-to-br from-white via-teal-50/50 to-tekhelet-50/40">
       {/* Navigation */}
       <nav className="relative z-50 px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -54,7 +54,7 @@ export default function HomePage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative px-6 py-20 lg:py-32 bg-white">
+      <section className="relative px-6 py-20 lg:py-32 bg-gradient-to-b from-white to-tekhelet-100/60">
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center">
             <div className="inline-flex items-center px-4 py-2 rounded-full bg-teal-100 text-teal-700 text-sm font-medium mb-8">
@@ -114,7 +114,7 @@ export default function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section className="px-6 py-20 bg-gray-50">
+      <section className="px-6 py-20 bg-gradient-to-b from-tekhelet-100/40 via-white to-maize-100/50">
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-black mb-6">
@@ -321,7 +321,7 @@ export default function HomePage() {
       </section>
 
       {/* Stats Section */}
-      <section className="px-6 py-20 bg-white">
+      <section className="px-6 py-20 bg-gradient-to-b from-maize-100/50 via-white to-satinSheenGold-100/60">
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-black mb-6">
@@ -355,7 +355,7 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="px-6 py-20 bg-gray-50">
+      <section className="px-6 py-20 bg-gradient-to-b from-satinSheenGold-100/40 via-white to-tekhelet-100/50">
         <div className="max-w-4xl mx-auto text-center relative z-10">
           <h2 className="text-4xl md:text-5xl font-bold text-black mb-6">
             Ready to Transform Your Consulting Practice?
@@ -390,7 +390,7 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="px-6 py-12 bg-white border-t border-gray-200">
+      <footer className="px-6 py-12 bg-gradient-to-r from-white via-coolGray-100/50 to-white border-t border-gray-200">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div className="flex items-center mb-4 md:mb-0">
