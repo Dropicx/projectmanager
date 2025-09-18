@@ -25,17 +25,20 @@ export default function HomePage() {
   }, [isSignedIn, router]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-teal-100/30 via-white via-tekhelet-100/20 via-maize-100/25 via-satinSheenGold-100/20 to-coolGray-100/30">
+    <div className="min-h-screen bg-gradient-to-b from-teal-200/40 via-white via-tekhelet-200/30 via-maize-200/35 via-satinSheenGold-200/30 to-coolGray-200/40">
       {/* Main Section with integrated header */}
       <section className="relative min-h-screen px-6 pt-8 pb-20 lg:pt-12 lg:pb-32 overflow-hidden">
         {/* Animated floating elements */}
-        <div className="absolute top-20 right-20 w-72 h-72 bg-teal-200/30 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 left-20 w-96 h-96 bg-tekhelet-200/25 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/4 w-64 h-64 bg-maize-200/20 rounded-full blur-3xl animate-pulse delay-500"></div>
-        <div className="absolute top-1/3 right-1/3 w-80 h-80 bg-satinSheenGold-200/15 rounded-full blur-3xl animate-pulse delay-1500"></div>
+        <div className="absolute top-20 right-20 w-72 h-72 bg-teal-400/40 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-20 left-20 w-96 h-96 bg-tekhelet-400/35 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/4 w-64 h-64 bg-maize-400/30 rounded-full blur-3xl animate-pulse delay-500"></div>
+        <div className="absolute top-1/3 right-1/3 w-80 h-80 bg-satinSheenGold-400/25 rounded-full blur-3xl animate-pulse delay-1500"></div>
+        <div className="absolute top-1/4 left-1/2 w-56 h-56 bg-coolGray-400/20 rounded-full blur-3xl animate-pulse delay-2000"></div>
+        <div className="absolute bottom-1/3 right-1/4 w-88 h-88 bg-tekhelet-300/30 rounded-full blur-3xl animate-pulse delay-3000"></div>
 
         {/* Flowing background elements */}
-        <div className="absolute inset-0 bg-gradient-to-r from-tekhelet-100/20 via-transparent to-maize-100/30"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-tekhelet-200/30 via-transparent to-maize-200/40"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-teal-200/20 via-transparent to-satinSheenGold-200/25"></div>
 
         <div className="max-w-7xl mx-auto relative z-10">
           {/* Integrated Navigation */}
