@@ -81,7 +81,7 @@ export function DashboardSidebar() {
         )}
       >
         {/* Header with branding */}
-        <div className="flex h-20 items-center justify-between px-4 border-b border-white/10">
+        <div className="flex h-30 items-center justify-between px-4 border-b border-white/10">
           {!isCollapsed ? (
             <div className="flex items-center">
               <Image
@@ -98,8 +98,8 @@ export function DashboardSidebar() {
               <Image
                 src="/logos/smalllogo.png"
                 alt="Consailt Logo"
-                width={60}
-                height={60}
+                width={80}
+                height={80}
                 className="object-contain"
                 priority
               />
