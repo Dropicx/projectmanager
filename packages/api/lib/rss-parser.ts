@@ -1,5 +1,5 @@
 import { db, news_articles } from "@consulting-platform/database";
-import { and, desc, eq, gte } from "drizzle-orm";
+import { and, desc, eq, gte, lt } from "drizzle-orm";
 import Parser from "rss-parser";
 
 const parser = new Parser({
@@ -55,6 +55,7 @@ export type FeedCategory = keyof typeof RSS_FEED_CATEGORIES;
 // Configuration for RSS feed fetching
 const RSS_FEED_CONFIG = {
   maxArticlesPerFeed: 500, // Maximum number of articles to process per feed
+  maxArticleAgeInDays: 365, // Maximum age of articles to keep (1 year)
 };
 
 export async function fetchAndStoreRSSFeed(feedCategory: FeedCategory = "general") {
@@ -217,6 +218,38 @@ export async function getAllNewsArticles(feedCategory?: FeedCategory): Promise<N
   }
 }
 
+// Clean up old articles from the database
+export async function cleanupOldArticles(): Promise<{ deletedCount: number }> {
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - RSS_FEED_CONFIG.maxArticleAgeInDays);
+
+  try {
+    console.log(`Cleaning up articles older than ${cutoffDate.toISOString()}`);
+
+    // Get count of articles to delete for logging
+    const articlesToDelete = await db
+      .select({ id: news_articles.id })
+      .from(news_articles)
+      .where(lt(news_articles.published_at, cutoffDate));
+
+    const deletedCount = articlesToDelete.length;
+
+    if (deletedCount > 0) {
+      // Delete old articles
+      await db.delete(news_articles).where(lt(news_articles.published_at, cutoffDate));
+
+      console.log(`Deleted ${deletedCount} articles older than 1 year`);
+    } else {
+      console.log("No old articles to clean up");
+    }
+
+    return { deletedCount };
+  } catch (error) {
+    console.error("Error cleaning up old articles:", error);
+    return { deletedCount: 0 };
+  }
+}
+
 // Sync all configured RSS feeds
 export async function syncAllRssFeeds() {
   const results = [];
@@ -228,6 +261,11 @@ export async function syncAllRssFeeds() {
     const result = await fetchAndStoreRSSFeed(category);
     results.push({ category, ...result });
   }
+
+  // Clean up old articles after syncing
+  console.log("Starting cleanup of old articles...");
+  const cleanupResult = await cleanupOldArticles();
+  console.log(`Cleanup completed. Deleted ${cleanupResult.deletedCount} old articles`);
 
   console.log(`Completed sync of ${results.length} RSS feeds`);
   return results;
