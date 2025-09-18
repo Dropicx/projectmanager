@@ -204,13 +204,15 @@ export async function getAllNewsArticles(feedCategory?: FeedCategory): Promise<N
       .select()
       .from(news_articles)
       .where(eq(news_articles.source, feedUrl))
-      .orderBy(desc(news_articles.published_at));
+      .orderBy(desc(news_articles.published_at))
+      .limit(1000); // Reasonable limit for UI display
     return articles as NewsArticle[];
   } else {
     const articles = await db
       .select()
       .from(news_articles)
-      .orderBy(desc(news_articles.published_at));
+      .orderBy(desc(news_articles.published_at))
+      .limit(1000); // Reasonable limit for UI display
     return articles as NewsArticle[];
   }
 }
