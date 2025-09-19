@@ -82,7 +82,7 @@ export const knowledgeRouter = router({
             updatedAt: knowledge_base.updated_at,
             createdBy: knowledge_base.created_by,
             views: sql<number>`COALESCE(${knowledge_base.metadata}->>'views', '0')::int`,
-            summary: sql<string | null>`${knowledge_base.metadata}->>'summary'`,
+            summary: knowledge_base.summary, // Get summary from dedicated column
           })
           .from(knowledge_base);
 

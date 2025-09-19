@@ -222,9 +222,8 @@ const knowledgeSummaryWorker = new Worker(
         let errorCount = 0;
 
         for (const item of items) {
-          // Skip if summary already exists
-          const metadata = item.metadata as any;
-          if (metadata?.summary) {
+          // Skip if summary already exists in the summary column
+          if (item.summary) {
             console.log(`Skipping ${item.id} - summary already exists`);
             continue;
           }
@@ -242,13 +241,14 @@ const knowledgeSummaryWorker = new Worker(
               budgetConstraint: 10,
             });
 
-            // Update item with AI summary
+            // Update item with AI summary - save to summary column
+            const existingMetadata = (item.metadata as any) || {};
             await db
               .update(knowledge_base)
               .set({
+                summary: response.content, // Save summary to dedicated column
                 metadata: {
-                  ...(metadata || {}),
-                  summary: response.content,
+                  ...existingMetadata,
                   summaryGeneratedAt: new Date().toISOString(),
                   ai_model: response.model,
                   ai_cost_cents: response.costCents,
@@ -291,14 +291,14 @@ const knowledgeSummaryWorker = new Worker(
           budgetConstraint: 10,
         });
 
-        // Update knowledge item with AI summary
+        // Update knowledge item with AI summary - save to summary column
         const existingMetadata = (item.metadata as any) || {};
         await db
           .update(knowledge_base)
           .set({
+            summary: response.content, // Save summary to dedicated column
             metadata: {
               ...existingMetadata,
-              summary: response.content,
               summaryGeneratedAt: new Date().toISOString(),
               ai_model: response.model,
               ai_cost_cents: response.costCents,
