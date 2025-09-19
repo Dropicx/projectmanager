@@ -18,7 +18,7 @@
 
 import { AIOrchestrator } from "@consulting-platform/ai";
 import { syncAllRssFeeds } from "@consulting-platform/api";
-import { db, engagements, knowledgeItems } from "@consulting-platform/database";
+import { db, engagements, knowledge_base } from "@consulting-platform/database";
 import { Queue, Worker } from "bullmq";
 import { CronJob } from "cron";
 import { eq, gte, inArray } from "drizzle-orm";
@@ -213,8 +213,8 @@ const knowledgeSummaryWorker = new Worker(
         // Batch processing: generate summaries for multiple items
         const items = await db
           .select()
-          .from(knowledgeItems)
-          .where(eq(knowledgeItems.user_id, userId))
+          .from(knowledge_base)
+          .where(eq(knowledge_base.created_by, userId))
           .limit(50); // Process up to 50 items at a time
 
         console.log(`Starting batch summary generation for ${items.length} knowledge items`);
@@ -223,7 +223,8 @@ const knowledgeSummaryWorker = new Worker(
 
         for (const item of items) {
           // Skip if summary already exists
-          if (item.metadata?.ai_summary) {
+          const metadata = item.metadata as any;
+          if (metadata?.summary) {
             console.log(`Skipping ${item.id} - summary already exists`);
             continue;
           }
@@ -243,18 +244,18 @@ const knowledgeSummaryWorker = new Worker(
 
             // Update item with AI summary
             await db
-              .update(knowledgeItems)
+              .update(knowledge_base)
               .set({
                 metadata: {
-                  ...item.metadata,
-                  ai_summary: response.content,
+                  ...(metadata || {}),
+                  summary: response.content,
+                  summaryGeneratedAt: new Date().toISOString(),
                   ai_model: response.model,
-                  ai_generated_at: new Date().toISOString(),
                   ai_cost_cents: response.costCents,
                 },
                 updated_at: new Date(),
               })
-              .where(eq(knowledgeItems.id, item.id));
+              .where(eq(knowledge_base.id, item.id));
 
             successCount++;
             console.log(`Generated summary for knowledge item ${item.id}`);
@@ -269,8 +270,8 @@ const knowledgeSummaryWorker = new Worker(
         // Single item processing
         const [item] = await db
           .select()
-          .from(knowledgeItems)
-          .where(eq(knowledgeItems.id, knowledgeId))
+          .from(knowledge_base)
+          .where(eq(knowledge_base.id, knowledgeId))
           .limit(1);
 
         if (!item) {
@@ -291,19 +292,20 @@ const knowledgeSummaryWorker = new Worker(
         });
 
         // Update knowledge item with AI summary
+        const existingMetadata = (item.metadata as any) || {};
         await db
-          .update(knowledgeItems)
+          .update(knowledge_base)
           .set({
             metadata: {
-              ...item.metadata,
-              ai_summary: response.content,
+              ...existingMetadata,
+              summary: response.content,
+              summaryGeneratedAt: new Date().toISOString(),
               ai_model: response.model,
-              ai_generated_at: new Date().toISOString(),
               ai_cost_cents: response.costCents,
             },
             updated_at: new Date(),
           })
-          .where(eq(knowledgeItems.id, knowledgeId));
+          .where(eq(knowledge_base.id, knowledgeId));
 
         console.log(`Generated AI summary for knowledge item ${knowledgeId}`);
       }

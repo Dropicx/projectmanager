@@ -1,4 +1,3 @@
-import { AIOrchestrator } from "@consulting-platform/ai";
 import {
   engagements,
   knowledge_base,
@@ -8,9 +7,8 @@ import {
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq, isNull, like, or, sql } from "drizzle-orm";
 import { z } from "zod";
+import { enqueueBatchSummaryGeneration, enqueueSummaryGeneration } from "../../lib/queue-client";
 import { protectedProcedure, router } from "../trpc";
-
-const aiOrchestrator = new AIOrchestrator();
 
 export const knowledgeRouter = router({
   /**
@@ -735,7 +733,11 @@ export const knowledgeRouter = router({
         };
 
         // Generate status summary using AI
-        const statusSummary = await aiOrchestrator.processRequest({
+        // TODO: Move to background queue
+        const statusSummary = {
+          content: "Summary generation temporarily disabled - moving to background queue",
+        };
+        /* await aiOrchestrator.processRequest({
           type: "project_analysis",
           prompt: `Generate a comprehensive project status summary based on the following information:
 
@@ -762,7 +764,7 @@ Format the response in markdown.`,
           accuracyRequired: "standard",
           contextLength: 4000,
           budgetConstraint: 50,
-        });
+        }); */
 
         return {
           summary: statusSummary.content,
@@ -815,7 +817,11 @@ Format the response in markdown.`,
         }
 
         // Generate wiki structure using AI
-        const wikiContent = await aiOrchestrator.processRequest({
+        // TODO: Move to background queue
+        const wikiContent = {
+          content: "Wiki generation temporarily disabled - moving to background queue",
+        };
+        /* await aiOrchestrator.processRequest({
           type: "technical_docs",
           prompt: `Generate a comprehensive wiki/knowledge base structure for the project:
 
@@ -842,7 +848,7 @@ Format in markdown with clear headings and sections.`,
           accuracyRequired: "standard",
           contextLength: 4000,
           budgetConstraint: 80,
-        });
+        }); */
 
         return {
           content: wikiContent.content,
@@ -870,7 +876,7 @@ Format in markdown with clear headings and sections.`,
     )
     .mutation(async ({ ctx, input }) => {
       try {
-        // Fetch the knowledge item
+        // Verify the knowledge item exists and belongs to the user's org
         const item = await ctx.db
           .select()
           .from(knowledge_base)
@@ -889,48 +895,19 @@ Format in markdown with clear headings and sections.`,
           });
         }
 
-        const knowledgeItem = item[0];
-
-        // Generate summary using Nova Lite
-        const summary = await aiOrchestrator.execute({
-          prompt: `Please provide a concise 2-3 sentence summary of the following content. Focus on the key insights and practical value:
-
-Title: ${knowledgeItem.title}
-Type: ${knowledgeItem.knowledge_type}
-Content: ${knowledgeItem.content}
-
-Summary:`,
-          userId: ctx.user.id,
-          knowledgeId: input.knowledgeId, // Pass the knowledge ID for logging
-          complexity: 2, // Simple task for Nova Lite
-          urgency: "batch",
-          accuracyRequired: "standard",
-          contextLength: 1000,
-          budgetConstraint: 10, // Adjusted for Nova Lite (6 cents per 1M tokens)
-          preferredModel: "nova-lite", // Hint to use Nova Lite
-        });
-
-        // Update the knowledge item with the summary in metadata
-        await ctx.db
-          .update(knowledge_base)
-          .set({
-            metadata: {
-              ...((knowledgeItem.metadata as any) || {}),
-              summary: summary.content,
-              summaryGeneratedAt: new Date().toISOString(),
-            },
-          })
-          .where(eq(knowledge_base.id, input.knowledgeId));
+        // Enqueue the summary generation job
+        await enqueueSummaryGeneration(input.knowledgeId, ctx.user.id);
 
         return {
-          summary: summary.content,
-          generatedAt: new Date().toISOString(),
+          message: "Summary generation queued",
+          status: "processing",
+          knowledgeId: input.knowledgeId,
         };
       } catch (error) {
-        console.error("Error generating summary:", error);
+        console.error("Error enqueueing summary generation:", error);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to generate summary",
+          message: "Failed to queue summary generation",
         });
       }
     }),
@@ -941,85 +918,46 @@ Summary:`,
   generateBatchSummaries: protectedProcedure
     .input(
       z.object({
-        knowledgeIds: z.array(z.string().uuid()).max(10),
+        knowledgeIds: z.array(z.string().uuid()).optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const summaries = await Promise.all(
-        input.knowledgeIds.map(async (knowledgeId) => {
-          try {
-            const item = await ctx.db
-              .select()
-              .from(knowledge_base)
-              .where(
-                and(
-                  eq(knowledge_base.id, knowledgeId),
-                  eq(knowledge_base.organization_id, ctx.user.organizationId || "")
-                )
+      try {
+        // If specific IDs provided, validate they belong to the user's org
+        if (input.knowledgeIds && input.knowledgeIds.length > 0) {
+          const items = await ctx.db
+            .select({ id: knowledge_base.id })
+            .from(knowledge_base)
+            .where(
+              and(
+                eq(knowledge_base.organization_id, ctx.user.organizationId || ""),
+                sql`${knowledge_base.id} = ANY(${input.knowledgeIds})`
               )
-              .limit(1);
+            );
 
-            if (!item || item.length === 0) {
-              return { knowledgeId, error: "Not found" };
-            }
-
-            const knowledgeItem = item[0];
-
-            // Check if we already have a recent summary
-            const metadata = knowledgeItem.metadata as any;
-            if (metadata?.summary && metadata?.summaryGeneratedAt) {
-              const generatedDate = new Date(metadata.summaryGeneratedAt);
-              const daysSinceGenerated =
-                (Date.now() - generatedDate.getTime()) / (1000 * 60 * 60 * 24);
-              if (daysSinceGenerated < 7) {
-                return {
-                  knowledgeId,
-                  summary: metadata.summary,
-                  cached: true,
-                };
-              }
-            }
-
-            // Generate new summary using Nova Lite
-            const summary = await aiOrchestrator.execute({
-              prompt: `Provide a 2-3 sentence summary highlighting key insights:
-
-${knowledgeItem.title}: ${knowledgeItem.content?.substring(0, 1000)}`,
-              userId: ctx.user.id,
-              knowledgeId: knowledgeId, // Pass the knowledge ID for logging
-              complexity: 1,
-              urgency: "batch",
-              accuracyRequired: "standard",
-              contextLength: 500,
-              budgetConstraint: 10, // Adjusted for Nova Lite (6 cents per 1M tokens)
-              preferredModel: "nova-lite",
+          if (items.length !== input.knowledgeIds.length) {
+            throw new TRPCError({
+              code: "UNAUTHORIZED",
+              message: "Some knowledge items not found or unauthorized",
             });
-
-            // Update metadata
-            await ctx.db
-              .update(knowledge_base)
-              .set({
-                metadata: {
-                  ...(metadata || {}),
-                  summary: summary.content,
-                  summaryGeneratedAt: new Date().toISOString(),
-                },
-              })
-              .where(eq(knowledge_base.id, knowledgeId));
-
-            return {
-              knowledgeId,
-              summary: summary.content,
-              cached: false,
-            };
-          } catch (error) {
-            console.error(`Error generating summary for ${knowledgeId}:`, error);
-            return { knowledgeId, error: "Failed to generate" };
           }
-        })
-      );
+        }
 
-      return summaries;
+        // Enqueue batch summary generation job
+        await enqueueBatchSummaryGeneration(ctx.user.id);
+
+        return {
+          message: "Batch summary generation queued",
+          status: "processing",
+          itemCount: input.knowledgeIds?.length || "all",
+        };
+      } catch (error) {
+        console.error("Error enqueueing batch summary generation:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to queue batch summary generation",
+        });
+      }
     }),
 });
 

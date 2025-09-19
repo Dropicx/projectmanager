@@ -68,8 +68,15 @@ export default function KnowledgePage() {
 
   // Generate summaries mutation
   const generateSummaries = trpc.knowledge.generateBatchSummaries.useMutation({
-    onSuccess: () => {
-      refetch();
+    onSuccess: (data) => {
+      console.log("Summary generation queued:", data);
+      // Poll for updates after a delay
+      setTimeout(() => refetch(), 3000);
+      setTimeout(() => refetch(), 8000);
+      setTimeout(() => refetch(), 15000);
+    },
+    onError: (error) => {
+      console.error("Failed to queue summary generation:", error);
     },
   });
 

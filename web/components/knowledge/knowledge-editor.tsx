@@ -37,9 +37,6 @@ export function KnowledgeEditor({
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
-        history: {
-          depth: 100,
-        },
         dropcursor: {
           color: "#DBEAFE",
           width: 2,
