@@ -26,6 +26,7 @@ import {
   Loader2,
   Plus,
   Search,
+  Sparkles,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { trpc } from "@/app/providers/trpc-provider";
@@ -54,12 +55,32 @@ export default function KnowledgePage() {
   }, [searchQuery]);
 
   // Fetch knowledge items from API
-  const { data: knowledgeItems = [], isLoading } = trpc.knowledge.list.useQuery({
+  const {
+    data: knowledgeItems = [],
+    isLoading,
+    refetch,
+  } = trpc.knowledge.list.useQuery({
     search: debouncedSearch || undefined,
     categoryId: selectedCategory,
     type: "all",
     limit: 50,
   });
+
+  // Generate summaries mutation
+  const generateSummaries = trpc.knowledge.generateBatchSummaries.useMutation({
+    onSuccess: () => {
+      refetch();
+    },
+  });
+
+  // Check if any items need summaries
+  const itemsWithoutSummary = knowledgeItems.filter((item: any) => !item.summary);
+  const canGenerateSummaries = itemsWithoutSummary.length > 0 && !generateSummaries.isPending;
+
+  const handleGenerateSummaries = () => {
+    const idsToGenerate = itemsWithoutSummary.slice(0, 10).map((item: any) => item.id);
+    generateSummaries.mutate({ knowledgeIds: idsToGenerate });
+  };
 
   // Fetch categories for search
   const { data: categories = [] } = trpc.knowledge.getCategories.useQuery();
@@ -210,7 +231,14 @@ export default function KnowledgePage() {
                       </div>
                       <CardTitle className="text-lg">{item.title}</CardTitle>
                       <CardDescription className="line-clamp-3">
-                        {getContentExcerpt(item.content || "", 200)}
+                        {item.summary ? (
+                          <span className="flex items-start gap-1">
+                            <Sparkles className="h-3 w-3 text-tekhelet-500 mt-0.5 flex-shrink-0" />
+                            <span>{item.summary}</span>
+                          </span>
+                        ) : (
+                          getContentExcerpt(item.content || "", 200)
+                        )}
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -346,7 +374,14 @@ export default function KnowledgePage() {
                             <div>
                               <h3 className="font-semibold">{item.title}</h3>
                               <p className="text-sm text-muted-foreground mt-1">
-                                {getContentExcerpt(item.content || "", 150)}
+                                {item.summary ? (
+                                  <span className="flex items-start gap-1">
+                                    <Sparkles className="h-3 w-3 text-tekhelet-500 mt-0.5 flex-shrink-0" />
+                                    <span>{item.summary}</span>
+                                  </span>
+                                ) : (
+                                  getContentExcerpt(item.content || "", 150)
+                                )}
                               </p>
                             </div>
                             <Badge
@@ -459,7 +494,14 @@ export default function KnowledgePage() {
                             </Badge>
                           </div>
                           <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                            {getContentExcerpt(item.content || "", 120)}
+                            {item.summary ? (
+                              <span className="flex items-start gap-1">
+                                <Sparkles className="h-3 w-3 text-tekhelet-500 mt-0.5 flex-shrink-0" />
+                                <span>{item.summary}</span>
+                              </span>
+                            ) : (
+                              getContentExcerpt(item.content || "", 120)
+                            )}
                           </p>
                           <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
                             <span>{item.views || 0} views</span>
@@ -531,6 +573,22 @@ export default function KnowledgePage() {
                   </TabsList>
                 </Tabs>
 
+                {canGenerateSummaries && (
+                  <Button
+                    onClick={handleGenerateSummaries}
+                    variant="outline"
+                    disabled={generateSummaries.isPending}
+                  >
+                    {generateSummaries.isPending ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Sparkles className="mr-2 h-4 w-4" />
+                    )}
+                    {generateSummaries.isPending
+                      ? "Generating..."
+                      : `Generate Summaries (${Math.min(10, itemsWithoutSummary.length)})`}
+                  </Button>
+                )}
                 <Button onClick={() => setAddDialogOpen(true)}>
                   <Plus className="mr-2 h-4 w-4" />
                   Add Knowledge

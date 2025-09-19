@@ -23,6 +23,7 @@ export const AITaskTypeSchema = z.enum([
   "realtime_assist", // Real-time assistance requiring low latency
   "knowledge_search", // Semantic search through knowledge base
   "report_generation", // Formal report generation with structured output
+  "general", // General purpose AI task without specific optimization
 ]);
 
 /**

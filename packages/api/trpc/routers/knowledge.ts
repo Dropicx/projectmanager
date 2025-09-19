@@ -84,6 +84,7 @@ export const knowledgeRouter = router({
             updatedAt: knowledge_base.updated_at,
             createdBy: knowledge_base.created_by,
             views: sql<number>`COALESCE(${knowledge_base.metadata}->>'views', '0')::int`,
+            summary: sql<string | null>`${knowledge_base.metadata}->>'summary'`,
           })
           .from(knowledge_base);
 
@@ -856,6 +857,167 @@ Format in markdown with clear headings and sections.`,
           sourceCount: 0,
         };
       }
+    }),
+
+  /**
+   * Generate AI summary for a knowledge item using Nova Lite
+   */
+  generateSummary: protectedProcedure
+    .input(
+      z.object({
+        knowledgeId: z.string().uuid(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      try {
+        // Fetch the knowledge item
+        const item = await ctx.db
+          .select()
+          .from(knowledge_base)
+          .where(
+            and(
+              eq(knowledge_base.id, input.knowledgeId),
+              eq(knowledge_base.organization_id, ctx.user.organizationId || "")
+            )
+          )
+          .limit(1);
+
+        if (!item || item.length === 0) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Knowledge item not found",
+          });
+        }
+
+        const knowledgeItem = item[0];
+
+        // Generate summary using Nova Lite
+        const summary = await aiOrchestrator.execute({
+          prompt: `Please provide a concise 2-3 sentence summary of the following content. Focus on the key insights and practical value:
+
+Title: ${knowledgeItem.title}
+Type: ${knowledgeItem.knowledge_type}
+Content: ${knowledgeItem.content}
+
+Summary:`,
+          userId: ctx.user.id,
+          complexity: 2, // Simple task for Nova Lite
+          urgency: "batch",
+          accuracyRequired: "standard",
+          contextLength: 1000,
+          budgetConstraint: 5, // Very low cost for Nova Lite
+          preferredModel: "nova-lite", // Hint to use Nova Lite
+        });
+
+        // Update the knowledge item with the summary in metadata
+        await ctx.db
+          .update(knowledge_base)
+          .set({
+            metadata: {
+              ...((knowledgeItem.metadata as any) || {}),
+              summary: summary.content,
+              summaryGeneratedAt: new Date().toISOString(),
+            },
+          })
+          .where(eq(knowledge_base.id, input.knowledgeId));
+
+        return {
+          summary: summary.content,
+          generatedAt: new Date().toISOString(),
+        };
+      } catch (error) {
+        console.error("Error generating summary:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to generate summary",
+        });
+      }
+    }),
+
+  /**
+   * Get summaries for multiple knowledge items
+   */
+  generateBatchSummaries: protectedProcedure
+    .input(
+      z.object({
+        knowledgeIds: z.array(z.string().uuid()).max(10),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const summaries = await Promise.all(
+        input.knowledgeIds.map(async (knowledgeId) => {
+          try {
+            const item = await ctx.db
+              .select()
+              .from(knowledge_base)
+              .where(
+                and(
+                  eq(knowledge_base.id, knowledgeId),
+                  eq(knowledge_base.organization_id, ctx.user.organizationId || "")
+                )
+              )
+              .limit(1);
+
+            if (!item || item.length === 0) {
+              return { knowledgeId, error: "Not found" };
+            }
+
+            const knowledgeItem = item[0];
+
+            // Check if we already have a recent summary
+            const metadata = knowledgeItem.metadata as any;
+            if (metadata?.summary && metadata?.summaryGeneratedAt) {
+              const generatedDate = new Date(metadata.summaryGeneratedAt);
+              const daysSinceGenerated =
+                (Date.now() - generatedDate.getTime()) / (1000 * 60 * 60 * 24);
+              if (daysSinceGenerated < 7) {
+                return {
+                  knowledgeId,
+                  summary: metadata.summary,
+                  cached: true,
+                };
+              }
+            }
+
+            // Generate new summary using Nova Lite
+            const summary = await aiOrchestrator.execute({
+              prompt: `Provide a 2-3 sentence summary highlighting key insights:
+
+${knowledgeItem.title}: ${knowledgeItem.content?.substring(0, 1000)}`,
+              userId: ctx.user.id,
+              complexity: 1,
+              urgency: "batch",
+              accuracyRequired: "standard",
+              contextLength: 500,
+              budgetConstraint: 3,
+              preferredModel: "nova-lite",
+            });
+
+            // Update metadata
+            await ctx.db
+              .update(knowledge_base)
+              .set({
+                metadata: {
+                  ...(metadata || {}),
+                  summary: summary.content,
+                  summaryGeneratedAt: new Date().toISOString(),
+                },
+              })
+              .where(eq(knowledge_base.id, knowledgeId));
+
+            return {
+              knowledgeId,
+              summary: summary.content,
+              cached: false,
+            };
+          } catch (error) {
+            console.error(`Error generating summary for ${knowledgeId}:`, error);
+            return { knowledgeId, error: "Failed to generate" };
+          }
+        })
+      );
+
+      return summaries;
     }),
 });
 

@@ -24,18 +24,44 @@ export class BedrockClient {
     const startTime = Date.now();
 
     try {
-      const body = JSON.stringify({
-        anthropic_version: "bedrock-2023-05-31",
-        max_tokens: config.maxTokens,
-        temperature: config.temperature,
-        top_p: config.topP,
-        messages: [
-          {
-            role: "user",
-            content: prompt,
+      // Different request formats for different model families
+      let body: string;
+      let responseText: string;
+
+      if (modelId.startsWith("amazon.nova")) {
+        // Nova model format
+        body = JSON.stringify({
+          messages: [
+            {
+              role: "user",
+              content: [{ text: prompt }],
+            },
+          ],
+          system: [],
+          inferenceConfig: {
+            temperature: config.temperature,
+            top_p: config.topP,
+            max_new_tokens: config.maxTokens,
+            stopSequences: [],
           },
-        ],
-      });
+        });
+      } else if (modelId.startsWith("anthropic.claude")) {
+        // Claude model format
+        body = JSON.stringify({
+          anthropic_version: "bedrock-2023-05-31",
+          max_tokens: config.maxTokens,
+          temperature: config.temperature,
+          top_p: config.topP,
+          messages: [
+            {
+              role: "user",
+              content: prompt,
+            },
+          ],
+        });
+      } else {
+        throw new Error(`Unsupported model: ${modelId}`);
+      }
 
       const command = new InvokeModelCommand({
         modelId,
@@ -47,12 +73,21 @@ export class BedrockClient {
       const response = await this.client.send(command);
       const responseBody = JSON.parse(new TextDecoder().decode(response.body));
 
+      // Extract text based on model family
+      if (modelId.startsWith("amazon.nova")) {
+        responseText = responseBody.output?.message?.content?.[0]?.text || "";
+      } else if (modelId.startsWith("anthropic.claude")) {
+        responseText = responseBody.content?.[0]?.text || "";
+      } else {
+        throw new Error(`Unable to parse response from model: ${modelId}`);
+      }
+
       const latencyMs = Date.now() - startTime;
-      const tokensUsed = this.estimateTokens(prompt + responseBody.content[0].text);
+      const tokensUsed = this.estimateTokens(prompt + responseText);
       const costCents = Math.ceil((tokensUsed / 1000000) * config.costPer1MTokens);
 
       return {
-        content: responseBody.content[0].text,
+        content: responseText,
         model: config.model as any,
         tokensUsed,
         costCents,

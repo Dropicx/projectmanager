@@ -161,6 +161,10 @@ export class AIOrchestrator {
         // High-quality model for formal reports
         return candidates.find((c) => c.model === "claude-3-7-sonnet") || candidates[0];
 
+      case "general":
+        // For general tasks, use cost-effective model
+        return candidates.find((c) => c.model === "nova-lite") || candidates[0];
+
       default:
         // Fallback to cheapest available model
         return candidates[0];
@@ -321,6 +325,36 @@ export class AIOrchestrator {
       contextLength: 4000,
       budgetConstraint: 100,
       userId: "system",
+    };
+
+    return this.processRequest(task);
+  }
+
+  /**
+   * Execute an AI task with optional model preference
+   * This is a convenience method that allows specifying a preferred model
+   */
+  async execute(params: {
+    prompt: string;
+    userId: string;
+    projectId?: string;
+    complexity?: number;
+    urgency?: "realtime" | "batch" | "background";
+    accuracyRequired?: "high" | "standard" | "low";
+    contextLength?: number;
+    budgetConstraint?: number;
+    preferredModel?: string;
+  }): Promise<AIResponse> {
+    const task: AITask = {
+      type: params.preferredModel === "nova-lite" ? "quick_summary" : "general",
+      prompt: params.prompt,
+      complexity: params.complexity || 3,
+      urgency: params.urgency || "batch",
+      accuracyRequired: params.accuracyRequired || "standard",
+      contextLength: params.contextLength || 4000,
+      budgetConstraint: params.budgetConstraint || 100,
+      userId: params.userId,
+      projectId: params.projectId,
     };
 
     return this.processRequest(task);
