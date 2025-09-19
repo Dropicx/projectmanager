@@ -226,6 +226,7 @@ const _dailyInsightsJob = new CronJob(
 // This syncs all configured RSS feeds (General IT News, Security Advisories, Citizen Security)
 
 // Daily RSS Feed Sync Job
+console.log("[RSS SYNC] Initializing daily RSS sync cron job (8 AM UTC)...");
 const dailyRssSyncJob = new CronJob(
   "0 8 * * *", // Run at 8 AM daily
   async () => {
@@ -372,6 +373,13 @@ process.on("SIGINT", async () => {
 
 console.log("Background workers started successfully");
 
-// Log next scheduled RSS sync time
+// Log cron job status
+console.log("========================================");
+console.log("[CRON JOBS] Status Report:");
+console.log(`[CRON JOBS] Daily RSS Sync: ${dailyRssSyncJob.running ? "RUNNING" : "STOPPED"}`);
 const nextRssSync = dailyRssSyncJob.nextDates(1);
-console.log(`[RSS SYNC] Next scheduled sync: ${nextRssSync[0].toISO()} (UTC)`);
+console.log(`[CRON JOBS] Next RSS sync scheduled for: ${nextRssSync[0].toISO()} (UTC)`);
+console.log(`[CRON JOBS] Current time: ${new Date().toISOString()}`);
+const hoursUntilSync = Math.round((nextRssSync[0].toMillis() - Date.now()) / (1000 * 60 * 60));
+console.log(`[CRON JOBS] Time until next sync: ~${hoursUntilSync} hours`);
+console.log("========================================");
