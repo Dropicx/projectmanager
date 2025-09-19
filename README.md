@@ -6,7 +6,8 @@ A production-ready consulting project management platform with AI-powered insigh
 
 - **AI-Powered Insights**: Multi-model AI orchestration with Claude, Nova, and Mistral
 - **Project Management**: Comprehensive project tracking and collaboration
-- **Knowledge Base**: RAG-enabled knowledge management system
+- **Knowledge Base**: RAG-enabled knowledge management system with AI summaries
+- **AI Summaries**: Automatic Nova Lite-powered summaries for knowledge items
 - **Real-time Collaboration**: Live updates and notifications
 - **Risk Assessment**: Automated AI-driven risk analysis
 - **Cost Optimization**: Intelligent model selection based on task requirements

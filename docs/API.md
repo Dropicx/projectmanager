@@ -168,6 +168,56 @@ updateKnowledge.mutate({
 })
 ```
 
+#### Generate AI Summary for Knowledge Item
+```typescript
+// Mutation
+const generateSummary = trpc.knowledge.generateSummary.useMutation()
+
+// Usage
+const summary = await generateSummary.mutate({
+  knowledgeId: "kb_123"
+})
+
+// Response
+{
+  "data": {
+    "summary": "This knowledge item provides a comprehensive framework for AWS migration, focusing on cost optimization and security best practices. It includes step-by-step guidance for planning, execution, and post-migration validation.",
+    "generatedAt": "2024-01-20T10:30:00Z"
+  }
+}
+```
+
+#### Generate Batch AI Summaries
+```typescript
+// Mutation
+const generateBatchSummaries = trpc.knowledge.generateBatchSummaries.useMutation()
+
+// Usage
+const summaries = await generateBatchSummaries.mutate({
+  knowledgeIds: ["kb_123", "kb_124", "kb_125"]
+})
+
+// Response
+{
+  "data": [
+    {
+      "knowledgeId": "kb_123",
+      "summary": "Comprehensive AWS migration framework with focus on cost and security.",
+      "cached": false
+    },
+    {
+      "knowledgeId": "kb_124",
+      "summary": "Database optimization strategies for high-performance PostgreSQL deployments.",
+      "cached": true  // Reused existing summary
+    },
+    {
+      "knowledgeId": "kb_125",
+      "error": "Not found"
+    }
+  ]
+}
+```
+
 ### AI API
 
 #### Generate Knowledge Insights

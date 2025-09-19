@@ -692,6 +692,55 @@ startCommand = "pnpm start --filter=@consulting-platform/web"
 startCommand = "pnpm worker:start"
 ```
 
+## 🎯 Implemented Features
+
+### Knowledge Item Summaries with Nova Lite
+The first production implementation uses Amazon Nova Lite (`amazon.nova-lite-v1:0`) for generating concise summaries of knowledge base items:
+
+#### Implementation Details
+- **Model**: Amazon Nova Lite - Cost-effective at $0.06 per 1M tokens
+- **Use Case**: Automatic 2-3 sentence summaries for knowledge cards
+- **Caching**: Summaries stored in metadata and reused for 7 days
+- **Batch Processing**: Generate up to 10 summaries simultaneously
+
+#### API Endpoints
+```typescript
+// Generate single summary
+trpc.knowledge.generateSummary.mutate({
+  knowledgeId: "uuid-here"
+})
+
+// Generate batch summaries
+trpc.knowledge.generateBatchSummaries.mutate({
+  knowledgeIds: ["uuid-1", "uuid-2", "..."]
+})
+```
+
+#### UI Features
+- **Visual Indicator**: Summaries displayed with sparkle icon (✨)
+- **Auto-Generation Button**: "Generate Summaries" button for items without summaries
+- **Progressive Enhancement**: Falls back to content excerpt if no summary exists
+
+#### BedrockClient Nova Support
+```typescript
+// Nova model format
+if (modelId.startsWith("amazon.nova")) {
+  body = JSON.stringify({
+    messages: [{
+      role: "user",
+      content: [{ text: prompt }]
+    }],
+    system: [],
+    inferenceConfig: {
+      temperature: config.temperature,
+      top_p: config.topP,
+      max_new_tokens: config.maxTokens,
+      stopSequences: []
+    }
+  });
+}
+```
+
 ## 📚 Best Practices
 
 ### Model Selection
