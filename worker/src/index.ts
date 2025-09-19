@@ -18,10 +18,10 @@
 
 import { AIOrchestrator } from "@consulting-platform/ai";
 import { syncAllRssFeeds } from "@consulting-platform/api";
-import { db, engagements } from "@consulting-platform/database";
+import { db, engagements, knowledgeItems } from "@consulting-platform/database";
 import { Queue, Worker } from "bullmq";
 import { CronJob } from "cron";
-import { eq, gte } from "drizzle-orm";
+import { eq, gte, inArray } from "drizzle-orm";
 import { Redis } from "ioredis";
 import "./health"; // Start health check server
 
@@ -86,6 +86,7 @@ const queueConnection = new Redis(redisUrl, {
 });
 const aiInsightsQueue = new Queue("ai-insights", { connection: queueConnection });
 const riskAssessmentQueue = new Queue("risk-assessment", { connection: queueConnection });
+const knowledgeSummaryQueue = new Queue("knowledge-summary", { connection: queueConnection });
 
 // Background job processors
 const workerConnection1 = new Redis(redisUrl, {
@@ -193,6 +194,127 @@ const riskAssessmentWorker = new Worker(
   {
     connection: workerConnection2,
     concurrency: 3,
+  }
+);
+
+// Knowledge Summary Worker
+const workerConnection3 = new Redis(redisUrl, {
+  ...redisOptions,
+  family: 0,
+  retryStrategy: (times) => Math.min(times * 50, 2000),
+});
+const knowledgeSummaryWorker = new Worker(
+  "knowledge-summary",
+  async (job) => {
+    const { knowledgeId, userId, isBatch } = job.data;
+
+    try {
+      if (isBatch) {
+        // Batch processing: generate summaries for multiple items
+        const items = await db
+          .select()
+          .from(knowledgeItems)
+          .where(eq(knowledgeItems.user_id, userId))
+          .limit(50); // Process up to 50 items at a time
+
+        console.log(`Starting batch summary generation for ${items.length} knowledge items`);
+        let successCount = 0;
+        let errorCount = 0;
+
+        for (const item of items) {
+          // Skip if summary already exists
+          if (item.metadata?.ai_summary) {
+            console.log(`Skipping ${item.id} - summary already exists`);
+            continue;
+          }
+
+          try {
+            const response = await aiOrchestrator.execute({
+              prompt: `Provide a concise summary (2-3 sentences) of the following content:\n\n${item.content}`,
+              userId,
+              knowledgeId: item.id,
+              preferredModel: "nova-lite",
+              complexity: 2,
+              urgency: "batch",
+              accuracyRequired: "standard",
+              contextLength: 4000,
+              budgetConstraint: 10,
+            });
+
+            // Update item with AI summary
+            await db
+              .update(knowledgeItems)
+              .set({
+                metadata: {
+                  ...item.metadata,
+                  ai_summary: response.content,
+                  ai_model: response.model,
+                  ai_generated_at: new Date().toISOString(),
+                  ai_cost_cents: response.costCents,
+                },
+                updated_at: new Date(),
+              })
+              .where(eq(knowledgeItems.id, item.id));
+
+            successCount++;
+            console.log(`Generated summary for knowledge item ${item.id}`);
+          } catch (error) {
+            errorCount++;
+            console.error(`Failed to generate summary for item ${item.id}:`, error);
+          }
+        }
+
+        console.log(`Batch summary complete: ${successCount} succeeded, ${errorCount} failed`);
+      } else {
+        // Single item processing
+        const [item] = await db
+          .select()
+          .from(knowledgeItems)
+          .where(eq(knowledgeItems.id, knowledgeId))
+          .limit(1);
+
+        if (!item) {
+          throw new Error("Knowledge item not found");
+        }
+
+        // Generate AI summary using Nova Lite
+        const response = await aiOrchestrator.execute({
+          prompt: `Provide a concise summary (2-3 sentences) of the following content:\n\n${item.content}`,
+          userId,
+          knowledgeId,
+          preferredModel: "nova-lite",
+          complexity: 2,
+          urgency: "batch",
+          accuracyRequired: "standard",
+          contextLength: 4000,
+          budgetConstraint: 10,
+        });
+
+        // Update knowledge item with AI summary
+        await db
+          .update(knowledgeItems)
+          .set({
+            metadata: {
+              ...item.metadata,
+              ai_summary: response.content,
+              ai_model: response.model,
+              ai_generated_at: new Date().toISOString(),
+              ai_cost_cents: response.costCents,
+            },
+            updated_at: new Date(),
+          })
+          .where(eq(knowledgeItems.id, knowledgeId));
+
+        console.log(`Generated AI summary for knowledge item ${knowledgeId}`);
+      }
+    } catch (error) {
+      console.error(`Failed to generate summary for knowledge item:`, error);
+      throw error;
+    }
+  },
+  {
+    connection: workerConnection3,
+    concurrency: 10, // Higher concurrency for lightweight summary tasks
   }
 );
 
@@ -357,17 +479,24 @@ riskAssessmentWorker.on("error", (error) => {
   console.error("Risk Assessment Worker error:", error);
 });
 
+knowledgeSummaryWorker.on("error", (error) => {
+  console.error("Knowledge Summary Worker error:", error);
+});
+
 // Graceful shutdown
 process.on("SIGINT", async () => {
   console.log("Shutting down workers...");
   await aiInsightsWorker.close();
   await riskAssessmentWorker.close();
+  await knowledgeSummaryWorker.close();
   await aiInsightsQueue.close();
   await riskAssessmentQueue.close();
+  await knowledgeSummaryQueue.close();
   await redis.quit();
   await queueConnection.quit();
   await workerConnection1.quit();
   await workerConnection2.quit();
+  await workerConnection3.quit();
   process.exit(0);
 });
 
