@@ -192,9 +192,9 @@ export class AIOrchestrator {
     const modelMap: Record<ModelType, string> = {
       "claude-3-7-sonnet": "anthropic.claude-3-5-sonnet-20241022-v2:0",
       "claude-3-5-haiku": "anthropic.claude-3-5-haiku-20241022-v1:0",
-      // Nova models use inference profiles for API key access
-      "nova-pro": "us.amazon.nova-pro-v1:0",
-      "nova-lite": "us.amazon.nova-lite-v1:0",
+      // Nova models use EU inference profiles for API key access
+      "nova-pro": "eu.amazon.nova-pro-v1:0",
+      "nova-lite": "eu.amazon.nova-lite-v1:0",
       "mistral-large": "mistral.mistral-large-2407-v1:0",
       "llama-3-8b": "meta.llama-3-8b-instruct-v1:0",
       "llama-3-70b": "meta.llama-3-70b-instruct-v1:0",
