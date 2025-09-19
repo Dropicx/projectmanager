@@ -53,7 +53,7 @@ export class BedrockClient {
         modelId.startsWith("us.amazon.nova") ||
         modelId.startsWith("eu.amazon.nova")
       ) {
-        // Nova model format
+        // Nova model format - requires at least one system message
         body = JSON.stringify({
           messages: [
             {
@@ -61,7 +61,11 @@ export class BedrockClient {
               content: [{ text: prompt }],
             },
           ],
-          system: [],
+          system: [
+            {
+              text: "You are a helpful AI assistant.",
+            },
+          ],
           inferenceConfig: {
             temperature: config.temperature,
             top_p: config.topP,
