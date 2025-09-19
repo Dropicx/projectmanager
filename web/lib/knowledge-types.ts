@@ -13,7 +13,7 @@ export interface TypeField {
   type: "text" | "textarea" | "date" | "select" | "checklist" | "number";
   placeholder?: string;
   options?: { value: string; label: string }[];
-  defaultValue?: any;
+  defaultValue?: string | string[] | number | boolean;
 }
 
 export interface TypeSection {
@@ -47,36 +47,11 @@ export interface KnowledgeTypeConfig {
 }
 
 export const KNOWLEDGE_TYPES: Record<string, KnowledgeTypeConfig> = {
-  note: {
-    id: "note",
-    name: "Simple Note",
-    description: "Quick notes and free-form documentation",
-    icon: "📝",
-    color: "gray",
-    sections: [
-      {
-        id: "content",
-        title: "Content",
-        description: "Write your note or documentation here",
-        fields: [
-          {
-            id: "body",
-            label: "Note Content",
-            type: "textarea",
-            required: true,
-            placeholder: "Start writing your note, documentation, or any other content...",
-          },
-        ],
-      },
-    ],
-    aiFeatures: {
-      generateSummary: true,
-      autoTag: true,
-    },
-    exportFormats: ["md", "pdf", "docx"],
-  },
-  decision: {
-    id: "decision",
+  // Note: Simple Note is not included here as it's only for Basic Mode
+  // Template Mode uses structured templates only
+
+  "decision-record": {
+    id: "decision-record",
     name: "Decision Record",
     description: "Document important decisions with context and rationale",
     icon: "Scale",
@@ -193,8 +168,8 @@ export const KNOWLEDGE_TYPES: Record<string, KnowledgeTypeConfig> = {
     },
   },
 
-  solution: {
-    id: "solution",
+  "solution-design": {
+    id: "solution-design",
     name: "Solution Design",
     description: "Document technical solutions and architectures",
     icon: "Lightbulb",
@@ -302,8 +277,8 @@ export const KNOWLEDGE_TYPES: Record<string, KnowledgeTypeConfig> = {
     },
   },
 
-  issue: {
-    id: "issue",
+  "issue-analysis": {
+    id: "issue-analysis",
     name: "Issue Analysis",
     description: "Track and analyze problems with root cause analysis",
     icon: "AlertCircle",
@@ -437,9 +412,9 @@ export const KNOWLEDGE_TYPES: Record<string, KnowledgeTypeConfig> = {
     },
   },
 
-  pattern: {
-    id: "pattern",
-    name: "Method/Process",
+  "method-process": {
+    id: "method-process",
+    name: "Method & Process",
     description: "Document reusable methods, processes, and patterns",
     icon: "GitBranch",
     color: "purple",
@@ -551,10 +526,10 @@ export const KNOWLEDGE_TYPES: Record<string, KnowledgeTypeConfig> = {
     exportFormats: ["markdown", "checklist", "diagram"],
   },
 
-  template: {
-    id: "template",
-    name: "Template",
-    description: "Reusable templates and frameworks",
+  "reusable-template": {
+    id: "reusable-template",
+    name: "Reusable Template",
+    description: "Reusable templates and frameworks for standardization",
     icon: "FileText",
     color: "yellow",
     sections: [
@@ -645,8 +620,8 @@ export const KNOWLEDGE_TYPES: Record<string, KnowledgeTypeConfig> = {
     exportFormats: ["word", "markdown", "html"],
   },
 
-  reference: {
-    id: "reference",
+  "reference-guide": {
+    id: "reference-guide",
     name: "Reference Guide",
     description: "Quick reference documentation and guides",
     icon: "Book",
@@ -753,8 +728,8 @@ export const KNOWLEDGE_TYPES: Record<string, KnowledgeTypeConfig> = {
     },
   },
 
-  insight: {
-    id: "insight",
+  "case-study": {
+    id: "case-study",
     name: "Case Study",
     description: "Document project experiences and lessons learned",
     icon: "TrendingUp",
@@ -889,8 +864,8 @@ export const KNOWLEDGE_TYPES: Record<string, KnowledgeTypeConfig> = {
     exportFormats: ["presentation", "report", "markdown"],
   },
 
-  action: {
-    id: "action",
+  "action-plan": {
+    id: "action-plan",
     name: "Action Plan",
     description: "Strategic plans with tasks and milestones",
     icon: "Target",
@@ -1035,7 +1010,7 @@ export function getTypeOptions() {
 export const knowledgeTypes = Object.values(KNOWLEDGE_TYPES);
 
 // Helper function to validate required fields
-export function validateTypeFields(typeId: string, data: Record<string, any>): string[] {
+export function validateTypeFields(typeId: string, data: Record<string, unknown>): string[] {
   const errors: string[] = [];
   const config = getTypeConfig(typeId);
 

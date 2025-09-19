@@ -45,8 +45,8 @@ import { KnowledgeEditor } from "./knowledge-editor";
 
 interface TypeTemplateProps {
   typeConfig: KnowledgeTypeConfig;
-  initialData?: Record<string, any>;
-  onChange: (data: Record<string, any>) => void;
+  initialData?: Record<string, unknown>;
+  onChange: (data: Record<string, unknown>) => void;
   onContentGenerated?: (content: string) => void;
   mode?: "create" | "edit" | "view";
 }
@@ -58,13 +58,13 @@ export function TypeTemplate({
   onContentGenerated,
   mode = "create",
 }: TypeTemplateProps) {
-  const [formData, setFormData] = useState<Record<string, any>>(initialData);
+  const [formData, setFormData] = useState<Record<string, unknown>>(initialData);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set(typeConfig.sections.filter((s) => s.required).map((s) => s.id))
   );
   const [activeTab, setActiveTab] = useState("structured");
 
-  const handleFieldChange = (sectionId: string, fieldKey: string, value: any) => {
+  const handleFieldChange = (sectionId: string, fieldKey: string, value: unknown) => {
     const newData = {
       ...formData,
       [sectionId]: {
@@ -119,7 +119,7 @@ export function TypeTemplate({
   };
 
   const getFieldIcon = (fieldId: string) => {
-    const iconMap: Record<string, any> = {
+    const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
       context: Info,
       decision: Target,
       stakeholders: Users,
@@ -239,7 +239,7 @@ export function TypeTemplate({
                 <SelectValue placeholder={field.placeholder || "Select an option"} />
               </SelectTrigger>
               <SelectContent>
-                {field.options?.map((option: any) => (
+                {field.options?.map((option) => (
                   <SelectItem key={option.value || option} value={option.value || option}>
                     {option.label || option}
                   </SelectItem>
@@ -261,7 +261,7 @@ export function TypeTemplate({
               {field.required && <span className="text-red-500">*</span>}
             </Label>
             <div className="flex flex-wrap gap-2 p-3 border rounded-md min-h-[60px]">
-              {field.options?.map((option: any) => {
+              {field.options?.map((option) => {
                 const optionValue = option.value || option;
                 const isSelected = Array.isArray(value) && value.includes(optionValue);
                 return (
@@ -294,29 +294,8 @@ export function TypeTemplate({
     }
   };
 
-  // For Simple Note type, show a simpler interface
-  if (typeConfig.id === "note") {
-    return (
-      <div className="space-y-4">
-        {/* Simple editor for note */}
-        <KnowledgeEditor
-          content={formData.content?.body || ""}
-          onChange={(content) => {
-            const newData = { ...formData, content: { body: content } };
-            setFormData(newData);
-            onChange(newData);
-            if (onContentGenerated) {
-              onContentGenerated(content);
-            }
-          }}
-          placeholder="Start writing your note, documentation, or any other content..."
-          editable={mode !== "view"}
-          showToolbar={mode !== "view"}
-          minHeight="min-h-[400px]"
-        />
-      </div>
-    );
-  }
+  // Simple Note is not available in Template Mode
+  // All templates are structured
 
   return (
     <div className="space-y-6">

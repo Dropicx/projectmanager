@@ -35,11 +35,15 @@
     "validate": "pnpm type-check && pnpm lint && pnpm security:audit && pnpm test"
   },
   "devDependencies": {
+    "@aws-sdk/client-bedrock-runtime": "^3.891.0",
+    "@aws-sdk/credential-providers": "^3.892.0",
     "@biomejs/biome": "^2.2.4",
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
+    "@smithy/node-http-handler": "^4.2.1",
     "@types/node": "^24.4.0",
     "audit-ci": "^7.1.0",
+    "dotenv": "^17.2.2",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.6",
     "pg": "^8.16.3",

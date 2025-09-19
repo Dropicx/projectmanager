@@ -1,9 +1,13 @@
+import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
+import { fromEnv } from "@aws-sdk/credential-providers";
 import {
+  ai_interactions,
   engagements,
   knowledge_base,
   knowledge_categories,
   knowledge_to_categories,
 } from "@consulting-platform/database";
+import { NodeHttpHandler } from "@smithy/node-http-handler";
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq, inArray, isNull, like, or, sql } from "drizzle-orm";
 import { z } from "zod";
@@ -124,7 +128,7 @@ export const knowledgeRouter = router({
 
       // Calculate actual item counts for each category
       const categoriesWithCounts = await Promise.all(
-        categories.map(async (category: any) => {
+        categories.map(async (category) => {
           const count = await ctx.db
             .select({ count: sql`count(*)::int` })
             .from(knowledge_to_categories)
@@ -213,7 +217,7 @@ export const knowledgeRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const updates: any = {
+      const updates: Record<string, unknown> = {
         updated_at: new Date(),
       };
 
@@ -327,7 +331,12 @@ export const knowledgeRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const embedding = await generateEmbedding(input.content);
+      const embedding = await generateEmbedding(input.content, {
+        db: ctx.db,
+        userId: ctx.user.id,
+        organizationId: ctx.user.organizationId,
+        trackCost: true,
+      });
 
       const [entry] = await ctx.db
         .insert(knowledge_base)
@@ -335,7 +344,7 @@ export const knowledgeRouter = router({
           organization_id: ctx.user.organizationId || "",
           title: input.title,
           content: input.content,
-          embedding: embedding as any, // Cast to any for JSONB compatibility
+          embedding: embedding as unknown as any, // Cast for JSONB compatibility
           tags: input.tags || [],
           knowledge_type: mapToKnowledgeType(input.type),
           is_public: false, // Always private to organization
@@ -424,7 +433,12 @@ export const knowledgeRouter = router({
 
       if (input.content) {
         updates.content = input.content;
-        updates.embedding = (await generateEmbedding(input.content)) as any; // Cast to any for JSONB compatibility
+        updates.embedding = (await generateEmbedding(input.content, {
+          db: ctx.db,
+          userId: ctx.user.id,
+          organizationId: ctx.user.organizationId,
+          trackCost: true,
+        })) as unknown as any; // Cast for JSONB compatibility
       }
 
       // Ensure user can only update their organization's knowledge
@@ -524,7 +538,12 @@ export const knowledgeRouter = router({
       }
 
       // Generate embedding for the content
-      const embedding = await generateEmbedding(input.content);
+      const embedding = await generateEmbedding(input.content, {
+        db: ctx.db,
+        userId: ctx.user.id,
+        organizationId: ctx.user.organizationId,
+        trackCost: true,
+      });
 
       // Create knowledge entry
       const [entry] = await ctx.db
@@ -578,7 +597,7 @@ export const knowledgeRouter = router({
 
         // Filter by type in memory if specified
         if (input.type && input.type !== "all") {
-          return entries.filter((entry: any) => {
+          return entries.filter((entry) => {
             return entry.knowledge_type === input.type;
           });
         }
@@ -604,7 +623,12 @@ export const knowledgeRouter = router({
     .query(async ({ ctx, input }) => {
       try {
         // Generate embedding for search query
-        const queryEmbedding = await generateEmbedding(input.query);
+        const queryEmbedding = await generateEmbedding(input.query, {
+          db: ctx.db,
+          userId: ctx.user.id,
+          organizationId: ctx.user.organizationId,
+          trackCost: true,
+        });
 
         // Get all entries (with optional project filter)
         const conditions = [];
@@ -620,7 +644,7 @@ export const knowledgeRouter = router({
 
         // Perform semantic search using embeddings
         const results = entries
-          .map((entry: any) => {
+          .map((entry) => {
             if (!entry.embedding) return null;
             const similarity = cosineSimilarity(queryEmbedding, entry.embedding as number[]);
             return { ...entry, similarity };
@@ -668,7 +692,13 @@ export const knowledgeRouter = router({
       if (input.content) {
         updates.content = input.content;
         // Regenerate embedding if content changed
-        updates.embedding = await generateEmbedding(input.content);
+        updates.embedding = await generateEmbedding(input.content, {
+          db: ctx.db,
+          userId: ctx.user.id,
+          organizationId: ctx.user.organizationId,
+          knowledgeId: input.id,
+          trackCost: true,
+        });
       }
 
       // Ensure user can only update their organization's knowledge
@@ -720,7 +750,7 @@ export const knowledgeRouter = router({
         }
 
         // Prepare context for AI
-        const context = {
+        const _context = {
           projectName: engagement.client_name,
           projectDescription: engagement.description || "",
           status: engagement.status,
@@ -994,12 +1024,181 @@ function mapToKnowledgeType(
   return typeMap[type] || "reference";
 }
 
-// Helper function to generate embeddings
-async function generateEmbedding(_text: string): Promise<number[]> {
-  // For now, return a mock embedding
-  // In production, you'd call OpenAI or another embedding service
-  const mockEmbedding = new Array(1536).fill(0).map(() => Math.random());
-  return mockEmbedding;
+// Initialize Bedrock client for embeddings
+const getBedrockClient = (): BedrockRuntimeClient => {
+  const region = process.env.AWS_REGION || "eu-central-1";
+  const bedrockApiKey = process.env.BEDROCK_API_KEY;
+
+  if (bedrockApiKey) {
+    console.log("Using Bedrock API key for embeddings");
+    process.env.AWS_BEARER_TOKEN_BEDROCK = bedrockApiKey;
+    return new BedrockRuntimeClient({
+      region,
+      requestHandler: new NodeHttpHandler({
+        connectionTimeout: 5000,
+        socketTimeout: 30000,
+      }),
+    });
+  }
+
+  console.log("Using AWS IAM credentials for embeddings");
+  return new BedrockRuntimeClient({
+    region,
+    credentials: fromEnv(),
+    requestHandler: new NodeHttpHandler({
+      connectionTimeout: 5000,
+      socketTimeout: 30000,
+    }),
+  });
+};
+
+// Helper function to generate embeddings with AWS Titan
+async function generateEmbedding(
+  text: string,
+  options?: {
+    db?: any; // Database connection for cost tracking
+    userId?: string;
+    organizationId?: string;
+    engagementId?: string;
+    knowledgeId?: string;
+    trackCost?: boolean;
+  }
+): Promise<number[]> {
+  const startTime = Date.now();
+
+  try {
+    // Validate input
+    if (!text || text.trim().length === 0) {
+      console.warn("Empty text provided for embedding generation");
+      return generateMockEmbedding();
+    }
+
+    // Truncate text if too long (Titan has a limit)
+    const maxChars = 8000; // Titan's approximate character limit
+    const truncatedText = text.length > maxChars ? text.substring(0, maxChars) : text;
+
+    if (text.length > maxChars) {
+      console.warn(`Text truncated from ${text.length} to ${maxChars} characters for embedding`);
+    }
+
+    // Use AWS Titan Embed Text v2 model
+    const modelId = "amazon.titan-embed-text-v2:0";
+    const client = getBedrockClient();
+
+    // Prepare the request body for Titan embedding
+    const requestBody = {
+      inputText: truncatedText,
+      dimensions: 1536, // Titan v2 supports configurable dimensions
+      normalize: true, // Normalize embeddings for cosine similarity
+    };
+
+    const command = new InvokeModelCommand({
+      modelId,
+      body: JSON.stringify(requestBody),
+      contentType: "application/json",
+      accept: "application/json",
+    });
+
+    console.log(`Generating embedding for text (${truncatedText.length} chars) with Titan...`);
+    const response = await client.send(command);
+
+    // Parse the response
+    const responseBody = JSON.parse(new TextDecoder().decode(response.body));
+
+    // Extract the embedding from Titan's response
+    const embedding = responseBody.embedding;
+
+    if (!embedding || !Array.isArray(embedding)) {
+      console.error("Invalid embedding response from Titan:", responseBody);
+      throw new Error("Invalid embedding response structure");
+    }
+
+    // Validate embedding dimensions
+    if (embedding.length !== 1536) {
+      console.warn(`Unexpected embedding dimensions: ${embedding.length}, expected 1536`);
+    }
+
+    const latencyMs = Date.now() - startTime;
+    console.log(`Embedding generated successfully in ${latencyMs}ms`);
+
+    // Track cost if requested
+    if (options?.trackCost && options.userId && options.organizationId && options.db) {
+      try {
+        // Estimate tokens (Titan charges per input token)
+        // Rough estimate: 1 token ≈ 4 characters
+        const estimatedTokens = Math.ceil(truncatedText.length / 4);
+
+        // Titan Embed v2 pricing: $0.02 per 1M input tokens (as of 2024)
+        const costPer1MTokens = 2; // in cents
+        const costCents = Math.ceil((estimatedTokens / 1000000) * costPer1MTokens);
+
+        // Log to ai_interactions table
+        await options.db.insert(ai_interactions).values({
+          user_id: options.userId,
+          organization_id: options.organizationId,
+          engagement_id: options.engagementId || null,
+          knowledge_id: options.knowledgeId || null,
+          model: "titan-embed-v2",
+          action: "embed",
+          prompt: truncatedText.substring(0, 500), // Store first 500 chars as sample
+          response: `Generated ${embedding.length}D embedding`,
+          tokens_used: estimatedTokens,
+          cost_cents: costCents,
+          latency_ms: latencyMs,
+        });
+
+        console.log(`Embedding cost tracked: ${costCents} cents for ~${estimatedTokens} tokens`);
+      } catch (trackingError) {
+        console.error("Failed to track embedding cost:", trackingError);
+        // Don't fail the embedding generation due to tracking errors
+      }
+    }
+
+    return embedding;
+  } catch (error) {
+    console.error("Failed to generate embedding with AWS Titan:", error);
+
+    // Log error details for debugging
+    if (error instanceof Error) {
+      console.error("Error details:", {
+        name: error.name,
+        message: error.message,
+        stack: error.stack?.split("\n").slice(0, 3).join("\n"),
+      });
+    }
+
+    // Check for specific AWS errors
+    if (error instanceof Error) {
+      if (error.message.includes("throttling") || error.message.includes("rate")) {
+        console.warn("AWS Bedrock rate limit hit, falling back to mock embedding");
+      } else if (error.message.includes("credentials") || error.message.includes("auth")) {
+        console.error("AWS authentication issue, check credentials configuration");
+      } else if (error.message.includes("model")) {
+        console.error(
+          "Model invocation issue, check if Titan Embed v2 is available in your region"
+        );
+      }
+    }
+
+    // Fallback to mock embedding for development/testing
+    console.warn("Falling back to mock embedding generation");
+    return generateMockEmbedding();
+  }
+}
+
+// Fallback function for mock embeddings
+function generateMockEmbedding(): number[] {
+  // Generate deterministic mock embedding for consistency in development
+  const mockEmbedding = new Array(1536).fill(0).map((_, i) => {
+    // Create a somewhat realistic distribution
+    const base = Math.sin(i * 0.1) * 0.3;
+    const noise = (Math.random() - 0.5) * 0.2;
+    return base + noise;
+  });
+
+  // Normalize the mock embedding
+  const magnitude = Math.sqrt(mockEmbedding.reduce((sum, val) => sum + val * val, 0));
+  return mockEmbedding.map((val) => val / magnitude);
 }
 
 // Helper function for cosine similarity

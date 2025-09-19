@@ -136,7 +136,7 @@ export async function fetchAndStoreRSSFeed(feedCategory: FeedCategory = "general
         // Check for media content
         if ((item as any).mediaContent) {
           const mediaContent = (item as any).mediaContent;
-          if (mediaContent.$ && mediaContent.$.url) {
+          if (mediaContent.$?.url) {
             imageUrl = mediaContent.$.url;
           }
         }
@@ -144,13 +144,13 @@ export async function fetchAndStoreRSSFeed(feedCategory: FeedCategory = "general
         // Check for media thumbnail
         if ((item as any).mediaThumbnail) {
           const mediaThumbnail = (item as any).mediaThumbnail;
-          if (mediaThumbnail.$ && mediaThumbnail.$.url) {
+          if (mediaThumbnail.$?.url) {
             thumbnailUrl = mediaThumbnail.$.url;
           }
         }
 
         // Check for enclosure (common for images)
-        if ((item as any).enclosure && (item as any).enclosure.url) {
+        if ((item as any).enclosure?.url) {
           if (!imageUrl) {
             imageUrl = (item as any).enclosure.url;
           }

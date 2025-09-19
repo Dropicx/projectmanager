@@ -21,7 +21,7 @@ import { syncAllRssFeeds } from "@consulting-platform/api";
 import { db, engagements, knowledge_base } from "@consulting-platform/database";
 import { Queue, Worker } from "bullmq";
 import { CronJob } from "cron";
-import { eq, gte, inArray } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { Redis } from "ioredis";
 import "./health"; // Start health check server
 

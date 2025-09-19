@@ -24,7 +24,7 @@ import {
 import { FileText, Loader2, Plus, Sparkles, X } from "lucide-react";
 import { useId, useState } from "react";
 import { trpc } from "@/app/providers/trpc-provider";
-import { knowledgeTypes } from "@/lib/knowledge-types";
+import { type KnowledgeTypeConfig, knowledgeTypes } from "@/lib/knowledge-types";
 import { KnowledgeEditor } from "./knowledge-editor";
 import { TypeTemplate } from "./type-template";
 
@@ -44,8 +44,9 @@ export function AddKnowledgeDialog({ open, onOpenChange, onSuccess }: AddKnowled
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
   const [useTemplate, setUseTemplate] = useState(false);
-  const [structuredData, setStructuredData] = useState<Record<string, any>>({});
+  const [structuredData, setStructuredData] = useState<Record<string, unknown>>({});
   const [activeTab, setActiveTab] = useState("basic");
+  const [templateType, setTemplateType] = useState<string>("decision-record");
 
   const titleId = useId();
   const typeId = useId();
@@ -72,6 +73,7 @@ export function AddKnowledgeDialog({ open, onOpenChange, onSuccess }: AddKnowled
     setTitle("");
     setContent("");
     setType("note");
+    setTemplateType("decision-record");
     setCategoryIds([]);
     setTags([]);
     setTagInput("");
@@ -91,8 +93,15 @@ export function AddKnowledgeDialog({ open, onOpenChange, onSuccess }: AddKnowled
       return; // Need content if not using template
     }
 
-    // Map "note" to "guide" for backend compatibility
-    const submitType = type === "note" ? "guide" : type;
+    // Determine the type based on mode
+    let submitType: typeof type;
+    if (useTemplate && templateType) {
+      // In template mode, derive type from selected template
+      submitType = getBackendTypeFromTemplate(templateType);
+    } else {
+      // In basic mode, use the selected type (map "note" to "guide" for backend)
+      submitType = type === "note" ? "guide" : type;
+    }
 
     createMutation.mutate({
       title: title.trim(),
@@ -120,48 +129,58 @@ export function AddKnowledgeDialog({ open, onOpenChange, onSuccess }: AddKnowled
     setTags(tags.filter((t) => t !== tag));
   };
 
+  // Basic Mode type options - simple types including Simple Note
   const typeOptions = [
-    { value: "note", label: "Simple Note" },
-    { value: "methodology", label: "Methodology" },
-    { value: "framework", label: "Framework" },
-    { value: "template", label: "Template" },
-    { value: "case-study", label: "Case Study" },
-    { value: "guide", label: "Guide" },
-    { value: "checklist", label: "Checklist" },
+    { value: "note", label: "Simple Note", description: "Quick notes and documentation" },
+    { value: "methodology", label: "Methodology", description: "Methods and approaches" },
+    { value: "framework", label: "Framework", description: "Structured frameworks" },
+    { value: "template", label: "Template", description: "Reusable templates" },
+    { value: "case-study", label: "Case Study", description: "Project experiences" },
+    { value: "guide", label: "Guide", description: "Reference documentation" },
+    { value: "checklist", label: "Checklist", description: "Action lists and checks" },
   ] as const;
 
-  // Map frontend type to backend type
-  const getBackendType = (frontendType: typeof type): string => {
+  // Template Mode options - structured templates only (no Simple Note)
+  const templateOptions = knowledgeTypes.map((kt) => ({
+    value: kt.id,
+    label: kt.name,
+    description: kt.description,
+    icon: kt.icon,
+  }));
+
+  // Map frontend type to backend type (not used anymore, kept for reference)
+  const _getBackendType = (frontendType: typeof type): string => {
     const typeMap: Record<typeof type, string> = {
-      note: "reference",
-      methodology: "pattern",
-      framework: "solution",
+      note: "guide", // Simple Note maps to guide type in backend
+      methodology: "methodology",
+      framework: "framework",
       template: "template",
-      "case-study": "insight",
-      guide: "reference",
-      checklist: "decision",
+      "case-study": "case-study",
+      guide: "guide",
+      checklist: "checklist",
     };
-    return typeMap[frontendType] || "reference";
+    return typeMap[frontendType] || "guide";
   };
 
   // Get the type configuration for template mode
+  // Get the type configuration for template mode
   const getTypeConfig = () => {
-    const backendType = getBackendType(type);
-    return knowledgeTypes.find((kt) => {
-      // Map backend types to our type config IDs
-      const configMap: Record<string, string> = {
-        note: "note",
-        decision: "decision",
-        solution: "solution",
-        issue: "issue",
-        pattern: "method",
-        template: "template",
-        reference: "reference",
-        insight: "case-study",
-        lesson_learned: "action-plan",
-      };
-      return kt.id === configMap[backendType];
-    });
+    return knowledgeTypes.find((kt) => kt.id === templateType);
+  };
+
+  // Map template type to backend type for Template Mode
+  const getBackendTypeFromTemplate = (templateId: string): typeof type => {
+    const templateMap: Record<string, typeof type> = {
+      "decision-record": "checklist",
+      "solution-design": "framework",
+      "issue-analysis": "framework",
+      "method-process": "methodology",
+      "reusable-template": "template",
+      "reference-guide": "guide",
+      "case-study": "case-study",
+      "action-plan": "checklist",
+    };
+    return templateMap[templateId] || "guide";
   };
 
   return (
@@ -289,40 +308,50 @@ export function AddKnowledgeDialog({ open, onOpenChange, onSuccess }: AddKnowled
 
           <TabsContent value="template" className="mt-4">
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="template-title">Title</Label>
                   <Input
-                    id="template-title"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="Enter a descriptive title"
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="template-type">Type</Label>
-                  <select
-                    id="template-type"
-                    value={type}
-                    onChange={(e) => {
-                      setType(e.target.value as typeof type);
+                  <Label htmlFor="template-select">Template Type</Label>
+                  <Select
+                    value={templateType}
+                    onValueChange={(value) => {
+                      setTemplateType(value);
                       setUseTemplate(true);
                       setStructuredData({});
                     }}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   >
-                    {typeOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a template" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {templateOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">{option.icon}</span>
+                            <div>
+                              <div className="font-medium">{option.label}</div>
+                              <div className="text-xs text-muted-foreground">
+                                {option.description}
+                              </div>
+                            </div>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
               {getTypeConfig() ? (
                 <TypeTemplate
-                  typeConfig={getTypeConfig()!}
+                  typeConfig={getTypeConfig() as KnowledgeTypeConfig}
                   onChange={(data) => {
                     setStructuredData(data);
                     setUseTemplate(true);

@@ -1,10 +1,6 @@
 #!/usr/bin/env tsx
 
-import {
-  fetchAndStoreRSSFeed,
-  RSS_FEED_CATEGORIES,
-  syncAllRssFeeds,
-} from "../packages/api/lib/rss-parser";
+import { syncAllRssFeeds } from "../packages/api/lib/rss-parser";
 
 async function main() {
   console.log("🔄 Starting RSS feed sync...\n");

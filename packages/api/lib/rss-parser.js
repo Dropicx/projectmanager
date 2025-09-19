@@ -1,5 +1,5 @@
 var __importDefault =
-  (this && this.__importDefault) || ((mod) => (mod && mod.__esModule ? mod : { default: mod }));
+  (this && this.__importDefault) || ((mod) => (mod?.__esModule ? mod : { default: mod }));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RSS_FEED_CATEGORIES = void 0;
 exports.fetchAndStoreRSSFeed = fetchAndStoreRSSFeed;
@@ -51,19 +51,19 @@ async function fetchAndStoreRSSFeed(feedCategory = "general") {
       // Check for media content
       if (item.mediaContent) {
         const mediaContent = item.mediaContent;
-        if (mediaContent.$ && mediaContent.$.url) {
+        if (mediaContent.$?.url) {
           imageUrl = mediaContent.$.url;
         }
       }
       // Check for media thumbnail
       if (item.mediaThumbnail) {
         const mediaThumbnail = item.mediaThumbnail;
-        if (mediaThumbnail.$ && mediaThumbnail.$.url) {
+        if (mediaThumbnail.$?.url) {
           thumbnailUrl = mediaThumbnail.$.url;
         }
       }
       // Check for enclosure (common for images)
-      if (item.enclosure && item.enclosure.url) {
+      if (item.enclosure?.url) {
         if (!imageUrl) {
           imageUrl = item.enclosure.url;
         }
