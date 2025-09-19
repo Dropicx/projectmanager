@@ -10,9 +10,27 @@ export class BedrockClient {
   constructor() {
     this.region = process.env.AWS_REGION || "eu-central-1";
 
+    // Check if using API key authentication
+    const apiKeyId = process.env.BEDROCK_API_KEY_ID;
+    const apiKeySecret = process.env.BEDROCK_API_KEY_SECRET;
+
+    let credentials: any;
+    if (apiKeyId && apiKeySecret) {
+      // Use API key authentication
+      console.log("Using Bedrock API key authentication");
+      credentials = {
+        accessKeyId: apiKeyId,
+        secretAccessKey: apiKeySecret,
+      };
+    } else {
+      // Fall back to standard AWS IAM credentials
+      console.log("Using AWS IAM credentials for Bedrock");
+      credentials = fromEnv();
+    }
+
     this.client = new BedrockRuntimeClient({
       region: this.region,
-      credentials: fromEnv(),
+      credentials,
       requestHandler: new NodeHttpHandler({
         connectionTimeout: 5000,
         socketTimeout: 60000,
