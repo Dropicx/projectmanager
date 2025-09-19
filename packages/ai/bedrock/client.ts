@@ -48,7 +48,7 @@ export class BedrockClient {
       let body: string;
       let responseText: string;
 
-      if (modelId.startsWith("amazon.nova")) {
+      if (modelId.startsWith("amazon.nova") || modelId.startsWith("us.amazon.nova")) {
         // Nova model format
         body = JSON.stringify({
           messages: [
@@ -94,7 +94,7 @@ export class BedrockClient {
       const responseBody = JSON.parse(new TextDecoder().decode(response.body));
 
       // Extract text based on model family
-      if (modelId.startsWith("amazon.nova")) {
+      if (modelId.startsWith("amazon.nova") || modelId.startsWith("us.amazon.nova")) {
         responseText = responseBody.output?.message?.content?.[0]?.text || "";
       } else if (modelId.startsWith("anthropic.claude")) {
         responseText = responseBody.content?.[0]?.text || "";
