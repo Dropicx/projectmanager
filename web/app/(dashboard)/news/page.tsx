@@ -38,6 +38,47 @@ const categoryLabels: Record<NewsCategory, string> = {
   citizen: "Citizen Security",
 };
 
+// Helper function to extract and style security classification
+const getSecurityClassification = (title: string) => {
+  // Check for German classifications
+  const niedrigMatch = /\bniedrig\b/i.test(title);
+  const mittelMatch = /\bmittel\b/i.test(title);
+  const hochMatch = /\bhoch\b/i.test(title);
+
+  // Check for English classifications
+  const lowMatch = /\blow\b/i.test(title);
+  const mediumMatch = /\bmedium\b|\bmoderate\b/i.test(title);
+  const highMatch = /\bhigh\b|\bcritical\b/i.test(title);
+
+  if (hochMatch || highMatch) {
+    return {
+      level: "high",
+      label: hochMatch ? "Hoch" : "High",
+      className: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-300",
+      borderClassName: "border-l-4 border-red-500",
+    };
+  }
+  if (mittelMatch || mediumMatch) {
+    return {
+      level: "medium",
+      label: mittelMatch ? "Mittel" : "Medium",
+      className:
+        "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border-yellow-300",
+      borderClassName: "border-l-4 border-yellow-500",
+    };
+  }
+  if (niedrigMatch || lowMatch) {
+    return {
+      level: "low",
+      label: niedrigMatch ? "Niedrig" : "Low",
+      className:
+        "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-300",
+      borderClassName: "border-l-4 border-green-500",
+    };
+  }
+  return null;
+};
+
 export default function NewsPage() {
   const [daysBack, setDaysBack] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState<NewsCategory>("general");
@@ -256,84 +297,102 @@ export default function NewsPage() {
         </Card>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 auto-rows-max">
-          {filteredArticles?.map((article) => (
-            <Card
-              key={article.id}
-              className="overflow-hidden hover:shadow-lg transition-shadow flex flex-col"
-            >
-              {(article.image_url || article.thumbnail_url) && (
-                <div className="relative h-48 w-full bg-muted">
-                  <Image
-                    src={article.image_url || article.thumbnail_url || ""}
-                    alt={article.title}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    onError={(e) => {
-                      // Try thumbnail as fallback
-                      const target = e.target as HTMLImageElement;
-                      if (article.thumbnail_url && target.src !== article.thumbnail_url) {
-                        target.src = article.thumbnail_url;
-                      } else {
-                        // Hide image container if both fail
-                        const container = target.parentElement;
-                        if (container) container.style.display = "none";
-                      }
-                    }}
-                  />
-                </div>
-              )}
-              <CardHeader>
-                <CardTitle className="line-clamp-2 text-lg">{article.title}</CardTitle>
-                <CardDescription className="flex items-center gap-2 text-sm">
-                  <CalendarDays className="h-3 w-3" />
-                  {format(new Date(article.published_at), "MMM d, yyyy h:mm a")}
-                  {article.metadata?.feed_category_name && (
-                    <>
-                      <span className="text-muted-foreground">•</span>
-                      <span className="text-xs bg-secondary px-2 py-0.5 rounded">
-                        {article.metadata.feed_category_name as string}
-                      </span>
-                    </>
-                  )}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex-grow">
-                {/* Show cleaned content or description */}
-                {(article.content || article.description) && (
-                  <div className="text-sm text-muted-foreground mb-4">
-                    <p className="line-clamp-[12] min-h-[12rem]">
-                      {stripHtml(article.content || article.description || "")}
-                    </p>
+          {filteredArticles?.map((article) => {
+            const securityClass = getSecurityClassification(article.title);
+            const isSecurityAdvisory =
+              article.metadata?.feed_category === "security" ||
+              article.metadata?.feed_category === "citizen";
+
+            return (
+              <Card
+                key={article.id}
+                className={`overflow-hidden hover:shadow-lg transition-shadow flex flex-col ${
+                  isSecurityAdvisory && securityClass ? securityClass.borderClassName : ""
+                }`}
+              >
+                {(article.image_url || article.thumbnail_url) && (
+                  <div className="relative h-48 w-full bg-muted">
+                    <Image
+                      src={article.image_url || article.thumbnail_url || ""}
+                      alt={article.title}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      onError={(e) => {
+                        // Try thumbnail as fallback
+                        const target = e.target as HTMLImageElement;
+                        if (article.thumbnail_url && target.src !== article.thumbnail_url) {
+                          target.src = article.thumbnail_url;
+                        } else {
+                          // Hide image container if both fail
+                          const container = target.parentElement;
+                          if (container) container.style.display = "none";
+                        }
+                      }}
+                    />
                   </div>
                 )}
-                {article.author && (
-                  <p className="text-xs text-muted-foreground mb-2">By {article.author}</p>
-                )}
-                {article.categories && article.categories.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mb-3">
-                    {(article.categories as string[]).slice(0, 3).map((category, idx) => (
+                <CardHeader>
+                  <div className="flex items-start justify-between gap-2">
+                    <CardTitle className="line-clamp-2 text-lg flex-1">{article.title}</CardTitle>
+                    {isSecurityAdvisory && securityClass && (
                       <span
-                        key={`${article.id}-category-${idx}`}
-                        className="text-xs bg-secondary px-2 py-1 rounded-md"
+                        className={`text-xs font-semibold px-2 py-1 rounded border ${securityClass.className}`}
                       >
-                        {category}
+                        {securityClass.label}
                       </span>
-                    ))}
+                    )}
                   </div>
-                )}
-                <a
-                  href={article.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
-                >
-                  Read Full Article
-                  <ExternalLink className="h-3 w-3" />
-                </a>
-              </CardContent>
-            </Card>
-          ))}
+                  <CardDescription className="flex items-center gap-2 text-sm">
+                    <CalendarDays className="h-3 w-3" />
+                    {format(new Date(article.published_at), "MMM d, yyyy h:mm a")}
+                    {article.metadata?.feed_category_name && (
+                      <>
+                        <span className="text-muted-foreground">•</span>
+                        <span className="text-xs bg-secondary px-2 py-0.5 rounded">
+                          {article.metadata.feed_category_name as string}
+                        </span>
+                      </>
+                    )}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="flex-grow">
+                  {/* Show cleaned content or description */}
+                  {(article.content || article.description) && (
+                    <div className="text-sm text-muted-foreground mb-4">
+                      <p className="line-clamp-[12] min-h-[12rem]">
+                        {stripHtml(article.content || article.description || "")}
+                      </p>
+                    </div>
+                  )}
+                  {article.author && (
+                    <p className="text-xs text-muted-foreground mb-2">By {article.author}</p>
+                  )}
+                  {article.categories && article.categories.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mb-3">
+                      {(article.categories as string[]).slice(0, 3).map((category, idx) => (
+                        <span
+                          key={`${article.id}-category-${idx}`}
+                          className="text-xs bg-secondary px-2 py-1 rounded-md"
+                        >
+                          {category}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  <a
+                    href={article.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+                  >
+                    Read Full Article
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
     </div>
