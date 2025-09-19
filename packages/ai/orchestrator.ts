@@ -86,6 +86,21 @@ export class AIOrchestrator {
     const latencyMs = Date.now() - startTime;
 
     // Step 6: Record actual usage for billing and analytics
+    // Map task type to action for logging
+    const actionMap: Record<
+      string,
+      "generate" | "summarize" | "extract" | "translate" | "analyze" | "embed"
+    > = {
+      quick_summary: "summarize",
+      project_analysis: "analyze",
+      risk_assessment: "analyze",
+      technical_docs: "generate",
+      realtime_assist: "generate",
+      knowledge_search: "extract",
+      report_generation: "generate",
+      general: "generate",
+    };
+
     await this.usageLimiter.recordUsage(
       organizationId,
       task.userId,
@@ -94,7 +109,9 @@ export class AIOrchestrator {
       task.prompt,
       response.content,
       response.tokensUsed,
-      latencyMs
+      latencyMs,
+      task.knowledgeId || null,
+      actionMap[task.type] || "generate"
     );
 
     return response;
@@ -338,6 +355,7 @@ export class AIOrchestrator {
     prompt: string;
     userId: string;
     projectId?: string;
+    knowledgeId?: string;
     complexity?: number;
     urgency?: "realtime" | "batch" | "background";
     accuracyRequired?: "high" | "standard" | "low";
@@ -355,6 +373,7 @@ export class AIOrchestrator {
       budgetConstraint: params.budgetConstraint || 100,
       userId: params.userId,
       projectId: params.projectId,
+      knowledgeId: params.knowledgeId,
     };
 
     return this.processRequest(task);

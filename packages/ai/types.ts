@@ -54,6 +54,7 @@ export const AITaskSchema = z.object({
   contextLength: z.number().default(4000), // Expected context length in tokens
   budgetConstraint: z.number().default(100), // Maximum cost in cents
   projectId: z.string().optional(), // Associated project ID
+  knowledgeId: z.string().optional(), // Associated knowledge item ID
   userId: z.string(), // User making the request
 });
 

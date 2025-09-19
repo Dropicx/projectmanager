@@ -901,6 +901,7 @@ Content: ${knowledgeItem.content}
 
 Summary:`,
           userId: ctx.user.id,
+          knowledgeId: input.knowledgeId, // Pass the knowledge ID for logging
           complexity: 2, // Simple task for Nova Lite
           urgency: "batch",
           accuracyRequired: "standard",
@@ -985,6 +986,7 @@ Summary:`,
 
 ${knowledgeItem.title}: ${knowledgeItem.content?.substring(0, 1000)}`,
               userId: ctx.user.id,
+              knowledgeId: knowledgeId, // Pass the knowledge ID for logging
               complexity: 1,
               urgency: "batch",
               accuracyRequired: "standard",

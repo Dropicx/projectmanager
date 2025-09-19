@@ -105,9 +105,14 @@ export class UsageLimiter {
     prompt: string,
     response: string,
     actualTokens: number,
-    latencyMs: number
+    latencyMs: number,
+    knowledgeId?: string | null,
+    action?: "generate" | "summarize" | "extract" | "translate" | "analyze" | "embed"
   ): Promise<void> {
     const actualCostCents = this.calculateCost(model, actualTokens);
+
+    // Detect action type from prompt if not provided
+    const detectedAction = action || this.detectActionType(prompt);
 
     // Start a transaction to ensure consistency
     await db.transaction(async (tx: any) => {
@@ -124,22 +129,74 @@ export class UsageLimiter {
       // Record detailed interaction
       await tx.insert(ai_interactions).values({
         user_id: userId,
-        project_id: projectId,
+        organization_id: organizationId,
+        engagement_id: projectId, // Map projectId to engagement_id
+        knowledge_id: knowledgeId,
         model,
+        action: detectedAction,
         prompt,
         response,
         tokens_used: actualTokens,
         cost_cents: actualCostCents,
         latency_ms: latencyMs,
         metadata: {
-          organization_id: organizationId,
           timestamp: new Date().toISOString(),
+          source: "api", // Track where the request came from
         },
       });
     });
 
     // Check if we should send alerts
     await this.checkAndSendAlerts(organizationId);
+
+    // Log for monitoring
+    console.log("AI Interaction logged:", {
+      model,
+      action: detectedAction,
+      tokens: actualTokens,
+      cost: `$${(actualCostCents / 100).toFixed(2)}`,
+      latency: `${latencyMs}ms`,
+    });
+  }
+
+  /**
+   * Detect the action type based on prompt content
+   */
+  private detectActionType(
+    prompt: string
+  ): "generate" | "summarize" | "extract" | "translate" | "analyze" | "embed" {
+    const lowerPrompt = prompt.toLowerCase();
+
+    if (
+      lowerPrompt.includes("summar") ||
+      lowerPrompt.includes("brief") ||
+      lowerPrompt.includes("concise")
+    ) {
+      return "summarize";
+    }
+    if (
+      lowerPrompt.includes("extract") ||
+      lowerPrompt.includes("find") ||
+      lowerPrompt.includes("identify")
+    ) {
+      return "extract";
+    }
+    if (lowerPrompt.includes("translate") || lowerPrompt.includes("convert")) {
+      return "translate";
+    }
+    if (
+      lowerPrompt.includes("analy") ||
+      lowerPrompt.includes("assess") ||
+      lowerPrompt.includes("evaluat")
+    ) {
+      return "analyze";
+    }
+    if (lowerPrompt.includes("embed") || lowerPrompt.includes("vector")) {
+      return "embed";
+    }
+
+    // Default to generate for content creation
+    return "generate";
   }
 
   /**
