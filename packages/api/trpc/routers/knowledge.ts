@@ -906,7 +906,7 @@ Summary:`,
           urgency: "batch",
           accuracyRequired: "standard",
           contextLength: 1000,
-          budgetConstraint: 5, // Very low cost for Nova Lite
+          budgetConstraint: 10, // Adjusted for Nova Lite (6 cents per 1M tokens)
           preferredModel: "nova-lite", // Hint to use Nova Lite
         });
 
@@ -991,7 +991,7 @@ ${knowledgeItem.title}: ${knowledgeItem.content?.substring(0, 1000)}`,
               urgency: "batch",
               accuracyRequired: "standard",
               contextLength: 500,
-              budgetConstraint: 3,
+              budgetConstraint: 10, // Adjusted for Nova Lite (6 cents per 1M tokens)
               preferredModel: "nova-lite",
             });
 
