@@ -47,6 +47,10 @@ export const knowledgeSummaryQueue = new Queue("knowledge-summary", {
   connection: queueConnection,
 });
 
+export const embeddingQueue = new Queue("embedding-generation", {
+  connection: queueConnection,
+});
+
 /**
  * Enqueue a single knowledge summary generation job
  */
@@ -93,21 +97,112 @@ export async function enqueueBatchSummaryGeneration(userId: string): Promise<voi
 }
 
 /**
+ * Enqueue embedding generation job
+ */
+export async function enqueueEmbeddingGeneration(
+  knowledgeId: string,
+  content: string,
+  userId: string,
+  organizationId: string,
+  options?: {
+    priority?: number;
+    delay?: number;
+  }
+): Promise<void> {
+  await embeddingQueue.add(
+    "generate-embedding",
+    {
+      knowledgeId,
+      content,
+      userId,
+      organizationId,
+      timestamp: new Date().toISOString(),
+    },
+    {
+      priority: options?.priority || 0,
+      delay: options?.delay || 0,
+      attempts: 3,
+      backoff: {
+        type: "exponential",
+        delay: 2000,
+      },
+      removeOnComplete: {
+        age: 3600, // Keep completed jobs for 1 hour
+        count: 100, // Keep last 100 completed jobs
+      },
+      removeOnFail: {
+        age: 86400, // Keep failed jobs for 24 hours
+      },
+    }
+  );
+
+  console.log(`[Queue Client] Enqueued embedding generation for knowledge item ${knowledgeId}`);
+}
+
+/**
+ * Enqueue batch embedding generation for multiple knowledge items
+ */
+export async function enqueueBatchEmbeddingGeneration(
+  items: Array<{ knowledgeId: string; content: string }>,
+  userId: string,
+  organizationId: string
+): Promise<void> {
+  const jobs = items.map((item) => ({
+    name: "generate-embedding",
+    data: {
+      knowledgeId: item.knowledgeId,
+      content: item.content,
+      userId,
+      organizationId,
+      timestamp: new Date().toISOString(),
+    },
+    opts: {
+      attempts: 3,
+      backoff: {
+        type: "exponential" as const,
+        delay: 2000,
+      },
+    },
+  }));
+
+  await embeddingQueue.addBulk(jobs);
+
+  console.log(`[Queue Client] Enqueued batch embedding generation for ${items.length} items`);
+}
+
+/**
  * Get queue status and job counts
  */
 export async function getQueueStatus() {
-  const jobCounts = await knowledgeSummaryQueue.getJobCounts();
-  const isPaused = await knowledgeSummaryQueue.isPaused();
+  const [summaryJobCounts, embeddingJobCounts] = await Promise.all([
+    knowledgeSummaryQueue.getJobCounts(),
+    embeddingQueue.getJobCounts(),
+  ]);
+
+  const [summaryPaused, embeddingPaused] = await Promise.all([
+    knowledgeSummaryQueue.isPaused(),
+    embeddingQueue.isPaused(),
+  ]);
 
   return {
-    name: "knowledge-summary",
-    isPaused,
-    jobCounts,
+    queues: [
+      {
+        name: "knowledge-summary",
+        isPaused: summaryPaused,
+        jobCounts: summaryJobCounts,
+      },
+      {
+        name: "embedding-generation",
+        isPaused: embeddingPaused,
+        jobCounts: embeddingJobCounts,
+      },
+    ],
   };
 }
 
 // Graceful shutdown
 process.on("beforeExit", async () => {
   await knowledgeSummaryQueue.close();
+  await embeddingQueue.close();
   await queueConnection.quit();
 });

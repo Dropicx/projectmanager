@@ -11,7 +11,12 @@ import { NodeHttpHandler } from "@smithy/node-http-handler";
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq, inArray, isNull, like, or, sql } from "drizzle-orm";
 import { z } from "zod";
-import { enqueueBatchSummaryGeneration, enqueueSummaryGeneration } from "../../lib/queue-client";
+import {
+  enqueueBatchEmbeddingGeneration,
+  enqueueBatchSummaryGeneration,
+  enqueueEmbeddingGeneration,
+  enqueueSummaryGeneration,
+} from "../../lib/queue-client";
 import { protectedProcedure, router } from "../trpc";
 
 export const knowledgeRouter = router({
@@ -128,7 +133,7 @@ export const knowledgeRouter = router({
 
       // Calculate actual item counts for each category
       const categoriesWithCounts = await Promise.all(
-        categories.map(async (category) => {
+        categories.map(async (category: (typeof categories)[0]) => {
           const count = await ctx.db
             .select({ count: sql`count(*)::int` })
             .from(knowledge_to_categories)
@@ -597,7 +602,7 @@ export const knowledgeRouter = router({
 
         // Filter by type in memory if specified
         if (input.type && input.type !== "all") {
-          return entries.filter((entry) => {
+          return entries.filter((entry: (typeof entries)[0]) => {
             return entry.knowledge_type === input.type;
           });
         }
@@ -644,7 +649,7 @@ export const knowledgeRouter = router({
 
         // Perform semantic search using embeddings
         const results = entries
-          .map((entry) => {
+          .map((entry: (typeof entries)[0]) => {
             if (!entry.embedding) return null;
             const similarity = cosineSimilarity(queryEmbedding, entry.embedding as number[]);
             return { ...entry, similarity };
@@ -986,6 +991,128 @@ Format in markdown with clear headings and sections.`,
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to queue batch summary generation",
+        });
+      }
+    }),
+
+  /**
+   * Queue embedding generation for a knowledge item
+   */
+  generateEmbeddingAsync: protectedProcedure
+    .input(
+      z.object({
+        knowledgeId: z.string(),
+        priority: z.number().min(0).max(10).optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Get the knowledge item
+      const [item] = await ctx.db
+        .select()
+        .from(knowledge_base)
+        .where(
+          and(
+            eq(knowledge_base.id, input.knowledgeId),
+            eq(knowledge_base.organization_id, ctx.user.organizationId || "")
+          )
+        )
+        .limit(1);
+
+      if (!item) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Knowledge item not found",
+        });
+      }
+
+      try {
+        // Enqueue embedding generation
+        await enqueueEmbeddingGeneration(
+          item.id,
+          item.content,
+          ctx.user.id,
+          ctx.user.organizationId || "",
+          { priority: input.priority }
+        );
+
+        return {
+          message: "Embedding generation queued",
+          knowledgeId: item.id,
+          status: "queued",
+        };
+      } catch (error) {
+        console.error("Error enqueueing embedding generation:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to queue embedding generation",
+        });
+      }
+    }),
+
+  /**
+   * Queue batch embedding generation for multiple knowledge items
+   */
+  generateBatchEmbeddingsAsync: protectedProcedure
+    .input(
+      z.object({
+        knowledgeIds: z.array(z.string()).optional(),
+        regenerate: z.boolean().default(false), // Regenerate even if embeddings exist
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      try {
+        // Build query conditions
+        const conditions: any[] = [
+          eq(knowledge_base.organization_id, ctx.user.organizationId || ""),
+        ];
+
+        if (input.knowledgeIds && input.knowledgeIds.length > 0) {
+          conditions.push(inArray(knowledge_base.id, input.knowledgeIds));
+        }
+
+        if (!input.regenerate) {
+          // Only get items without embeddings
+          conditions.push(isNull(knowledge_base.embedding));
+        }
+
+        // Get items to process
+        const items = await ctx.db
+          .select({
+            id: knowledge_base.id,
+            content: knowledge_base.content,
+          })
+          .from(knowledge_base)
+          .where(and(...conditions))
+          .limit(100); // Process max 100 items at a time
+
+        if (items.length === 0) {
+          return {
+            message: "No items need embedding generation",
+            status: "completed",
+            itemCount: 0,
+          };
+        }
+
+        // Enqueue batch embedding generation
+        await enqueueBatchEmbeddingGeneration(
+          items.map((item: (typeof items)[0]) => ({
+            knowledgeId: item.id,
+            content: item.content,
+          })),
+          ctx.user.id,
+          ctx.user.organizationId || ""
+        );
+
+        return {
+          message: "Batch embedding generation queued",
+          status: "processing",
+          itemCount: items.length,
+        };
+      } catch (error) {
+        console.error("Error enqueueing batch embedding generation:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to queue batch embedding generation",
         });
       }
     }),

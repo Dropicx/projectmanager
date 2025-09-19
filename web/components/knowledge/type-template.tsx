@@ -68,9 +68,11 @@ export function TypeTemplate({
     const newData = {
       ...formData,
       [sectionId]: {
-        ...formData[sectionId],
+        ...(typeof formData[sectionId] === "object" && formData[sectionId] !== null
+          ? formData[sectionId]
+          : {}),
         [fieldKey]: value,
-      },
+      } as Record<string, unknown>,
     };
     setFormData(newData);
     onChange(newData);
@@ -90,7 +92,11 @@ export function TypeTemplate({
     let content = `# ${formData.title || typeConfig.name}\n\n`;
 
     typeConfig.sections.forEach((section) => {
-      const sectionData = formData[section.id] || {};
+      const sectionData = (
+        typeof formData[section.id] === "object" && formData[section.id] !== null
+          ? formData[section.id]
+          : {}
+      ) as Record<string, unknown>;
       const hasContent = Object.values(sectionData).some((v) => v);
 
       if (hasContent) {
@@ -135,7 +141,12 @@ export function TypeTemplate({
   const renderField = (section: TypeSection, field: TypeField) => {
     const fieldKey = field.id || field.key || "";
     if (!fieldKey) return null;
-    const value = formData[section.id]?.[fieldKey] || "";
+    const sectionData = (
+      typeof formData[section.id] === "object" && formData[section.id] !== null
+        ? formData[section.id]
+        : {}
+    ) as Record<string, unknown>;
+    const value = sectionData[fieldKey] || "";
     const FieldIcon = getFieldIcon(fieldKey);
 
     switch (field.type) {
@@ -148,7 +159,7 @@ export function TypeTemplate({
               {field.required && <span className="text-red-500">*</span>}
             </Label>
             <Input
-              value={value}
+              value={typeof value === "string" || typeof value === "number" ? value : ""}
               onChange={(e) => handleFieldChange(section.id, fieldKey, e.target.value)}
               placeholder={field.placeholder}
               disabled={mode === "view"}
@@ -168,7 +179,7 @@ export function TypeTemplate({
               {field.required && <span className="text-red-500">*</span>}
             </Label>
             <Textarea
-              value={value}
+              value={typeof value === "string" ? value : ""}
               onChange={(e) => handleFieldChange(section.id, fieldKey, e.target.value)}
               placeholder={field.placeholder}
               rows={4}
@@ -191,7 +202,7 @@ export function TypeTemplate({
             </Label>
             <Input
               type="date"
-              value={value}
+              value={typeof value === "string" ? value : ""}
               onChange={(e) => handleFieldChange(section.id, fieldKey, e.target.value)}
               disabled={mode === "view"}
             />
@@ -211,7 +222,7 @@ export function TypeTemplate({
             </Label>
             <Input
               type="number"
-              value={value}
+              value={typeof value === "number" ? value : typeof value === "string" ? value : ""}
               onChange={(e) => handleFieldChange(section.id, fieldKey, e.target.value)}
               placeholder={field.placeholder}
               disabled={mode === "view"}
@@ -231,7 +242,7 @@ export function TypeTemplate({
               {field.required && <span className="text-red-500">*</span>}
             </Label>
             <Select
-              value={value}
+              value={typeof value === "string" ? value : ""}
               onValueChange={(val) => handleFieldChange(section.id, fieldKey, val)}
               disabled={mode === "view"}
             >
@@ -239,11 +250,15 @@ export function TypeTemplate({
                 <SelectValue placeholder={field.placeholder || "Select an option"} />
               </SelectTrigger>
               <SelectContent>
-                {field.options?.map((option) => (
-                  <SelectItem key={option.value || option} value={option.value || option}>
-                    {option.label || option}
-                  </SelectItem>
-                ))}
+                {field.options?.map((option) => {
+                  const optionValue = typeof option === "string" ? option : option.value;
+                  const optionLabel = typeof option === "string" ? option : option.label;
+                  return (
+                    <SelectItem key={optionValue} value={optionValue}>
+                      {optionLabel}
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
             {(field.helpText || field.description) && (
@@ -262,7 +277,8 @@ export function TypeTemplate({
             </Label>
             <div className="flex flex-wrap gap-2 p-3 border rounded-md min-h-[60px]">
               {field.options?.map((option) => {
-                const optionValue = option.value || option;
+                const optionValue = typeof option === "string" ? option : option.value;
+                const optionLabel = typeof option === "string" ? option : option.label;
                 const isSelected = Array.isArray(value) && value.includes(optionValue);
                 return (
                   <Badge
@@ -278,7 +294,7 @@ export function TypeTemplate({
                       handleFieldChange(section.id, fieldKey, newValues);
                     }}
                   >
-                    {option.label || option}
+                    {optionLabel}
                   </Badge>
                 );
               })}
@@ -359,9 +375,17 @@ export function TypeTemplate({
                       {section.required && <span className="text-red-500 ml-1">*</span>}
                     </CardTitle>
                   </div>
-                  {formData[section.id] && Object.keys(formData[section.id]).length > 0 && (
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
-                  )}
+                  {(() => {
+                    const sectionData = formData[section.id];
+                    if (
+                      sectionData &&
+                      typeof sectionData === "object" &&
+                      Object.keys(sectionData as object).length > 0
+                    ) {
+                      return <CheckCircle2 className="h-4 w-4 text-green-500" />;
+                    }
+                    return null;
+                  })()}
                 </div>
                 {section.description && expandedSections.has(section.id) && (
                   <CardDescription className="mt-2">{section.description}</CardDescription>
@@ -396,7 +420,9 @@ export function TypeTemplate({
             </CardHeader>
             <CardContent>
               <KnowledgeEditor
-                content={formData.freeformContent || ""}
+                content={
+                  typeof formData.freeformContent === "string" ? formData.freeformContent : ""
+                }
                 onChange={(content) => {
                   setFormData({ ...formData, freeformContent: content });
                   onChange({ ...formData, freeformContent: content });

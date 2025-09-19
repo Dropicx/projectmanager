@@ -16,9 +16,12 @@
  * - Health check endpoints for monitoring
  */
 
+import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
+import { fromEnv } from "@aws-sdk/credential-providers";
 import { AIOrchestrator } from "@consulting-platform/ai";
 import { syncAllRssFeeds } from "@consulting-platform/api";
-import { db, engagements, knowledge_base } from "@consulting-platform/database";
+import { ai_interactions, db, engagements, knowledge_base } from "@consulting-platform/database";
+import { NodeHttpHandler } from "@smithy/node-http-handler";
 import { Queue, Worker } from "bullmq";
 import { CronJob } from "cron";
 import { eq } from "drizzle-orm";
@@ -87,6 +90,7 @@ const queueConnection = new Redis(redisUrl, {
 const aiInsightsQueue = new Queue("ai-insights", { connection: queueConnection });
 const riskAssessmentQueue = new Queue("risk-assessment", { connection: queueConnection });
 const knowledgeSummaryQueue = new Queue("knowledge-summary", { connection: queueConnection });
+const embeddingQueue = new Queue("embedding-generation", { connection: queueConnection });
 
 // Background job processors
 const workerConnection1 = new Redis(redisUrl, {
@@ -319,6 +323,165 @@ const knowledgeSummaryWorker = new Worker(
     concurrency: 10, // Higher concurrency for lightweight summary tasks
   }
 );
+
+// Embedding Generation Worker
+const workerConnection4 = new Redis(redisUrl, {
+  ...redisOptions,
+  family: 0,
+  retryStrategy: (times) => Math.min(times * 50, 2000),
+});
+
+// Initialize Bedrock client for embeddings
+const getBedrockClient = (): BedrockRuntimeClient => {
+  const region = process.env.AWS_REGION || "eu-central-1";
+  const bedrockApiKey = process.env.BEDROCK_API_KEY;
+
+  if (bedrockApiKey) {
+    console.log("[Embedding Worker] Using Bedrock API key for embeddings");
+    process.env.AWS_BEARER_TOKEN_BEDROCK = bedrockApiKey;
+    return new BedrockRuntimeClient({
+      region,
+      requestHandler: new NodeHttpHandler({
+        connectionTimeout: 5000,
+        socketTimeout: 30000,
+      }),
+    });
+  }
+
+  console.log("[Embedding Worker] Using AWS IAM credentials for embeddings");
+  return new BedrockRuntimeClient({
+    region,
+    credentials: fromEnv(),
+    requestHandler: new NodeHttpHandler({
+      connectionTimeout: 5000,
+      socketTimeout: 30000,
+    }),
+  });
+};
+
+const embeddingWorker = new Worker(
+  "embedding-generation",
+  async (job) => {
+    const { knowledgeId, content, userId, organizationId } = job.data;
+    const startTime = Date.now();
+
+    try {
+      console.log(`[Embedding Worker] Processing embedding for knowledge item ${knowledgeId}`);
+
+      // Validate input
+      if (!content || content.trim().length === 0) {
+        console.warn(`[Embedding Worker] Empty content for ${knowledgeId}, using mock embedding`);
+        const mockEmbedding = generateMockEmbedding();
+        await updateKnowledgeEmbedding(knowledgeId, mockEmbedding);
+        return { success: true, type: "mock", knowledgeId };
+      }
+
+      // Truncate text if too long
+      const maxChars = 8000;
+      const truncatedText = content.length > maxChars ? content.substring(0, maxChars) : content;
+
+      if (content.length > maxChars) {
+        console.warn(
+          `[Embedding Worker] Text truncated from ${content.length} to ${maxChars} characters`
+        );
+      }
+
+      // Generate embedding with AWS Titan
+      const modelId = "amazon.titan-embed-text-v2:0";
+      const client = getBedrockClient();
+
+      const requestBody = {
+        inputText: truncatedText,
+        dimensions: 1536,
+        normalize: true,
+      };
+
+      const command = new InvokeModelCommand({
+        modelId,
+        body: JSON.stringify(requestBody),
+        contentType: "application/json",
+        accept: "application/json",
+      });
+
+      console.log(`[Embedding Worker] Invoking AWS Titan for ${knowledgeId}...`);
+      const response = await client.send(command);
+      const responseBody = JSON.parse(new TextDecoder().decode(response.body));
+      const embedding = responseBody.embedding;
+
+      if (!embedding || !Array.isArray(embedding)) {
+        throw new Error("Invalid embedding response from Titan");
+      }
+
+      const latencyMs = Date.now() - startTime;
+      console.log(`[Embedding Worker] Generated embedding in ${latencyMs}ms`);
+
+      // Track cost in ai_interactions
+      const estimatedTokens = Math.ceil(truncatedText.length / 4);
+      const costPer1MTokens = 2; // cents
+      const costCents = Math.ceil((estimatedTokens / 1000000) * costPer1MTokens);
+
+      await db.insert(ai_interactions).values({
+        user_id: userId,
+        organization_id: organizationId,
+        knowledge_id: knowledgeId,
+        model: "titan-embed-v2",
+        action: "embed",
+        prompt: truncatedText.substring(0, 500),
+        response: `Generated ${embedding.length}D embedding (queued)`,
+        tokens_used: estimatedTokens,
+        cost_cents: costCents,
+        latency_ms: latencyMs,
+      });
+
+      // Update knowledge item with embedding
+      await updateKnowledgeEmbedding(knowledgeId, embedding);
+
+      console.log(`[Embedding Worker] Successfully updated embedding for ${knowledgeId}`);
+      return { success: true, type: "titan", knowledgeId, costCents, latencyMs };
+    } catch (error) {
+      console.error(`[Embedding Worker] Failed to generate embedding for ${knowledgeId}:`, error);
+
+      // Fallback to mock embedding
+      console.log(`[Embedding Worker] Using fallback mock embedding for ${knowledgeId}`);
+      const mockEmbedding = generateMockEmbedding();
+      await updateKnowledgeEmbedding(knowledgeId, mockEmbedding);
+
+      return {
+        success: true,
+        type: "mock-fallback",
+        knowledgeId,
+        error: error instanceof Error ? error.message : String(error),
+      };
+    }
+  },
+  {
+    connection: workerConnection4,
+    concurrency: 5, // Process up to 5 embeddings in parallel
+  }
+);
+
+// Helper function to update knowledge embedding
+async function updateKnowledgeEmbedding(knowledgeId: string, embedding: number[]): Promise<void> {
+  await db
+    .update(knowledge_base)
+    .set({
+      embedding: embedding as any, // Cast for JSONB
+      updated_at: new Date(),
+    })
+    .where(eq(knowledge_base.id, knowledgeId));
+}
+
+// Helper function for mock embeddings
+function generateMockEmbedding(): number[] {
+  const mockEmbedding = new Array(1536).fill(0).map((_, i) => {
+    const base = Math.sin(i * 0.1) * 0.3;
+    const noise = (Math.random() - 0.5) * 0.2;
+    return base + noise;
+  });
+
+  const magnitude = Math.sqrt(mockEmbedding.reduce((sum, val) => sum + val * val, 0));
+  return mockEmbedding.map((val) => val / magnitude);
+}
 
 // Scheduled jobs
 const _dailyInsightsJob = new CronJob(

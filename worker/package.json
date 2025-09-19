@@ -12,9 +12,12 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@aws-sdk/client-bedrock-runtime": "^3.614.0",
+    "@aws-sdk/credential-providers": "^3.614.0",
     "@consulting-platform/ai": "workspace:*",
     "@consulting-platform/api": "workspace:*",
     "@consulting-platform/database": "workspace:*",
+    "@smithy/node-http-handler": "^3.1.4",
     "bullmq": "^5.34.0",
     "cron": "^3.1.6",
     "drizzle-orm": "^0.44.5",

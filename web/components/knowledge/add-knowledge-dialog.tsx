@@ -87,7 +87,7 @@ export function AddKnowledgeDialog({ open, onOpenChange, onSuccess }: AddKnowled
 
     // For template mode, generate content from structured data
     let finalContent = content;
-    if (useTemplate && structuredData.freeformContent) {
+    if (useTemplate && typeof structuredData.freeformContent === "string") {
       finalContent = structuredData.freeformContent;
     } else if (!content.trim()) {
       return; // Need content if not using template
@@ -384,7 +384,7 @@ export function AddKnowledgeDialog({ open, onOpenChange, onSuccess }: AddKnowled
             onClick={handleSubmit}
             disabled={
               !title.trim() ||
-              (!content.trim() && !structuredData.freeformContent) ||
+              (!content.trim() && typeof structuredData.freeformContent !== "string") ||
               createMutation.isPending
             }
           >
