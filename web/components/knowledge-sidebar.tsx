@@ -62,7 +62,7 @@ import {
   X,
 } from "lucide-react";
 import type React from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { trpc } from "@/app/providers/trpc-provider";
 import { CategoryDialog } from "./knowledge/category-dialog";
 

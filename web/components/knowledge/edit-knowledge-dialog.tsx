@@ -50,7 +50,7 @@ export function EditKnowledgeDialog({
   const contentId = useId();
   const tagsId = useId();
 
-  const utils = trpc.useUtils();
+  const _utils = trpc.useUtils();
 
   // Fetch categories for selection
   const { data: categories = [] } = trpc.knowledge.getCategories.useQuery();

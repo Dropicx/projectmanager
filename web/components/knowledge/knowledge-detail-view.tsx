@@ -16,7 +16,6 @@ import {
   Separator,
   Skeleton,
 } from "@consulting-platform/ui";
-import { cn } from "@consulting-platform/ui/lib/utils";
 import { format } from "date-fns";
 import {
   ArrowLeft,
@@ -94,7 +93,7 @@ export function KnowledgeDetailView({ knowledgeId, onBack, onDelete }: Knowledge
 
   // Update mutation
   const updateMutation = trpc.knowledge.updateGeneral.useMutation({
-    onSuccess: async (updatedData) => {
+    onSuccess: async (_updatedData) => {
       // Invalidate and wait for fresh data
       await Promise.all([
         utils.knowledge.getById.invalidate({ id: knowledgeId }),

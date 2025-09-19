@@ -1,7 +1,6 @@
 "use client";
 
 import { SignInButton, useUser } from "@clerk/nextjs";
-import { Button, cn } from "@consulting-platform/ui";
 import { Loader2 } from "lucide-react";
 import { DashboardSidebar } from "@/components/dashboard/sidebar";
 import { GlobalButton } from "@/components/GlobalButton";

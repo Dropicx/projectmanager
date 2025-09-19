@@ -2,13 +2,12 @@
 
 import { ClerkProvider as BaseClerkProvider } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 
 export function ClerkProvider({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
+  const _router = useRouter();
 
   // Handle authentication errors
-  const handleError = (error: any) => {
+  const _handleError = (error: any) => {
     console.error("Clerk authentication error:", error);
 
     // Handle rate limiting specifically
