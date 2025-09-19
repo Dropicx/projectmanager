@@ -5,7 +5,7 @@ import {
   knowledge_to_categories,
 } from "@consulting-platform/database";
 import { TRPCError } from "@trpc/server";
-import { and, desc, eq, isNull, like, or, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, like, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import { enqueueBatchSummaryGeneration, enqueueSummaryGeneration } from "../../lib/queue-client";
 import { protectedProcedure, router } from "../trpc";
@@ -931,7 +931,7 @@ Format in markdown with clear headings and sections.`,
             .where(
               and(
                 eq(knowledge_base.organization_id, ctx.user.organizationId || ""),
-                sql`${knowledge_base.id} = ANY(${input.knowledgeIds})`
+                inArray(knowledge_base.id, input.knowledgeIds)
               )
             );
 
