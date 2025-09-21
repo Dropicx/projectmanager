@@ -33,6 +33,7 @@ import {
   FileText,
   Info,
   Lightbulb,
+  Loader2,
   Sparkles,
   Target,
   TrendingUp,
@@ -40,6 +41,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useState } from "react";
+import { trpc } from "@/app/providers/trpc-provider";
 import type { KnowledgeTypeConfig, TypeField, TypeSection } from "@/lib/knowledge-types";
 import { KnowledgeEditor } from "./knowledge-editor";
 
@@ -63,6 +65,9 @@ export function TypeTemplate({
     new Set(typeConfig.sections.filter((s) => s.required).map((s) => s.id))
   );
   const [activeTab, setActiveTab] = useState("structured");
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const aiMutation = trpc.ai.processRequest.useMutation();
 
   const handleFieldChange = (sectionId: string, fieldKey: string, value: unknown) => {
     const newData = {
@@ -121,6 +126,105 @@ export function TypeTemplate({
 
     if (onContentGenerated) {
       onContentGenerated(content);
+    }
+    // Switch to freeform tab to show the generated content
+    setActiveTab("freeform");
+  };
+
+  const generateAIContent = async () => {
+    setIsGenerating(true);
+    try {
+      // First generate the basic template
+      let basicContent = `# ${formData.title || typeConfig.name}\n\n`;
+      const contextData: Record<string, any> = {};
+
+      typeConfig.sections.forEach((section) => {
+        const sectionData = (
+          typeof formData[section.id] === "object" && formData[section.id] !== null
+            ? formData[section.id]
+            : {}
+        ) as Record<string, unknown>;
+        const hasContent = Object.values(sectionData).some((v) => v);
+
+        if (hasContent) {
+          basicContent += `## ${section.title}\n\n`;
+          contextData[section.title] = {};
+
+          section.fields.forEach((field) => {
+            const fieldKey = field.id || field.key;
+            if (!fieldKey) return;
+            const value = sectionData[fieldKey];
+            if (value) {
+              contextData[section.title][field.label] = value;
+              if (field.type === "textarea") {
+                basicContent += `${value}\n\n`;
+              } else if (field.type === "select" || field.type === "checklist") {
+                basicContent += `**${field.label}:** ${Array.isArray(value) ? value.join(", ") : value}\n\n`;
+              } else {
+                basicContent += `**${field.label}:** ${value}\n\n`;
+              }
+            }
+          });
+        }
+      });
+
+      // Create a prompt for AI enhancement based on the type
+      const prompt = `You are a professional knowledge management assistant helping to create a ${typeConfig.name}.
+
+Given the following structured information, create a comprehensive, well-written knowledge article that expands on the provided details.
+
+Type: ${typeConfig.name}
+Description: ${typeConfig.description}
+
+Structured Data Provided:
+${JSON.stringify(contextData, null, 2)}
+
+Please create an enhanced version that:
+1. Expands on each section with more detail and context
+2. Adds smooth transitions between sections
+3. Includes relevant insights and best practices
+4. Maintains a professional, informative tone
+5. Organizes information logically
+6. Adds helpful context and explanations
+7. Ensures completeness while remaining concise
+
+Format the output in Markdown with clear headings and sections. Start with the title as # heading.`;
+
+      try {
+        // Call the AI API
+        const response = await aiMutation.mutateAsync({
+          type: "technical_docs", // Use technical_docs for knowledge article generation
+          prompt: prompt,
+          context: basicContent,
+          complexity: 7, // Medium-high complexity for comprehensive content
+          urgency: "realtime",
+          accuracyRequired: "standard",
+        });
+
+        const enhancedContent = response.content || basicContent;
+
+        if (onContentGenerated) {
+          onContentGenerated(enhancedContent);
+        }
+        // Switch to freeform tab to show the generated content
+        setActiveTab("freeform");
+      } catch (apiError) {
+        console.error("AI API error:", apiError);
+        // Fallback to basic content if AI fails
+        const fallbackContent =
+          basicContent +
+          "\n\n---\n\n" +
+          "*Note: AI enhancement is temporarily unavailable. The basic template has been generated from your input fields.*";
+
+        if (onContentGenerated) {
+          onContentGenerated(fallbackContent);
+        }
+        setActiveTab("freeform");
+      }
+    } catch (error) {
+      console.error("Error generating AI content:", error);
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -399,12 +503,33 @@ export function TypeTemplate({
             </Card>
           ))}
 
-          {/* Generate Content Button */}
+          {/* Generate Content Buttons */}
           {mode !== "view" && (
-            <div className="flex justify-end">
-              <Button onClick={generateStructuredContent} className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4" />
-                Generate Content from Fields
+            <div className="flex justify-end gap-2">
+              <Button
+                onClick={generateStructuredContent}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <FileText className="h-4 w-4" />
+                Basic Template
+              </Button>
+              <Button
+                onClick={generateAIContent}
+                disabled={isGenerating}
+                className="flex items-center gap-2"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-4 w-4" />
+                    AI Enhanced
+                  </>
+                )}
               </Button>
             </div>
           )}
