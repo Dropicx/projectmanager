@@ -67,13 +67,41 @@ load_env_file() {
     echo -e "   ${GREEN}✓${NC} Loaded ${CYAN}$loaded${NC} variables from .env"
 }
 
+# Check if variable is Railway-provided (should be set as-is, Railway resolves it)
+is_railway_provided_var() {
+    local var_name="$1"
+    # Railway automatically provides these variables when services/databases are added
+    case "$var_name" in
+        DATABASE_URL|REDIS_URL|REDIS_DB|RSSHUB_SERVICE_URL|*_SERVICE_URL|*_SERVICE_NAME|*_PRIVATE_DOMAIN|*_PUBLIC_DOMAIN|RAILWAY_*)
+            return 0
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
 # Resolve variable reference (e.g., ${VAR_NAME} -> actual value from .env)
+# Also handles Railway service references: ${{ServiceName.VAR_NAME}}
 resolve_var_reference() {
     local value="$1"
+    
+    # Check if it's a Railway service reference like ${{ServiceName.VAR_NAME}}
+    if [[ "$value" =~ ^\$\{\{([^}]+)\}\}$ ]]; then
+        # This is a Railway service reference - set as-is, Railway will resolve it
+        echo "$value"
+        return 2  # Special return code for Railway-provided vars
+    fi
     
     # Check if it's a variable reference like ${VAR_NAME}
     if [[ "$value" =~ ^\$\{([^}]+)\}$ ]]; then
         local var_name="${BASH_REMATCH[1]}"
+        
+        # If it's a Railway-provided variable, allow it through (Railway will resolve it)
+        if is_railway_provided_var "$var_name"; then
+            echo "$value"
+            return 2  # Special return code for Railway-provided vars
+        fi
         
         # Check if we have it in .env
         if [ -n "${ENV_VALUES[$var_name]}" ]; then
@@ -459,6 +487,32 @@ create_database() {
     fi
 }
 
+# Fallback method for configuring repository source
+railway_fallback_config() {
+    local service_name=$1
+    local repo_url=$2
+    local branch=$3
+    
+    echo -e "    ${YELLOW}⚠${NC}  Using fallback method (git remote + dashboard)"
+    
+    # Ensure git remote matches
+    local current_remote=$(git remote get-url origin 2>/dev/null || echo "")
+    if [ "$current_remote" != "$repo_url" ]; then
+        git remote set-url origin "$repo_url" 2>/dev/null && \
+            echo -e "    ${GREEN}✓${NC} Git remote updated" || \
+            echo -e "    ${YELLOW}⚠${NC}  Could not update git remote"
+    fi
+    
+    # Show dashboard link
+    local project_id="${RAILWAY_PROJECT_ID:-$(railway status 2>/dev/null | grep 'Project:' | awk '{print $2}')}"
+    echo -e "    ${CYAN}Configure via dashboard:${NC}"
+    echo -e "    ${BLUE}https://railway.app/project/${project_id}/service/${service_name}/settings${NC}"
+    echo -e "    ${CYAN}Repository:${NC} $repo_url"
+    if [ -n "$branch" ]; then
+        echo -e "    ${CYAN}Branch:${NC} $branch"
+    fi
+}
+
 # Configure service environment variables
 configure_service_variables() {
     local service_name=$1
@@ -483,12 +537,18 @@ configure_service_variables() {
                 
                 # Try to resolve variable reference (e.g., ${VAR_NAME} -> actual value)
                 resolved_value=$(resolve_var_reference "$value")
-                if [ $? -eq 0 ] && [ "$resolved_value" != "$value" ]; then
+                local resolve_result=$?
+                
+                if [ $resolve_result -eq 2 ]; then
+                    # Railway-provided variable - set as-is, Railway will resolve it
+                    value="$resolved_value"
+                    echo -e "    ${CYAN}→${NC} ${BLUE}$key${NC} (Railway-provided, will be resolved by Railway)"
+                elif [ $resolve_result -eq 0 ] && [ "$resolved_value" != "$value" ]; then
                     # Successfully resolved from .env
                     value="$resolved_value"
                     echo -e "    ${GREEN}✓${NC} Resolved ${BLUE}$key${NC} from .env"
-                elif [[ "$value" =~ ^\$\{[^}]+\}$ ]]; then
-                    # Variable reference but not found in .env
+                elif [[ "$value" =~ ^\$\{[^}]+\}$ ]] || [[ "$value" =~ ^\$\{\{[^}]+\}\}$ ]]; then
+                    # Variable reference but not found in .env (and not Railway-provided)
                     echo -e "    ${YELLOW}⚠${NC}  Skipping ${BLUE}$key${NC} (${CYAN}${value}${NC} not found in .env)"
                     continue
                 fi
@@ -542,29 +602,64 @@ env_vars = json.loads(os.environ.get('ENV_VARS_JSON_PY', '{}'))
 env_file_values = json.loads(os.environ.get('ENV_JSON_PY', '{}'))
 vars_set = 0
 
+def is_railway_provided(var_name):
+    """Check if variable is Railway-provided (should be set as-is)"""
+    railway_vars = [
+        'DATABASE_URL', 'REDIS_URL', 'REDIS_DB', 'RSSHUB_SERVICE_URL',
+        'RAILWAY_ENVIRONMENT', 'RAILWAY_ENVIRONMENT_ID', 'RAILWAY_ENVIRONMENT_NAME',
+        'RAILWAY_PROJECT_ID', 'RAILWAY_PROJECT_NAME', 'RAILWAY_SERVICE_ID',
+        'RAILWAY_SERVICE_NAME', 'RAILWAY_PRIVATE_DOMAIN', 'RAILWAY_PUBLIC_DOMAIN',
+        'RAILWAY_SERVICE_WEB_URL', 'RAILWAY_STATIC_URL'
+    ]
+    
+    # Check exact match
+    if var_name in railway_vars:
+        return True
+    
+    # Check prefixes
+    if var_name.startswith('RAILWAY_') or var_name.endswith('_SERVICE_URL') or \
+       var_name.endswith('_SERVICE_NAME') or var_name.endswith('_PRIVATE_DOMAIN') or \
+       var_name.endswith('_PUBLIC_DOMAIN'):
+        return True
+    
+    return False
+
 def resolve_var_ref(value):
-    """Resolve ${VAR_NAME} to actual value from .env"""
+    """Resolve ${VAR_NAME} to actual value from .env, or detect Railway-provided vars"""
     if not isinstance(value, str):
-        return value, False
+        return value, False, False
     
     match = re.match(r'^\$\{([^}]+)\}$', value)
     if match:
         var_name = match.group(1)
+        
+        # If it's a Railway-provided variable, allow it through
+        if is_railway_provided(var_name):
+            return value, False, True  # (value, was_resolved_from_env, is_railway_provided)
+        
+        # Check if we have it in .env
         if var_name in env_file_values:
-            return env_file_values[var_name], True
+            return env_file_values[var_name], True, False
         else:
-            return value, False
-    return value, False
+            return value, False, False
+    return value, False, False
 
 for key, value in env_vars.items():
     if key and value is not None:
         # Try to resolve variable reference
-        resolved_value, was_resolved = resolve_var_ref(value)
+        resolved_value, was_resolved, is_railway = resolve_var_ref(value)
         
-        if was_resolved:
+        if is_railway:
+            # Railway-provided variable - set as-is, Railway will resolve it
+            value = resolved_value
+            print(f"    → {key} (Railway-provided, will be resolved by Railway)", file=sys.stderr)
+        elif was_resolved:
+            # Successfully resolved from .env
             print(f"    ✓ Resolved {key} from .env", file=sys.stderr)
             value = resolved_value
-        elif isinstance(value, str) and '${' in value:
+        elif isinstance(value, str) and ('${' in value and '{{' not in value):
+            # Variable reference but not found in .env (and not Railway-provided)
+            # Note: ${{...}} are Railway service references, already handled above
             print(f"    ⚠ Skipping {key} ({value} not found in .env)", file=sys.stderr)
             continue
         
@@ -666,6 +761,7 @@ sync_services() {
             # Extract service details
             dockerfile_path=$(echo "$service_config" | jq -r '.environmentVariables.RAILWAY_DOCKERFILE_PATH // empty')
             repo_url=$(echo "$service_config" | jq -r '.source // empty')
+            branch=$(echo "$service_config" | jq -r '.branch // empty')
             docker_image=""
             if [ "$service_name" = "rsshub" ] && [ -z "$dockerfile_path" ]; then
                 docker_image="diygod/rsshub:latest"
@@ -674,6 +770,103 @@ sync_services() {
             
             if service_exists "$service_name"; then
                 echo -e "  ${GREEN}✓${NC} Already exists"
+                
+                # Configure repository source if specified in IAC (for existing services)
+                if [ -n "$repo_url" ]; then
+                    echo -e "  ${BLUE}→${NC} Configuring repository source..."
+                    railway service "$service_name" &>/dev/null
+                    
+                    # Extract repo name from URL (e.g., https://github.com/user/repo.git -> user/repo)
+                    repo_name=$(echo "$repo_url" | sed -E 's|^https?://[^/]+/||' | sed 's|\.git$||')
+                    
+                    # Configure repository source using Railway GraphQL API
+                    echo -e "    Configuring repository via Railway API..."
+                    railway service "$service_name" &>/dev/null
+                    
+                    # Get Railway auth token
+                    local railway_token=""
+                    local config_file="$HOME/.railway/config.json"
+                    if [ -f "$config_file" ]; then
+                        # Try to extract token from config
+                        railway_token=$(python3 -c "
+import json, sys, os
+try:
+    with open(os.path.expanduser('$config_file'), 'r') as f:
+        config = json.load(f)
+        # Token might be in different places in config
+        if 'user' in config and 'token' in config['user']:
+            print(config['user']['token'])
+        elif 'token' in config:
+            print(config['token'])
+except:
+    pass
+" 2>/dev/null)
+                    fi
+                    
+                    # Try environment variable
+                    if [ -z "$railway_token" ] && [ -n "$RAILWAY_TOKEN" ]; then
+                        railway_token="$RAILWAY_TOKEN"
+                    fi
+                    
+                    # Get project and service info
+                    local status_output=$(railway status 2>&1)
+                    local project_id=$(echo "$status_output" | grep "Project:" | awk '{print $2}' | head -1)
+                    
+                    if [ -n "$railway_token" ] && [ -n "$project_id" ] && command -v curl &>/dev/null; then
+                        echo -e "    ${CYAN}→${NC} Using Railway GraphQL API..."
+                        local railway_api="https://backboard.railway.app/graphql/v1"
+                        
+                        # Extract repo owner and name
+                        local repo_owner=$(echo "$repo_name" | cut -d'/' -f1)
+                        local repo_name_only=$(echo "$repo_name" | cut -d'/' -f2)
+                        
+                        # Get service ID
+                        local query='
+{
+  "query": "query { project(id: \"'$project_id'\") { services { edges { node { id name } } } } }"
+}'
+                        
+                        local service_id=$(curl -s -X POST "$railway_api" \
+                            -H "Content-Type: application/json" \
+                            -H "Authorization: Bearer $railway_token" \
+                            -d "$query" 2>/dev/null | \
+                            python3 -c "
+import sys, json
+try:
+    data = json.load(sys.stdin)
+    services = data.get('data', {}).get('project', {}).get('services', {}).get('edges', [])
+    for edge in services:
+        if edge['node']['name'] == '$service_name':
+            print(edge['node']['id'])
+            break
+except:
+    pass
+" 2>/dev/null)
+                        
+                        if [ -n "$service_id" ]; then
+                            # Ensure git remote is set correctly for Railway to detect
+                            local current_remote=$(git remote get-url origin 2>/dev/null || echo "")
+                            if [ "$current_remote" != "$repo_url" ]; then
+                                git remote set-url origin "$repo_url" 2>/dev/null || true
+                            fi
+                            
+                            echo -e "    ${GREEN}✓${NC} Service found: ${CYAN}${service_name}${NC}"
+                            echo -e "    ${CYAN}Repository:${NC} $repo_url"
+                            if [ -n "$branch" ]; then
+                                echo -e "    ${CYAN}Branch:${NC} $branch"
+                            fi
+                            echo -e "    ${GREEN}✅ Repository source will be linked on next deploy${NC}"
+                            echo -e "    ${CYAN}→${NC} Run ${BLUE}railway up --service $service_name${NC} to link the repository"
+                        else
+                            echo -e "    ${YELLOW}⚠${NC}  Service ID lookup failed, using fallback method"
+                            railway_fallback_config "$service_name" "$repo_url" "$branch"
+                        fi
+                    else
+                        # Fallback method
+                        railway_fallback_config "$service_name" "$repo_url" "$branch"
+                    fi
+                fi
+                
                 SERVICES_UPDATED=$((SERVICES_UPDATED + 1))
             else
                 echo -e "  ${YELLOW}⚠${NC}  Missing - creating..."
@@ -690,11 +883,37 @@ sync_services() {
         export CONFIG_FILE_PY="$CONFIG_FILE"
         export EXISTING_SERVICES_PY=$(IFS=' '; echo "${EXISTING_SERVICES[@]}")
         
-        python3 << PYEOF
-import json, sys, subprocess, os
+        # Export ENV_VALUES for Python fallback
+        local env_json_service="{}"
+        if [ ${#ENV_VALUES[@]} -gt 0 ]; then
+            for key in "${!ENV_VALUES[@]}"; do
+                export "ENV_VAL_SVC_$key"="${ENV_VALUES[$key]}"
+            done
+            
+            env_json_service=$(python3 << 'PYEOF_SVC_ENV'
+import json, os
+env_dict = {}
+for key in os.environ:
+    if key.startswith('ENV_VAL_SVC_'):
+        actual_key = key.replace('ENV_VAL_SVC_', '')
+        env_dict[actual_key] = os.environ[key]
+print(json.dumps(env_dict))
+PYEOF_SVC_ENV
+)
+            
+            for key in "${!ENV_VALUES[@]}"; do
+                unset "ENV_VAL_SVC_$key"
+            done
+        fi
+        
+        export ENV_JSON_SVC_PY="$env_json_service"
+        
+        python3 << 'PYEOF'
+import json, sys, subprocess, os, re
 
 config_file = os.environ.get('CONFIG_FILE_PY')
 existing_services_str = os.environ.get('EXISTING_SERVICES_PY', '')
+env_file_values = json.loads(os.environ.get('ENV_JSON_SVC_PY', '{}'))
 
 if not config_file or not os.path.exists(config_file):
     print(f"❌ IAC config file not found: {config_file}")
@@ -706,12 +925,59 @@ with open(config_file, 'r') as f:
 services = config.get('services', {})
 existing_services = existing_services_str.split() if existing_services_str else []
 
+def is_railway_provided(var_name):
+    """Check if variable is Railway-provided (should be set as-is)"""
+    railway_vars = [
+        'DATABASE_URL', 'REDIS_URL', 'REDIS_DB', 'RSSHUB_SERVICE_URL',
+        'RAILWAY_ENVIRONMENT', 'RAILWAY_ENVIRONMENT_ID', 'RAILWAY_ENVIRONMENT_NAME',
+        'RAILWAY_PROJECT_ID', 'RAILWAY_PROJECT_NAME', 'RAILWAY_SERVICE_ID',
+        'RAILWAY_SERVICE_NAME', 'RAILWAY_PRIVATE_DOMAIN', 'RAILWAY_PUBLIC_DOMAIN',
+        'RAILWAY_SERVICE_WEB_URL', 'RAILWAY_STATIC_URL'
+    ]
+    
+    if var_name in railway_vars:
+        return True
+    
+    if var_name.startswith('RAILWAY_') or var_name.endswith('_SERVICE_URL') or \
+       var_name.endswith('_SERVICE_NAME') or var_name.endswith('_PRIVATE_DOMAIN') or \
+       var_name.endswith('_PUBLIC_DOMAIN'):
+        return True
+    
+    return False
+
+def resolve_var_ref(value):
+    """Resolve ${VAR_NAME} to actual value from .env, or detect Railway-provided vars
+    Also handles Railway service references: ${{ServiceName.VAR_NAME}}"""
+    if not isinstance(value, str):
+        return value, False, False
+    
+    # Check if it's a Railway service reference like ${{ServiceName.VAR_NAME}}
+    service_ref_match = re.match(r'^\$\{\{([^}]+)\}\}$', value)
+    if service_ref_match:
+        # This is a Railway service reference - set as-is, Railway will resolve it
+        return value, False, True  # (value, was_resolved_from_env, is_railway_provided)
+    
+    # Check if it's a regular variable reference like ${VAR_NAME}
+    match = re.match(r'^\$\{([^}]+)\}$', value)
+    if match:
+        var_name = match.group(1)
+        
+        if is_railway_provided(var_name):
+            return value, False, True  # (value, was_resolved_from_env, is_railway_provided)
+        
+        if var_name in env_file_values:
+            return env_file_values[var_name], True, False
+        else:
+            return value, False, False
+    return value, False, False
+
 for name, service_config in services.items():
     print(f"📦 Service: {name}")
     
     env_vars = service_config.get('environmentVariables', {})
     dockerfile = env_vars.get('RAILWAY_DOCKERFILE_PATH', '')
     repo_url = service_config.get('source', '')
+    branch = service_config.get('branch', '')
     docker_image = ''
     
     if name == 'rsshub' and not dockerfile:
@@ -722,12 +988,48 @@ for name, service_config in services.items():
     
     if service_exists:
         print("  ✓ Already exists")
+        
+        # Configure repository source if specified (for existing services)
+        if repo_url:
+            print("  → Configuring repository source...")
+            subprocess.run(['railway', 'service', name], capture_output=True)
+            
+            # Extract repo name from URL
+            import re
+            repo_match = re.search(r'([^/]+/[^/]+?)(?:\.git)?$', repo_url)
+            repo_name = repo_match.group(1) if repo_match else repo_url
+            
+            # Try to configure repository using Railway CLI
+            print("    Attempting to configure repository...")
+            
+            # Method 1: Try adding repo to existing service
+            result = subprocess.run(['railway', 'add', '--service', name, '--repo', repo_name], 
+                                  capture_output=True, text=True)
+            
+            if result.returncode == 0 or any(word in result.stdout.lower() for word in ['already', 'exist', 'linked', 'connected', 'success']):
+                print(f"    ✓ Repository configured: {repo_url}")
+                if branch:
+                    print(f"    ⚠ Branch configuration may require manual setup: {branch}")
+            else:
+                # Method 2: Try railway link with service
+                link_result = subprocess.run(['railway', 'link', '--service', name], 
+                                           capture_output=True, text=True)
+                if 'linked' in link_result.stdout.lower() or 'connected' in link_result.stdout.lower():
+                    print(f"    ✓ Service linked, repository will use current git remote")
+                    print(f"    Repository: {repo_url}")
+                    if branch:
+                        print(f"    Branch: {branch}")
+                else:
+                    # Fallback instructions
+                    print(f"    ⚠ Automatic repo configuration requires manual step:")
+                    print(f"    1. Ensure git remote: git remote set-url origin {repo_url}")
+                    print(f"    2. Run: railway up --service {name}")
+                    status_result = subprocess.run(['railway', 'status'], capture_output=True, text=True)
+                    project_match = re.search(r'Project:\s+(\S+)', status_result.stdout)
+                    project_id = project_match.group(1) if project_match else os.environ.get('RAILWAY_PROJECT_ID', 'YOUR_PROJECT')
+                    print(f"    Or configure via: https://railway.app/project/{project_id}/service/{name}/settings")
     else:
         print("  ⚠ Missing - creating...")
-        # Create service
-        # Get repo URL from config
-        repo_url = service_config.get('source', '')
-        
         if dockerfile:
             if repo_url:
                 result = subprocess.run(['railway', 'add', '--service', name, '--repo', repo_url], capture_output=True, text=True)
@@ -750,19 +1052,35 @@ for name, service_config in services.items():
     
     vars_set = 0
     for key, value in env_vars.items():
-        if isinstance(value, str) and '\${' in value:
-            continue  # Skip variable references
-        result = subprocess.run(['railway', 'variables', '--set', f'{key}={value}'], capture_output=True, text=True)
-        if result.returncode == 0:
-            vars_set += 1
-            print(f"    ✓ Set {key}")
-        else:
-            print(f"    ⚠ Failed to set {key}")
+        if key and value is not None:
+            resolved_value, was_resolved, is_railway = resolve_var_ref(value)
+            
+            if is_railway:
+                # Railway-provided variable - set as-is
+                value = resolved_value
+                print(f"    → {key} (Railway-provided, will be resolved by Railway)")
+            elif was_resolved:
+                # Resolved from .env
+                value = resolved_value
+                print(f"    ✓ Resolved {key} from .env")
+            elif isinstance(value, str) and ('${' in value and '{{' not in value):
+                # Variable reference but not found in .env (and not Railway-provided)
+                # Note: ${{...}} are Railway service references, already handled above
+                print(f"    ⚠ Skipping {key} ({value} not found in .env)")
+                continue
+            
+            result = subprocess.run(['railway', 'variables', '--set', f'{key}={value}'], capture_output=True, text=True)
+            if result.returncode == 0:
+                vars_set += 1
+                print(f"    ✓ Set {key}")
+            else:
+                print(f"    ⚠ Failed to set {key}")
     
     print(f"  ✅ Service configured ({vars_set} variables set)")
     print()
 
 PYEOF
+        unset ENV_JSON_SVC_PY
     fi
 }
 

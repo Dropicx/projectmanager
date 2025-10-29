@@ -212,13 +212,14 @@ export async function fetchAndStoreRSSFeed(feedKey: string | FeedCategory): Prom
 
     // Validate feed has items
     if (!feed || !feed.items || !Array.isArray(feed.items)) {
-      console.log(`[RSS Parser] ⚠️ Feed has no valid items for ${feedCategory}`);
+      console.log(`[RSS Parser] ⚠️ Feed has no valid items for ${feedKeyUsed}`);
       return {
         success: false,
         error: "Feed contains no valid items",
         insertedCount: 0,
         skippedCount: 0,
         totalFetched: 0,
+        category: feedKeyUsed,
       };
     }
 

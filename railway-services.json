@@ -46,8 +46,8 @@
         "NEXT_PUBLIC_CLERK_SIGN_IN_URL": "/sign-in",
         "NEXT_PUBLIC_CLERK_SIGN_UP_URL": "/sign-up",
         "ENABLE_AI_INSIGHTS": "true",
-        "DATABASE_URL": "${DATABASE_URL}",
-        "REDIS_URL": "${REDIS_URL}"
+        "DATABASE_URL": "${{Postgres.DATABASE_URL}}",
+        "REDIS_URL": "${{Redis.REDIS_URL}}"
       }
     },
     "worker": {
@@ -87,8 +87,8 @@
         "BEDROCK_DAILY_LIMIT_USD": "10",
         "BEDROCK_MONTHLY_BUDGET_USD": "10",
         "ENABLE_AI_INSIGHTS": "true",
-        "DATABASE_URL": "${DATABASE_URL}",
-        "REDIS_URL": "${REDIS_URL}"
+        "DATABASE_URL": "${{Postgres.DATABASE_URL}}",
+        "REDIS_URL": "${{Redis.REDIS_URL}}"
       }
     },
     "rsshub": {
@@ -109,7 +109,7 @@
         "NODE_ENV": "production",
         "PORT": "1200",
         "CACHE_TYPE": "redis",
-        "REDIS_URL": "${REDIS_URL}",
+        "REDIS_URL": "${{Redis.REDIS_URL}}",
         "REDIS_DB": "3"
       }
     }
