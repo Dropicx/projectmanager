@@ -1,4 +1,10 @@
-# Multi-service Dockerfile for Monorepo
+# Multi-service Dockerfile for Monorepo (Legacy - for docker-compose)
+# For Railway, use separate Dockerfiles in dockerfiles/ directory:
+#   - dockerfiles/Dockerfile.web
+#   - dockerfiles/Dockerfile.worker
+#   - dockerfiles/Dockerfile.rsshub
+#
+# Railway services should use RAILWAY_DOCKERFILE_PATH env var to specify which Dockerfile to use.
 ARG SERVICE=web
 
 FROM node:22-alpine AS builder

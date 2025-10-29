@@ -1,0 +1,84 @@
+# Dockerfile for Web Service (Next.js)
+FROM node:22-alpine AS builder
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@9.14.0 --activate
+
+# Copy all package.json files for better caching
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY web/package.json ./web/
+COPY worker/package.json ./worker/
+COPY packages/ai/package.json ./packages/ai/
+COPY packages/api/package.json ./packages/api/
+COPY packages/database/package.json ./packages/database/
+COPY packages/ui/package.json ./packages/ui/
+
+# Install all dependencies
+RUN pnpm install --frozen-lockfile
+
+# Copy all source files
+COPY . .
+
+# Build packages first
+WORKDIR /app/packages/ai
+RUN pnpm install --frozen-lockfile && \
+    chmod +x build.sh && \
+    pnpm build
+
+WORKDIR /app/packages/database
+RUN pnpm build
+
+WORKDIR /app/packages/api
+RUN pnpm build
+
+WORKDIR /app/packages/ui
+RUN pnpm build || true
+
+# Build web application
+WORKDIR /app/web
+
+# Accept Clerk keys as build arguments
+ARG NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+ARG NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+ARG NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+ARG NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
+ARG NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/dashboard
+
+# Use build args as env vars
+ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:-pk_test_bm9ibGUtZG9ua2V5LTIzLmNsZXJrLmFjY291bnRzLmRldiQ}
+ENV NEXT_PUBLIC_CLERK_SIGN_IN_URL=${NEXT_PUBLIC_CLERK_SIGN_IN_URL}
+ENV NEXT_PUBLIC_CLERK_SIGN_UP_URL=${NEXT_PUBLIC_CLERK_SIGN_UP_URL}
+ENV NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=${NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL}
+ENV NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=${NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL}
+
+RUN echo "Building web application..." && \
+    pnpm build && \
+    echo "Web build completed"
+
+# Production stage
+FROM node:22-alpine AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
+
+COPY --from=builder /app/web/.next ./web/.next
+COPY --from=builder /app/web/public ./web/public
+COPY --from=builder /app/web/package.json ./web/package.json
+COPY --from=builder /app/web/next.config.js ./web/next.config.js
+COPY --from=builder /app/web/server.js ./web/server.js
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/web/node_modules ./web/node_modules
+COPY --from=builder /app/packages ./packages
+
+USER nextjs
+EXPOSE 3000
+ENV PORT=3000
+WORKDIR /app/web
+CMD ["node", "server.js"]
+

@@ -1,0 +1,46 @@
+# Dockerfile for RSSHub Service (Self-hosted RSS Aggregator)
+FROM node:22-alpine
+
+WORKDIR /app
+
+# Install dependencies required for RSSHub
+RUN apk add --no-cache \
+    chromium \
+    nss \
+    freetype \
+    freetype-dev \
+    harfbuzz \
+    ca-certificates \
+    ttf-freefont \
+    git \
+    python3 \
+    make \
+    g++
+
+# Set Puppeteer to use Chromium
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
+# Clone RSSHub repository
+# Using a specific version tag for stability (adjust as needed)
+ARG RSSHUB_VERSION=latest
+RUN if [ "$RSSHUB_VERSION" = "latest" ]; then \
+        git clone --depth 1 https://github.com/DIYgod/RSSHub.git /app; \
+    else \
+        git clone --depth 1 --branch v${RSSHUB_VERSION} https://github.com/DIYgod/RSSHub.git /app; \
+    fi
+
+# Install RSSHub dependencies
+RUN cd /app && npm install --production
+
+# Expose RSSHub port
+EXPOSE 1200
+
+# Set environment variables
+ENV NODE_ENV=production \
+    PORT=1200 \
+    CACHE_TYPE=redis
+
+# Start RSSHub
+CMD ["npm", "start"]
+

@@ -1,0 +1,142 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "project": "consailt",
+  "projectId": "88196c0b-74a3-4682-acd4-8d89d9f7799b",
+  "services": {
+    "web": {
+      "name": "web",
+      "source": "https://github.com/Dropicx/projectmanager.git",
+      "branch": "main",
+      "build": {
+        "builder": "DOCKERFILE"
+      },
+      "deploy": {
+        "startCommand": "cd /app/web && node server.js",
+        "restartPolicyType": "ON_FAILURE",
+        "restartPolicyMaxRetries": 3,
+        "healthcheckPath": "/api/health",
+        "healthcheckTimeout": 30,
+        "numReplicas": 1
+      },
+      "environmentVariables": {
+        "RAILWAY_DOCKERFILE_PATH": "dockerfiles/Dockerfile.web",
+        "NODE_ENV": "production",
+        "PORT": "3000",
+        "NEXT_TELEMETRY_DISABLED": "1",
+        "RSSHUB_URL": "${RSSHUB_SERVICE_URL}",
+        "RSSHUB_SELF_HOSTED": "true",
+        "RSS_ENABLE_BRIEF360_FEEDS": "true",
+        "RSS_MAX_CONCURRENT_FEEDS": "10",
+        "RSS_FETCH_TIMEOUT_MS": "30000",
+        "RSS_ENABLED_CATEGORIES": "security,news,business,technology,politics,regulation",
+        "AI_COST_LIMIT_CENTS": "1000",
+        "AWS_REGION": "eu-central-1",
+        "BEDROCK_API_KEY": "${BEDROCK_API_KEY}",
+        "BEDROCK_API_KEY_ID": "${BEDROCK_API_KEY_ID}",
+        "BEDROCK_API_KEY_SECRET": "${BEDROCK_API_KEY_SECRET}",
+        "BEDROCK_FREE_TIER_BUDGET_USD": "1",
+        "BEDROCK_PRO_TIER_BUDGET_USD": "20",
+        "BEDROCK_ENTERPRISE_BUDGET_USD": "10",
+        "BEDROCK_DAILY_LIMIT_USD": "10",
+        "BEDROCK_MONTHLY_BUDGET_USD": "10",
+        "CLERK_SECRET_KEY": "${CLERK_SECRET_KEY}",
+        "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY": "${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}",
+        "NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL": "/dashboard",
+        "NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL": "/dashboard",
+        "NEXT_PUBLIC_CLERK_SIGN_IN_URL": "/sign-in",
+        "NEXT_PUBLIC_CLERK_SIGN_UP_URL": "/sign-up",
+        "ENABLE_AI_INSIGHTS": "true",
+        "DATABASE_URL": "${DATABASE_URL}",
+        "REDIS_URL": "${REDIS_URL}"
+      }
+    },
+    "worker": {
+      "name": "worker",
+      "source": "https://github.com/Dropicx/projectmanager.git",
+      "branch": "main",
+      "build": {
+        "builder": "DOCKERFILE"
+      },
+      "deploy": {
+        "startCommand": "cd /app/worker && node dist/index.js",
+        "restartPolicyType": "ON_FAILURE",
+        "restartPolicyMaxRetries": 3,
+        "numReplicas": 1
+      },
+      "environmentVariables": {
+        "RAILWAY_DOCKERFILE_PATH": "dockerfiles/Dockerfile.worker",
+        "NODE_ENV": "production",
+        "WORKER_ENABLED": "true",
+        "WORKER_CONCURRENCY": "5",
+        "MAX_RETRIES": "3",
+        "JOB_TIMEOUT_MS": "300000",
+        "LOG_LEVEL": "info",
+        "RSSHUB_URL": "${RSSHUB_SERVICE_URL}",
+        "RSSHUB_SELF_HOSTED": "true",
+        "RSS_ENABLE_BRIEF360_FEEDS": "true",
+        "RSS_MAX_CONCURRENT_FEEDS": "10",
+        "RSS_FETCH_TIMEOUT_MS": "30000",
+        "AI_COST_LIMIT_CENTS": "1000",
+        "AWS_REGION": "eu-central-1",
+        "BEDROCK_API_KEY": "${BEDROCK_API_KEY}",
+        "BEDROCK_API_KEY_ID": "${BEDROCK_API_KEY_ID}",
+        "BEDROCK_API_KEY_SECRET": "${BEDROCK_API_KEY_SECRET}",
+        "BEDROCK_FREE_TIER_BUDGET_USD": "1",
+        "BEDROCK_PRO_TIER_BUDGET_USD": "20",
+        "BEDROCK_ENTERPRISE_BUDGET_USD": "10",
+        "BEDROCK_DAILY_LIMIT_USD": "10",
+        "BEDROCK_MONTHLY_BUDGET_USD": "10",
+        "ENABLE_AI_INSIGHTS": "true",
+        "DATABASE_URL": "${DATABASE_URL}",
+        "REDIS_URL": "${REDIS_URL}"
+      }
+    },
+    "rsshub": {
+      "name": "rsshub",
+      "source": "https://github.com/Dropicx/projectmanager.git",
+      "branch": "main",
+      "build": {
+        "builder": "DOCKERFILE"
+      },
+      "deploy": {
+        "startCommand": "npm start",
+        "restartPolicyType": "ON_FAILURE",
+        "restartPolicyMaxRetries": 3,
+        "numReplicas": 1
+      },
+      "environmentVariables": {
+        "RAILWAY_DOCKERFILE_PATH": "dockerfiles/Dockerfile.rsshub",
+        "NODE_ENV": "production",
+        "PORT": "1200",
+        "CACHE_TYPE": "redis",
+        "REDIS_URL": "${REDIS_URL}",
+        "REDIS_DB": "3"
+      }
+    }
+  },
+  "databases": {
+    "postgres": {
+      "name": "Postgres",
+      "type": "postgresql",
+      "version": "16"
+    },
+    "redis": {
+      "name": "Redis",
+      "type": "redis",
+      "version": "7"
+    }
+  },
+  "sharedEnvironmentVariables": {
+    "NODE_ENV": "production",
+    "NEXT_TELEMETRY_DISABLED": "1",
+    "RSS_ENABLE_BRIEF360_FEEDS": "true",
+    "RSS_MAX_CONCURRENT_FEEDS": "10",
+    "RSS_FETCH_TIMEOUT_MS": "30000",
+    "RSS_ENABLED_CATEGORIES": "security,news,business,technology,politics,regulation",
+    "RSSHUB_SELF_HOSTED": "true",
+    "WORKER_CONCURRENCY": "5",
+    "MAX_RETRIES": "3",
+    "JOB_TIMEOUT_MS": "300000",
+    "LOG_LEVEL": "info"
+  }
+}

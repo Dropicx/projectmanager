@@ -19,7 +19,7 @@
 import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
 import { fromEnv } from "@aws-sdk/credential-providers";
 import { AIOrchestrator } from "@consulting-platform/ai";
-import { syncAllRssFeeds } from "@consulting-platform/api";
+import { syncAllRssFeeds, syncFeedsByFrequency } from "@consulting-platform/api";
 import { ai_interactions, db, engagements, knowledge_base } from "@consulting-platform/database";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
 import { Queue, Worker } from "bullmq";
@@ -509,16 +509,111 @@ const _dailyInsightsJob = new CronJob(
   "UTC"
 );
 
-// RSS Feed Sync - Now using shared function from api/lib/rss-parser
-// This syncs all configured RSS feeds (General IT News, Security Advisories, Citizen Security)
+// RSS Feed Sync - Multi-frequency scheduler (like brief360)
+// Supports feeds with different fetch frequencies: 15min, 30min, 60min, 120min
 
-// Daily RSS Feed Sync Job
-console.log("[RSS SYNC] Initializing daily RSS sync cron job (8 AM UTC)...");
+// Helper function to run RSS sync for a specific frequency
+async function runRssSyncForFrequency(frequencyMinutes: number, frequencyName: string) {
+  console.log("========================================");
+  console.log(`[RSS SYNC] Starting ${frequencyName} RSS feed sync (${frequencyMinutes} min)`);
+  console.log(`[RSS SYNC] Timestamp: ${new Date().toISOString()}`);
+  console.log("========================================");
+
+  try {
+    const startTime = Date.now();
+    const results = await syncFeedsByFrequency(frequencyMinutes);
+    const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+
+    console.log("========================================");
+    console.log(`[RSS SYNC] ${frequencyName} sync completed successfully`);
+    console.log(`[RSS SYNC] Total duration: ${duration} seconds`);
+    console.log(`[RSS SYNC] Feeds processed: ${results.length}`);
+
+    let totalInserted = 0;
+    let totalSkipped = 0;
+    let totalFetched = 0;
+    const successful = results.filter((r) => r.success).length;
+    const failed = results.filter((r) => !r.success).length;
+
+    if (results.length > 0) {
+      console.log("[RSS SYNC] Results:");
+      for (const result of results) {
+        if (result.success) {
+          totalInserted += result.insertedCount || 0;
+          totalSkipped += result.skippedCount || 0;
+          totalFetched += result.totalFetched || 0;
+        }
+      }
+    }
+
+    console.log("[RSS SYNC] Summary:");
+    console.log(`[RSS SYNC]   • Successful: ${successful}`);
+    console.log(`[RSS SYNC]   • Failed: ${failed}`);
+    console.log(`[RSS SYNC]   • Total articles fetched: ${totalFetched}`);
+    console.log(`[RSS SYNC]   • New articles inserted: ${totalInserted}`);
+    console.log(`[RSS SYNC]   • Duplicates skipped: ${totalSkipped}`);
+    console.log("========================================\n");
+  } catch (error) {
+    console.error(`[RSS SYNC] ❌ ${frequencyName} sync failed:`, error);
+    console.error("========================================\n");
+  }
+}
+
+// Priority 1: Security feeds (15 minutes) - Critical security feeds
+console.log("[RSS SYNC] Initializing 15-minute RSS sync cron job...");
+const rss15MinJob = new CronJob(
+  "*/15 * * * *", // Every 15 minutes
+  async () => {
+    await runRssSyncForFrequency(15, "15-minute");
+  },
+  null,
+  true,
+  "UTC"
+);
+
+// Priority 2: News/Business/Tech feeds (30 minutes)
+console.log("[RSS SYNC] Initializing 30-minute RSS sync cron job...");
+const rss30MinJob = new CronJob(
+  "*/30 * * * *", // Every 30 minutes
+  async () => {
+    await runRssSyncForFrequency(30, "30-minute");
+  },
+  null,
+  true,
+  "UTC"
+);
+
+// Priority 3: Business/Technology feeds (60 minutes / 1 hour)
+console.log("[RSS SYNC] Initializing 60-minute RSS sync cron job...");
+const rss60MinJob = new CronJob(
+  "0 * * * *", // Every hour
+  async () => {
+    await runRssSyncForFrequency(60, "60-minute");
+  },
+  null,
+  true,
+  "UTC"
+);
+
+// Priority 4: Politics/Regulation feeds (120 minutes / 2 hours)
+console.log("[RSS SYNC] Initializing 120-minute RSS sync cron job...");
+const rss120MinJob = new CronJob(
+  "0 */2 * * *", // Every 2 hours
+  async () => {
+    await runRssSyncForFrequency(120, "120-minute");
+  },
+  null,
+  true,
+  "UTC"
+);
+
+// Daily full sync for legacy feeds and any feeds without specific frequency
+console.log("[RSS SYNC] Initializing daily full RSS sync cron job (8 AM UTC)...");
 const dailyRssSyncJob = new CronJob(
   "0 8 * * *", // Run at 8 AM daily
   async () => {
     console.log("========================================");
-    console.log("[RSS SYNC] Starting scheduled daily RSS feed sync");
+    console.log("[RSS SYNC] Starting scheduled daily full RSS feed sync");
     console.log(`[RSS SYNC] Timestamp: ${new Date().toISOString()}`);
     console.log("========================================");
 
@@ -528,35 +623,24 @@ const dailyRssSyncJob = new CronJob(
       const duration = ((Date.now() - startTime) / 1000).toFixed(2);
 
       console.log("========================================");
-      console.log("[RSS SYNC] Daily sync completed successfully");
+      console.log("[RSS SYNC] Daily full sync completed successfully");
       console.log(`[RSS SYNC] Total duration: ${duration} seconds`);
-      console.log("[RSS SYNC] Results by feed:");
 
-      let totalInserted = 0;
-      let totalSkipped = 0;
-      let totalFetched = 0;
-
-      for (const result of results) {
-        if (result.success) {
-          console.log(`[RSS SYNC]   - ${result.category}:`);
-          console.log(`[RSS SYNC]     • Fetched: ${result.totalFetched} articles`);
-          console.log(`[RSS SYNC]     • Inserted: ${result.insertedCount} new`);
-          console.log(`[RSS SYNC]     • Skipped: ${result.skippedCount} duplicates`);
-          totalInserted += result.insertedCount || 0;
-          totalSkipped += result.skippedCount || 0;
-          totalFetched += result.totalFetched || 0;
-        } else {
-          console.log(`[RSS SYNC]   - ${result.category}: FAILED - ${result.error}`);
-        }
-      }
+      const successful = results.filter((r) => r.success).length;
+      const failed = results.filter((r) => !r.success).length;
+      const totalInserted = results.reduce((sum, r) => sum + (r.insertedCount || 0), 0);
+      const totalSkipped = results.reduce((sum, r) => sum + (r.skippedCount || 0), 0);
+      const totalFetched = results.reduce((sum, r) => sum + (r.totalFetched || 0), 0);
 
       console.log("[RSS SYNC] Summary:");
+      console.log(`[RSS SYNC]   • Successful: ${successful}`);
+      console.log(`[RSS SYNC]   • Failed: ${failed}`);
       console.log(`[RSS SYNC]   • Total articles fetched: ${totalFetched}`);
-      console.log(`[RSS SYNC]   • Total new articles: ${totalInserted}`);
-      console.log(`[RSS SYNC]   • Total duplicates skipped: ${totalSkipped}`);
+      console.log(`[RSS SYNC]   • New articles inserted: ${totalInserted}`);
+      console.log(`[RSS SYNC]   • Duplicates skipped: ${totalSkipped}`);
       console.log("========================================\n");
     } catch (error) {
-      console.error("[RSS SYNC] ❌ Daily sync failed:", error);
+      console.error("[RSS SYNC] ❌ Daily full sync failed:", error);
       console.error("========================================\n");
     }
   },
@@ -670,10 +754,19 @@ console.log("Background workers started successfully");
 // Log cron job status
 console.log("========================================");
 console.log("[CRON JOBS] Status Report:");
-console.log(`[CRON JOBS] Daily RSS Sync: ${dailyRssSyncJob.running ? "RUNNING" : "STOPPED"}`);
-const nextRssSync = dailyRssSyncJob.nextDates(1);
-console.log(`[CRON JOBS] Next RSS sync scheduled for: ${nextRssSync[0].toISO()} (UTC)`);
+console.log(`[CRON JOBS] 15-minute RSS Sync: ${rss15MinJob.running ? "RUNNING" : "STOPPED"}`);
+console.log(`[CRON JOBS] 30-minute RSS Sync: ${rss30MinJob.running ? "RUNNING" : "STOPPED"}`);
+console.log(`[CRON JOBS] 60-minute RSS Sync: ${rss60MinJob.running ? "RUNNING" : "STOPPED"}`);
+console.log(`[CRON JOBS] 120-minute RSS Sync: ${rss120MinJob.running ? "RUNNING" : "STOPPED"}`);
+console.log(`[CRON JOBS] Daily Full RSS Sync: ${dailyRssSyncJob.running ? "RUNNING" : "STOPPED"}`);
+
+const next15Min = rss15MinJob.nextDates(1);
+console.log(`[CRON JOBS] Next 15-min sync: ${next15Min[0].toISO()} (UTC)`);
+
+const next30Min = rss30MinJob.nextDates(1);
+console.log(`[CRON JOBS] Next 30-min sync: ${next30Min[0].toISO()} (UTC)`);
+
+const nextDaily = dailyRssSyncJob.nextDates(1);
+console.log(`[CRON JOBS] Next daily sync: ${nextDaily[0].toISO()} (UTC)`);
 console.log(`[CRON JOBS] Current time: ${new Date().toISOString()}`);
-const hoursUntilSync = Math.round((nextRssSync[0].toMillis() - Date.now()) / (1000 * 60 * 60));
-console.log(`[CRON JOBS] Time until next sync: ~${hoursUntilSync} hours`);
 console.log("========================================");

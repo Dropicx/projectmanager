@@ -1,6 +1,11 @@
 import { db, news_articles } from "@consulting-platform/database";
 import { and, desc, eq, gte, lt } from "drizzle-orm";
 import Parser from "rss-parser";
+import {
+  BRIEF360_FEEDS,
+  type FeedConfig as Brief360FeedConfig,
+  type Brief360FeedKey,
+} from "./brief360-feeds";
 
 const parser = new Parser({
   customFields: {
@@ -12,6 +17,11 @@ const parser = new Parser({
     ],
   },
 });
+
+// RSSHub configuration
+const RSSHUB_URL = process.env.RSSHUB_URL || "https://rsshub.app";
+const RSSHUB_SELF_HOSTED = process.env.RSSHUB_SELF_HOSTED === "true";
+const USE_SELF_HOSTED_RSSHUB = RSSHUB_SELF_HOSTED && process.env.RSSHUB_URL;
 
 export interface NewsArticle {
   id: string;
@@ -31,29 +41,76 @@ export interface NewsArticle {
   metadata: Record<string, any>;
 }
 
-// RSS Feed Categories Configuration
+export interface FeedConfig {
+  name: string;
+  url: string;
+  description: string;
+  enabled: boolean;
+  feed_type?: "rss" | "rsshub" | "api";
+  fetch_frequency_minutes?: number;
+  category?: string;
+}
+
+// Original RSS Feed Categories Configuration (legacy)
 export const RSS_FEED_CATEGORIES = {
   general: {
     name: "General IT News",
     url: "https://rss.the-morpheus.news/rss/high_rating",
     description: "Global IT news from governments, companies, and releases",
     enabled: true,
+    feed_type: "rss" as const,
+    fetch_frequency_minutes: 1440, // Daily
+    category: "general",
   },
   security: {
     name: "Security Advisories",
     url: "https://wid.cert-bund.de/content/public/securityAdvisory/rss",
     description: "Security vulnerabilities and advisories from CERT-Bund",
     enabled: true,
+    feed_type: "rss" as const,
+    fetch_frequency_minutes: 1440, // Daily
+    category: "security",
   },
   citizen: {
     name: "Citizen Security",
     url: "https://wid.cert-bund.de/content/public/buergercert/rss",
     description: "Security information for citizens from CERT-Bund",
     enabled: true,
+    feed_type: "rss" as const,
+    fetch_frequency_minutes: 1440, // Daily
+    category: "security",
   },
 } as const;
 
 export type FeedCategory = keyof typeof RSS_FEED_CATEGORIES;
+
+// Get all feeds (legacy + brief360)
+export function getAllFeeds(): Map<string, FeedConfig> {
+  const feeds = new Map<string, FeedConfig>();
+
+  // Add legacy feeds
+  for (const [key, config] of Object.entries(RSS_FEED_CATEGORIES)) {
+    feeds.set(key, config as FeedConfig);
+  }
+
+  // Add brief360 feeds if enabled
+  if (process.env.RSS_ENABLE_BRIEF360_FEEDS !== "false") {
+    for (const [key, config] of Object.entries(BRIEF360_FEEDS)) {
+      feeds.set(key, config);
+    }
+  }
+
+  return feeds;
+}
+
+// Helper to convert RSSHub URLs to use self-hosted instance if configured
+function normalizeRSSHubUrl(url: string): string {
+  if (url.startsWith("https://rsshub.app/") && USE_SELF_HOSTED_RSSHUB) {
+    const path = url.replace("https://rsshub.app/", "");
+    return `${RSSHUB_URL}/${path}`;
+  }
+  return url;
+}
 
 // Configuration for RSS feed fetching
 const RSS_FEED_CONFIG = {
@@ -61,13 +118,41 @@ const RSS_FEED_CONFIG = {
   maxArticleAgeInDays: 365, // Maximum age of articles to keep (1 year)
 };
 
-export async function fetchAndStoreRSSFeed(feedCategory: FeedCategory = "general") {
-  const feedConfig = RSS_FEED_CATEGORIES[feedCategory];
-  const feedUrl = feedConfig.url;
+// Overloaded function signature
+export async function fetchAndStoreRSSFeed(feedKey: string | FeedCategory): Promise<{
+  success: boolean;
+  insertedCount: number;
+  skippedCount: number;
+  totalFetched: number;
+  error?: string;
+  category?: string;
+}> {
+  const allFeeds = getAllFeeds();
+  let feedConfig: FeedConfig | undefined;
+  let feedKeyUsed: string;
+
+  // Try to find feed in all feeds
+  if (allFeeds.has(feedKey)) {
+    feedConfig = allFeeds.get(feedKey)!;
+    feedKeyUsed = feedKey;
+  } else if (feedKey in RSS_FEED_CATEGORIES) {
+    // Legacy category support
+    feedConfig = RSS_FEED_CATEGORIES[feedKey as FeedCategory] as FeedConfig;
+    feedKeyUsed = feedKey;
+  } else {
+    return {
+      success: false,
+      error: `Feed not found: ${feedKey}`,
+      insertedCount: 0,
+      skippedCount: 0,
+      totalFetched: 0,
+      category: feedKey,
+    };
+  }
 
   // Check if feed is enabled
   if (!feedConfig.enabled) {
-    console.log(`[RSS Parser] ⛔ Feed disabled: ${feedCategory}`);
+    console.log(`[RSS Parser] ⛔ Feed disabled: ${feedKeyUsed}`);
     console.log(`[RSS Parser]   Reason: Temporarily disabled for maintenance`);
     return {
       success: false,
@@ -75,12 +160,21 @@ export async function fetchAndStoreRSSFeed(feedCategory: FeedCategory = "general
       insertedCount: 0,
       skippedCount: 0,
       totalFetched: 0,
+      category: feedKeyUsed,
     };
   }
 
+  // Normalize URL (handle RSSHub routing)
+  let feedUrl = feedConfig.url;
+  if (feedConfig.feed_type === "rsshub") {
+    feedUrl = normalizeRSSHubUrl(feedUrl);
+  }
+
   try {
-    console.log(`[RSS Parser] Fetching feed: ${feedCategory}`);
+    console.log(`[RSS Parser] Fetching feed: ${feedKeyUsed}`);
+    console.log(`[RSS Parser]   Name: ${feedConfig.name}`);
     console.log(`[RSS Parser]   URL: ${feedUrl}`);
+    console.log(`[RSS Parser]   Type: ${feedConfig.feed_type || "rss"}`);
     console.log(`[RSS Parser]   Description: ${feedConfig.description}`);
 
     const fetchStart = Date.now();
@@ -89,10 +183,18 @@ export async function fetchAndStoreRSSFeed(feedCategory: FeedCategory = "general
     try {
       // Try to fetch without retry logic first
       console.log(`[RSS Parser]   Fetching feed...`);
-      feed = await parser.parseURL(feedUrl);
+
+      // Add timeout and better error handling
+      const timeout = parseInt(process.env.RSS_FETCH_TIMEOUT_MS || "30000", 10);
+      feed = (await Promise.race([
+        parser.parseURL(feedUrl),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error(`Feed fetch timeout after ${timeout}ms`)), timeout)
+        ),
+      ])) as any;
     } catch (parseError) {
       // If parsing fails, log detailed error and return gracefully
-      console.error(`[RSS Parser] ⚠️ Failed to parse feed: ${feedCategory}`);
+      console.error(`[RSS Parser] ⚠️ Failed to parse feed: ${feedKeyUsed}`);
       console.error(`[RSS Parser]   Error details: ${(parseError as Error).message}`);
       return {
         success: false,
@@ -100,6 +202,7 @@ export async function fetchAndStoreRSSFeed(feedCategory: FeedCategory = "general
         insertedCount: 0,
         skippedCount: 0,
         totalFetched: 0,
+        category: feedKeyUsed,
       };
     }
 
@@ -184,8 +287,10 @@ export async function fetchAndStoreRSSFeed(feedCategory: FeedCategory = "general
           metadata: {
             feed_title: feed.title,
             feed_description: feed.description,
-            feed_category: feedCategory,
+            feed_category: feedKeyUsed,
             feed_category_name: feedConfig.name,
+            feed_type: feedConfig.feed_type || "rss",
+            feed_source_category: feedConfig.category || feedKeyUsed,
           },
         };
 
@@ -244,22 +349,24 @@ export async function fetchAndStoreRSSFeed(feedCategory: FeedCategory = "general
     console.log(`[RSS Parser]   Database operations completed`);
     console.log(`[RSS Parser]     • New articles inserted: ${insertedCount}`);
     console.log(`[RSS Parser]     • Duplicate articles skipped: ${skippedCount}`);
-    console.log(`[RSS Parser]   Feed sync completed for: ${feedCategory}`);
+    console.log(`[RSS Parser]   Feed sync completed for: ${feedKeyUsed}`);
 
     return {
       success: true,
       insertedCount,
       skippedCount,
       totalFetched: articles.length,
+      category: feedKeyUsed,
     };
   } catch (error) {
-    console.error(`[RSS Parser] ❌ Unexpected error for ${feedCategory}:`, error);
+    console.error(`[RSS Parser] ❌ Unexpected error for ${feedKeyUsed}:`, error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
       insertedCount: 0,
       skippedCount: 0,
       totalFetched: 0,
+      category: feedKeyUsed,
     };
   }
 }
@@ -350,26 +457,94 @@ export async function cleanupOldArticles(): Promise<{ deletedCount: number }> {
   }
 }
 
-// Sync all configured RSS feeds
-export async function syncAllRssFeeds() {
-  const results = [];
-  const categories = Object.keys(RSS_FEED_CATEGORIES) as FeedCategory[];
-  const enabledCategories = categories.filter((cat) => RSS_FEED_CATEGORIES[cat].enabled);
-  const disabledCategories = categories.filter((cat) => !RSS_FEED_CATEGORIES[cat].enabled);
+// Batch processing helper
+async function processFeedsInBatches(
+  feeds: Array<{ key: string; config: FeedConfig }>,
+  batchSize: number = 10
+): Promise<
+  Array<{
+    category: string;
+    success: boolean;
+    insertedCount: number;
+    skippedCount: number;
+    totalFetched: number;
+    error?: string;
+  }>
+> {
+  const results: Array<{
+    category: string;
+    success: boolean;
+    insertedCount: number;
+    skippedCount: number;
+    totalFetched: number;
+    error?: string;
+  }> = [];
+  const enabledFeeds = feeds.filter(({ config }) => config.enabled);
 
-  console.log(`[RSS Sync] Starting sync of ${enabledCategories.length} enabled RSS feeds`);
-  console.log(`[RSS Sync] Enabled categories: ${enabledCategories.join(", ") || "none"}`);
-  if (disabledCategories.length > 0) {
-    console.log(`[RSS Sync] Disabled categories: ${disabledCategories.join(", ")}`);
+  console.log(
+    `[RSS Sync] Processing ${enabledFeeds.length} enabled feeds in batches of ${batchSize}`
+  );
+
+  // Process feeds in batches
+  for (let i = 0; i < enabledFeeds.length; i += batchSize) {
+    const batch = enabledFeeds.slice(i, i + batchSize);
+    console.log(
+      `[RSS Sync] Processing batch ${Math.floor(i / batchSize) + 1} (${batch.length} feeds)...`
+    );
+
+    // Process batch concurrently with limit
+    const batchResults = await Promise.all(
+      batch.map(async ({ key, config }) => {
+        try {
+          const result = await fetchAndStoreRSSFeed(key);
+          return { category: key, ...result };
+        } catch (error) {
+          console.error(`[RSS Sync] Error processing feed ${key}:`, error);
+          return {
+            category: key,
+            success: false,
+            error: error instanceof Error ? error.message : "Unknown error",
+            insertedCount: 0,
+            skippedCount: 0,
+            totalFetched: 0,
+          };
+        }
+      })
+    );
+
+    results.push(...batchResults);
+
+    // Small delay between batches to avoid overwhelming feeds
+    if (i + batchSize < enabledFeeds.length) {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+  }
+
+  return results;
+}
+
+// Sync all configured RSS feeds (legacy + brief360)
+export async function syncAllRssFeeds() {
+  const allFeeds = getAllFeeds();
+  const feedEntries = Array.from(allFeeds.entries()).map(([key, config]) => ({ key, config }));
+
+  const enabledFeeds = feedEntries.filter(({ config }) => config.enabled);
+  const disabledFeeds = feedEntries.filter(({ config }) => !config.enabled);
+
+  console.log(`[RSS Sync] Starting sync of ${enabledFeeds.length} enabled RSS feeds`);
+  console.log(`[RSS Sync] Total feeds: ${feedEntries.length}`);
+  console.log(`[RSS Sync] Enabled: ${enabledFeeds.length}`);
+  if (disabledFeeds.length > 0) {
+    console.log(`[RSS Sync] Disabled: ${disabledFeeds.length}`);
   }
   console.log(`[RSS Sync] Max articles per feed: ${RSS_FEED_CONFIG.maxArticlesPerFeed}`);
   console.log(`[RSS Sync] Article retention period: ${RSS_FEED_CONFIG.maxArticleAgeInDays} days`);
 
-  for (const category of categories) {
-    console.log(`[RSS Sync] Processing category: ${category}`);
-    const result = await fetchAndStoreRSSFeed(category);
-    results.push({ category, ...result });
-  }
+  // Get batch size from env or default
+  const batchSize = parseInt(process.env.RSS_MAX_CONCURRENT_FEEDS || "10", 10);
+
+  // Process feeds in batches
+  const results = await processFeedsInBatches(feedEntries, batchSize);
 
   // Clean up old articles after syncing
   console.log(`[RSS Sync] Starting database cleanup...`);
@@ -382,6 +557,38 @@ export async function syncAllRssFeeds() {
     `[RSS Sync]   • Cutoff date: Articles older than ${RSS_FEED_CONFIG.maxArticleAgeInDays} days`
   );
 
+  // Summary
+  const successful = results.filter((r) => r.success).length;
+  const failed = results.filter((r) => !r.success).length;
+  const totalInserted = results.reduce((sum, r) => sum + (r.insertedCount || 0), 0);
+  const totalSkipped = results.reduce((sum, r) => sum + (r.skippedCount || 0), 0);
+  const totalFetched = results.reduce((sum, r) => sum + (r.totalFetched || 0), 0);
+
+  console.log(`[RSS Sync] ====== Summary ======`);
+  console.log(`[RSS Sync]   • Successful: ${successful}`);
+  console.log(`[RSS Sync]   • Failed: ${failed}`);
+  console.log(`[RSS Sync]   • Total articles fetched: ${totalFetched}`);
+  console.log(`[RSS Sync]   • New articles inserted: ${totalInserted}`);
+  console.log(`[RSS Sync]   • Duplicates skipped: ${totalSkipped}`);
   console.log(`[RSS Sync] All feeds synced successfully`);
+
   return results;
+}
+
+// Sync feeds by frequency (for cron scheduling)
+export async function syncFeedsByFrequency(frequencyMinutes: number) {
+  const allFeeds = getAllFeeds();
+  const feedEntries = Array.from(allFeeds.entries())
+    .map(([key, config]) => ({ key, config }))
+    .filter(({ config }) => {
+      const feedFreq = config.fetch_frequency_minutes || 1440; // Default to daily
+      return config.enabled && feedFreq === frequencyMinutes;
+    });
+
+  console.log(
+    `[RSS Sync] Syncing ${feedEntries.length} feeds with frequency ${frequencyMinutes} minutes`
+  );
+
+  const batchSize = parseInt(process.env.RSS_MAX_CONCURRENT_FEEDS || "10", 10);
+  return await processFeedsInBatches(feedEntries, batchSize);
 }
