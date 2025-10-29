@@ -16,6 +16,11 @@ const badgeVariants = cva(
         success: "border-transparent bg-green-100 text-green-800 hover:bg-green-200",
         warning: "border-transparent bg-yellow-100 text-yellow-800 hover:bg-yellow-200",
         info: "border-transparent bg-blue-100 text-blue-800 hover:bg-blue-200",
+        froxCategory:
+          "border-transparent bg-gray-200 text-gray-700 dark:bg-gray-dark-200 dark:text-gray-dark-700 text-[11px] px-2 py-0.5",
+        froxDot: "w-2 h-2 p-0 border-transparent rounded-full",
+        froxCount:
+          "border-transparent bg-gray-100 text-gray-700 dark:bg-gray-dark-100 dark:text-gray-dark-700 text-[10px] px-1.5 py-0.5 min-w-[18px] justify-center",
       },
     },
     defaultVariants: {

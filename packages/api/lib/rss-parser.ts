@@ -160,6 +160,14 @@ export async function fetchAndStoreRSSFeed(feedCategory: FeedCategory = "general
         const content = (item as any).contentEncoded || item.content || item.contentSnippet || null;
 
         // Prepare article data
+        // Ensure arrays are proper arrays, not strings or other types
+        let categories: string[] = [];
+        if (Array.isArray(item.categories)) {
+          categories = item.categories;
+        } else if (item.categories && typeof item.categories === "string") {
+          categories = [item.categories];
+        }
+
         const articleData = {
           title: item.title || "Untitled",
           description: item.contentSnippet || item.content || null,
@@ -168,8 +176,8 @@ export async function fetchAndStoreRSSFeed(feedCategory: FeedCategory = "general
           image_url: imageUrl,
           thumbnail_url: thumbnailUrl,
           author: item.creator || null,
-          categories: item.categories || [],
-          tags: [],
+          categories: categories,
+          tags: [] as string[],
           source: feedUrl,
           guid: item.guid || item.link || null,
           published_at: item.pubDate ? new Date(item.pubDate) : new Date(),
