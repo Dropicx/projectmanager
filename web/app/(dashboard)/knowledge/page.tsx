@@ -8,26 +8,27 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  Input,
-  Tabs,
-  TabsList,
-  TabsTrigger,
+  ContentGrid,
+  EmptyState,
+  FilterBar,
+  type FilterOption,
+  type FroxStatCardProps,
+  MetricsGrid,
+  PageContainer,
+  type ViewMode,
 } from "@consulting-platform/ui";
 import {
   BookOpen,
   Calendar,
-  Clock,
+  Database,
   Eye,
   FileText,
-  Folder,
-  Grid,
-  List,
+  FolderOpen,
   Loader2,
   Plus,
-  Search,
   Sparkles,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { trpc } from "@/app/providers/trpc-provider";
 import { AddKnowledgeDialog } from "@/components/knowledge/add-knowledge-dialog";
 import { KnowledgeDetailView } from "@/components/knowledge/knowledge-detail-view";
@@ -38,12 +39,12 @@ export const dynamic = "force-dynamic";
 
 export default function KnowledgePage() {
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>();
-  const [viewMode, setViewMode] = useState<"grid" | "list" | "timeline">("grid");
+  const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [searchQuery, setSearchQuery] = useState("");
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedKnowledgeId, setSelectedKnowledgeId] = useState<string | null>(null);
+  const [activeFilter, setActiveFilter] = useState<string>("all");
 
   // Debounce search query
   useEffect(() => {
@@ -62,39 +63,119 @@ export default function KnowledgePage() {
     search: debouncedSearch || undefined,
     categoryId: selectedCategory,
     type: "all",
-    limit: 50,
+    limit: 100,
   });
+
+  // Fetch categories
+  const { data: categories = [] } = trpc.knowledge.getCategories.useQuery();
 
   // Generate summaries mutation
   const generateSummaries = trpc.knowledge.generateBatchSummaries.useMutation({
-    onSuccess: (data) => {
-      console.log("Summary generation queued:", data);
-      // Poll for updates after a delay
+    onSuccess: () => {
       setTimeout(() => refetch(), 3000);
       setTimeout(() => refetch(), 8000);
-      setTimeout(() => refetch(), 15000);
-    },
-    onError: (error) => {
-      console.error("Failed to queue summary generation:", error);
     },
   });
 
-  // Check if any items need summaries
-  const itemsWithoutSummary = knowledgeItems.filter((item: any) => !item.summary);
-  const canGenerateSummaries = itemsWithoutSummary.length > 0 && !generateSummaries.isPending;
+  // Items without summary (defined before metrics to avoid reference errors)
+  const itemsWithoutSummary = knowledgeItems.filter((item) => !item.summary);
 
-  const handleGenerateSummaries = () => {
-    const idsToGenerate = itemsWithoutSummary.slice(0, 10).map((item: any) => item.id);
+  const handleGenerateSummaries = useCallback(() => {
+    const idsToGenerate = itemsWithoutSummary.slice(0, 10).map((item) => item.id);
     generateSummaries.mutate({ knowledgeIds: idsToGenerate });
-  };
+  }, [itemsWithoutSummary, generateSummaries]);
 
-  // Fetch categories for search
-  const { data: categories = [] } = trpc.knowledge.getCategories.useQuery();
+  // Calculate metrics for FroxStatCards
+  const metrics = useMemo((): FroxStatCardProps[] => {
+    const totalItems = knowledgeItems.length;
+    const itemsWithSummary = knowledgeItems.filter((item) => item.summary).length;
+    const summaryCompletionRate =
+      totalItems > 0 ? Math.round((itemsWithSummary / totalItems) * 100) : 0;
 
-  // Filter categories based on search query
-  const filteredCategories = debouncedSearch
-    ? categories.filter((cat) => cat.name.toLowerCase().includes(debouncedSearch.toLowerCase()))
-    : [];
+    // Calculate this week's items (last 7 days)
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    const thisWeekItems = knowledgeItems.filter(
+      (item) => new Date(item.createdAt) >= oneWeekAgo
+    );
+
+    return [
+      {
+        value: totalItems,
+        label: "Total Knowledge",
+        icon: Database,
+        iconBgColor: "blue",
+        trend: "up",
+        trendValue: "12%",
+        dropdownActions: [
+          {
+            id: "export",
+            label: "Export All",
+            onClick: () => console.log("Export all"),
+          },
+          {
+            id: "report",
+            label: "Generate Report",
+            onClick: () => console.log("Generate report"),
+          },
+        ],
+      },
+      {
+        value: thisWeekItems.length,
+        label: "This Week",
+        icon: Calendar,
+        iconBgColor: "green",
+        trend: thisWeekItems.length > 0 ? "up" : undefined,
+        trendValue: thisWeekItems.length > 0 ? `+${thisWeekItems.length}` : undefined,
+      },
+      {
+        value: categories.length,
+        label: "Categories",
+        icon: FolderOpen,
+        iconBgColor: "violet",
+      },
+      {
+        value: `${summaryCompletionRate}%`,
+        label: "AI Summaries",
+        icon: Sparkles,
+        iconBgColor: "orange",
+        trend: summaryCompletionRate > 50 ? "up" : "down",
+        trendValue: `${itemsWithoutSummary.length} pending`,
+        dropdownActions:
+          itemsWithoutSummary.length > 0
+            ? [
+                {
+                  id: "generate",
+                  label: "Generate Summaries",
+                  onClick: handleGenerateSummaries,
+                },
+              ]
+            : undefined,
+      },
+    ];
+  }, [knowledgeItems, categories, itemsWithoutSummary, handleGenerateSummaries]);
+
+  // Quick filters
+  const quickFilters: FilterOption[] = [
+    {
+      id: "all",
+      label: "All",
+      count: knowledgeItems.length,
+      active: activeFilter === "all",
+    },
+    {
+      id: "notes",
+      label: "Notes",
+      count: knowledgeItems.filter((item) => item.type === "pattern").length,
+      active: activeFilter === "notes",
+    },
+    {
+      id: "templates",
+      label: "Templates",
+      count: knowledgeItems.filter((item) => item.type === "template").length,
+      active: activeFilter === "templates",
+    },
+  ];
 
   // Map backend type to frontend display type
   const mapBackendType = (type: string): string => {
@@ -124,7 +205,7 @@ export default function KnowledgePage() {
     return icons[displayType] || FileText;
   };
 
-  const getTypeColor = (type: string) => {
+  const getTypeColor = (type: string): "default" | "secondary" | "outline" | "destructive" => {
     const displayType = mapBackendType(type);
     const colors: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
       methodology: "default",
@@ -142,492 +223,320 @@ export default function KnowledgePage() {
     return d.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
   };
 
-  const renderGridView = () => {
-    if (isLoading) {
+  // Render knowledge card based on view mode
+  const renderKnowledgeCard = (item, _index: number, mode: ViewMode) => {
+    const Icon = getTypeIcon(item.type || "guide");
+    const displayType = mapBackendType(item.type || "guide");
+
+    // Grid View Card
+    if (mode === "grid") {
       return (
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
-      );
-    }
-
-    const hasResults = knowledgeItems.length > 0 || filteredCategories.length > 0;
-
-    if (!hasResults) {
-      return (
-        <div className="flex flex-col items-center justify-center h-64 text-center">
-          <BookOpen className="h-12 w-12 text-muted-foreground mb-4" />
-          <p className="text-lg font-medium mb-1">No knowledge items found</p>
-          <p className="text-sm text-muted-foreground mb-4">
-            {searchQuery
-              ? "Try a different search term"
-              : "Start by adding your first knowledge item"}
-          </p>
-          {!searchQuery && (
-            <Button onClick={() => setAddDialogOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Add Knowledge
-            </Button>
-          )}
-        </div>
-      );
-    }
-
-    return (
-      <div className="space-y-6">
-        {filteredCategories.length > 0 && (
-          <div>
-            <h3 className="text-sm font-medium text-muted-foreground mb-3">Categories</h3>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {filteredCategories.map((category) => (
-                <Card
-                  key={category.id}
-                  className="hover:shadow-lg transition-shadow cursor-pointer"
-                  onClick={() => {
-                    setSelectedCategory(category.id);
-                    setSearchQuery("");
-                  }}
-                >
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <Folder className="h-5 w-5 text-primary" />
-                      <Badge variant="secondary" className="text-xs">
-                        Category
-                      </Badge>
-                    </div>
-                    <CardTitle className="text-lg">{category.name}</CardTitle>
-                    {category.description && (
-                      <CardDescription className="line-clamp-2">
-                        {category.description}
-                      </CardDescription>
-                    )}
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-xs text-muted-foreground">
-                      {String(category.item_count || 0)} items
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+        <Card
+          key={item.id}
+          className="group hover:shadow-lg transition-all duration-300 cursor-pointer border-gray-200 dark:border-dark-neutral-border hover:border-blue-accent dark:hover:border-blue-accent"
+          onClick={() => setSelectedKnowledgeId(item.id)}
+        >
+          <CardHeader>
+            <div className="flex items-start justify-between mb-2">
+              <div className="rounded-lg bg-blue-accent/10 p-2">
+                <Icon className="h-5 w-5 text-blue-accent" />
+              </div>
+              <Badge variant={getTypeColor(item.type || "guide")} className="text-xs">
+                {displayType}
+              </Badge>
             </div>
-          </div>
-        )}
-
-        {knowledgeItems.length > 0 && (
-          <div>
-            {filteredCategories.length > 0 && (
-              <h3 className="text-sm font-medium text-muted-foreground mb-3">Knowledge Items</h3>
-            )}
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {knowledgeItems.map((item: any) => {
-                const Icon = getTypeIcon(item.type || "guide");
-                const displayType = mapBackendType(item.type || "guide");
-                return (
-                  <Card
-                    key={item.id}
-                    className="hover:shadow-lg transition-shadow cursor-pointer"
-                    onClick={() => setSelectedKnowledgeId(item.id)}
-                  >
-                    <CardHeader>
-                      <div className="flex items-start justify-between mb-2">
-                        <Icon className="h-5 w-5 text-primary" />
-                        <Badge variant={getTypeColor(item.type || "guide")} className="text-xs">
-                          {displayType}
-                        </Badge>
-                      </div>
-                      <CardTitle className="text-lg">{item.title}</CardTitle>
-                      <CardDescription className="line-clamp-3">
-                        {item.summary ? (
-                          <span className="flex items-start gap-1">
-                            <Sparkles className="h-3 w-3 text-tekhelet-500 mt-0.5 flex-shrink-0" />
-                            <span>{item.summary}</span>
-                          </span>
-                        ) : (
-                          getContentExcerpt(item.content || "", 200)
-                        )}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                        {item.tags && Array.isArray(item.tags) && item.tags.length > 0 ? (
-                          <div className="flex flex-wrap gap-1">
-                            {(item.tags as string[]).slice(0, 3).map((tag) => (
-                              <Badge key={tag} variant="outline" className="text-xs">
-                                {tag}
-                              </Badge>
-                            ))}
-                          </div>
-                        ) : null}
-                        <div className="flex items-center justify-between text-xs text-muted-foreground">
-                          <div className="flex items-center gap-3">
-                            <span className="flex items-center">
-                              <Eye className="h-3 w-3 mr-1" />
-                              {item.views || 0}
-                            </span>
-                          </div>
-                          <span className="flex items-center">
-                            <Calendar className="h-3 w-3 mr-1" />
-                            {item.createdAt ? formatDate(item.createdAt) : "N/A"}
-                          </span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  const renderListView = () => {
-    if (isLoading) {
-      return (
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
-      );
-    }
-
-    const hasResults = knowledgeItems.length > 0 || filteredCategories.length > 0;
-
-    if (!hasResults) {
-      return (
-        <div className="flex flex-col items-center justify-center h-64 text-center">
-          <BookOpen className="h-12 w-12 text-muted-foreground mb-4" />
-          <p className="text-lg font-medium mb-1">No knowledge items found</p>
-          <p className="text-sm text-muted-foreground mb-4">
-            {searchQuery
-              ? "Try a different search term"
-              : "Start by adding your first knowledge item"}
-          </p>
-          {!searchQuery && (
-            <Button onClick={() => setAddDialogOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Add Knowledge
-            </Button>
-          )}
-        </div>
-      );
-    }
-
-    return (
-      <div className="space-y-4">
-        {filteredCategories.length > 0 && (
-          <div>
-            <h3 className="text-sm font-medium text-muted-foreground mb-3">Categories</h3>
-            <div className="space-y-2">
-              {filteredCategories.map((category) => (
-                <Card
-                  key={category.id}
-                  className="hover:shadow-md transition-shadow cursor-pointer"
-                  onClick={() => {
-                    setSelectedCategory(category.id);
-                    setSearchQuery("");
-                  }}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex items-start gap-4">
-                      <Folder className="h-5 w-5 text-primary mt-1" />
-                      <div className="flex-1">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <h3 className="font-semibold">{category.name}</h3>
-                            {category.description && (
-                              <p className="text-sm text-muted-foreground mt-1">
-                                {category.description}
-                              </p>
-                            )}
-                          </div>
-                          <Badge variant="secondary" className="text-xs ml-4">
-                            Category
-                          </Badge>
-                        </div>
-                        <div className="text-xs text-muted-foreground mt-2">
-                          {String(category.item_count || 0)} items
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {knowledgeItems.length > 0 && (
-          <div>
-            {filteredCategories.length > 0 && (
-              <h3 className="text-sm font-medium text-muted-foreground mb-3">Knowledge Items</h3>
-            )}
+            <CardTitle className="text-header-6 font-semibold text-gray-1100 dark:text-gray-dark-1100 group-hover:text-blue-accent transition-colors">
+              {item.title}
+            </CardTitle>
+            <CardDescription className="text-desc text-gray-600 dark:text-gray-dark-600 line-clamp-3">
+              {item.summary ? (
+                <span className="flex items-start gap-1">
+                  <Sparkles className="h-3 w-3 text-orange-accent mt-0.5 flex-shrink-0" />
+                  <span>{item.summary}</span>
+                </span>
+              ) : (
+                getContentExcerpt(item.content || "", 150)
+              )}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
             <div className="space-y-3">
-              {knowledgeItems.map((item: any) => {
-                const Icon = getTypeIcon(item.type || "guide");
-                const displayType = mapBackendType(item.type || "guide");
-                return (
-                  <Card
-                    key={item.id}
-                    className="hover:shadow-md transition-shadow cursor-pointer"
-                    onClick={() => setSelectedKnowledgeId(item.id)}
-                  >
-                    <CardContent className="p-4">
-                      <div className="flex items-start gap-4">
-                        <Icon className="h-5 w-5 text-primary mt-1" />
-                        <div className="flex-1 space-y-2">
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <h3 className="font-semibold">{item.title}</h3>
-                              <p className="text-sm text-muted-foreground mt-1">
-                                {item.summary ? (
-                                  <span className="flex items-start gap-1">
-                                    <Sparkles className="h-3 w-3 text-tekhelet-500 mt-0.5 flex-shrink-0" />
-                                    <span>{item.summary}</span>
-                                  </span>
-                                ) : (
-                                  getContentExcerpt(item.content || "", 150)
-                                )}
-                              </p>
-                            </div>
-                            <Badge
-                              variant={getTypeColor(item.type || "guide")}
-                              className="text-xs ml-4"
-                            >
-                              {displayType}
-                            </Badge>
-                          </div>
-                          <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                            <span className="flex items-center">
-                              <Calendar className="h-3 w-3 mr-1" />
-                              {item.createdAt ? formatDate(item.createdAt) : "N/A"}
-                            </span>
-                            <span className="flex items-center">
-                              <Eye className="h-3 w-3 mr-1" />
-                              {item.views || 0} views
-                            </span>
-                            {item.tags && Array.isArray(item.tags) && item.tags.length > 0 ? (
-                              <div className="flex gap-1">
-                                {(item.tags as string[]).slice(0, 3).map((tag) => (
-                                  <Badge key={tag} variant="outline" className="text-xs">
-                                    {tag}
-                                  </Badge>
-                                ))}
-                              </div>
-                            ) : null}
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+              {item.tags && Array.isArray(item.tags) && item.tags.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {(item.tags as string[]).slice(0, 3).map((tag) => (
+                    <Badge key={tag} variant="outline" className="text-xs">
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+              <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-dark-500">
+                <span className="flex items-center gap-1">
+                  <Eye className="h-3 w-3" />
+                  {item.views || 0}
+                </span>
+                <span className="flex items-center gap-1">
+                  <Calendar className="h-3 w-3" />
+                  {formatDate(item.createdAt)}
+                </span>
+              </div>
             </div>
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  const renderTimelineView = () => {
-    if (isLoading) {
-      return (
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
+          </CardContent>
+        </Card>
       );
     }
 
-    const hasResults = knowledgeItems.length > 0 || filteredCategories.length > 0;
-
-    if (!hasResults) {
+    // List View Card
+    if (mode === "list") {
       return (
-        <div className="flex flex-col items-center justify-center h-64 text-center">
-          <BookOpen className="h-12 w-12 text-muted-foreground mb-4" />
-          <p className="text-lg font-medium mb-1">No knowledge items found</p>
-          <p className="text-sm text-muted-foreground mb-4">
-            {searchQuery
-              ? "Try a different search term"
-              : "Start by adding your first knowledge item"}
-          </p>
-          {!searchQuery && (
-            <Button onClick={() => setAddDialogOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Add Knowledge
-            </Button>
-          )}
-        </div>
+        <Card
+          key={item.id}
+          className="hover:shadow-md transition-all duration-200 cursor-pointer border-gray-200 dark:border-dark-neutral-border hover:border-blue-accent dark:hover:border-blue-accent"
+          onClick={() => setSelectedKnowledgeId(item.id)}
+        >
+          <CardContent className="p-4">
+            <div className="flex items-start gap-4">
+              <div className="rounded-lg bg-blue-accent/10 p-2 mt-1">
+                <Icon className="h-5 w-5 text-blue-accent" />
+              </div>
+              <div className="flex-1 space-y-2">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h3 className="text-header-7 font-semibold text-gray-1100 dark:text-gray-dark-1100">
+                      {item.title}
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-dark-600 mt-1 line-clamp-2">
+                      {item.summary ? (
+                        <span className="flex items-start gap-1">
+                          <Sparkles className="h-3 w-3 text-orange-accent mt-0.5 flex-shrink-0" />
+                          <span>{item.summary}</span>
+                        </span>
+                      ) : (
+                        getContentExcerpt(item.content || "", 120)
+                      )}
+                    </p>
+                  </div>
+                  <Badge variant={getTypeColor(item.type || "guide")} className="text-xs ml-4">
+                    {displayType}
+                  </Badge>
+                </div>
+                <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-dark-500">
+                  <span className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    {formatDate(item.createdAt)}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Eye className="h-3 w-3" />
+                    {item.views || 0} views
+                  </span>
+                  {item.tags && Array.isArray(item.tags) && item.tags.length > 0 && (
+                    <div className="flex gap-1">
+                      {(item.tags as string[]).slice(0, 2).map((tag) => (
+                        <Badge key={tag} variant="outline" className="text-xs">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       );
     }
 
-    const groupedByDate = knowledgeItems.reduce(
-      (acc: any, item: any) => {
-        const date = item.createdAt ? formatDate(item.createdAt) : "Unknown";
-        if (!acc[date]) acc[date] = [];
-        acc[date].push(item);
-        return acc;
-      },
-      {} as Record<string, any[]>
-    );
-
+    // Timeline View Card
     return (
-      <div className="space-y-6">
-        {Object.entries(groupedByDate).map(([date, items]) => (
-          <div key={date}>
-            <div className="flex items-center gap-3 mb-3">
-              <Clock className="h-4 w-4 text-muted-foreground" />
-              <h3 className="font-semibold text-sm text-muted-foreground">{date}</h3>
-              <div className="flex-1 h-px bg-border" />
-            </div>
-            <div className="space-y-3 ml-7">
-              {(items as any[]).map((item: any) => {
-                const Icon = getTypeIcon(item.type || "guide");
-                const displayType = mapBackendType(item.type || "guide");
-                return (
-                  <Card
-                    key={item.id}
-                    className="hover:shadow-md transition-shadow cursor-pointer"
-                    onClick={() => setSelectedKnowledgeId(item.id)}
-                  >
-                    <CardContent className="p-3">
-                      <div className="flex items-start gap-3">
-                        <Icon className="h-4 w-4 text-primary mt-0.5" />
-                        <div className="flex-1">
-                          <div className="flex items-start justify-between">
-                            <h4 className="font-medium text-sm">{item.title}</h4>
-                            <Badge variant={getTypeColor(item.type || "guide")} className="text-xs">
-                              {displayType}
-                            </Badge>
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                            {item.summary ? (
-                              <span className="flex items-start gap-1">
-                                <Sparkles className="h-3 w-3 text-tekhelet-500 mt-0.5 flex-shrink-0" />
-                                <span>{item.summary}</span>
-                              </span>
-                            ) : (
-                              getContentExcerpt(item.content || "", 120)
-                            )}
-                          </p>
-                          <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
-                            <span>{item.views || 0} views</span>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+      <Card
+        key={item.id}
+        className="hover:shadow-md transition-all duration-200 cursor-pointer border-gray-200 dark:border-dark-neutral-border"
+        onClick={() => setSelectedKnowledgeId(item.id)}
+      >
+        <CardContent className="p-3">
+          <div className="flex items-start gap-3">
+            <Icon className="h-4 w-4 text-blue-accent mt-0.5" />
+            <div className="flex-1">
+              <div className="flex items-start justify-between">
+                <h4 className="text-normal font-medium text-gray-900 dark:text-gray-dark-900">
+                  {item.title}
+                </h4>
+                <Badge variant={getTypeColor(item.type || "guide")} className="text-xs">
+                  {displayType}
+                </Badge>
+              </div>
+              <p className="text-xs text-gray-600 dark:text-gray-dark-600 mt-1 line-clamp-2">
+                {item.summary ? (
+                  <span className="flex items-start gap-1">
+                    <Sparkles className="h-3 w-3 text-orange-accent mt-0.5 flex-shrink-0" />
+                    <span>{item.summary}</span>
+                  </span>
+                ) : (
+                  getContentExcerpt(item.content || "", 100)
+                )}
+              </p>
+              <div className="flex items-center gap-3 mt-2 text-xs text-gray-500 dark:text-gray-dark-500">
+                <span className="flex items-center gap-1">
+                  <Eye className="h-3 w-3" />
+                  {item.views || 0}
+                </span>
+                <span>{formatDate(item.createdAt)}</span>
+              </div>
             </div>
           </div>
-        ))}
-      </div>
+        </CardContent>
+      </Card>
     );
   };
+
+  // Filter knowledge items based on active filter
+  const filteredItems = knowledgeItems.filter((item) => {
+    if (activeFilter === "all") return true;
+    if (activeFilter === "notes") return item.type === "pattern";
+    if (activeFilter === "templates") return item.type === "template";
+    return true;
+  });
+
+  // If viewing detail, show detail view
+  if (selectedKnowledgeId) {
+    return (
+      <div className="lg:-m-6 flex flex-col lg:flex-row lg:h-[calc(100vh-4rem)]">
+        <aside className="hidden lg:block w-64 border-r border-gray-200 dark:border-dark-neutral-border bg-white dark:bg-dark-neutral-bg flex-shrink-0">
+          <div className="h-full overflow-y-auto">
+            <div className="p-4">
+              <KnowledgeSidebar
+                selectedCategory={selectedCategory}
+                onCategorySelect={setSelectedCategory}
+                onSearch={setSearchQuery}
+              />
+            </div>
+          </div>
+        </aside>
+        <main className="flex-1 bg-gray-100 dark:bg-dark-gray-100">
+          <div className="h-full overflow-y-auto">
+            <div className="p-6 lg:p-6">
+              <KnowledgeDetailView
+                knowledgeId={selectedKnowledgeId}
+                onBack={() => setSelectedKnowledgeId(null)}
+                onDelete={() => {
+                  setSelectedKnowledgeId(null);
+                  refetch();
+                }}
+              />
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex h-screen">
-      {/* Knowledge Sidebar - Fixed left sidebar */}
-      <aside className="w-64 border-r bg-background flex-shrink-0 sticky top-0 h-screen overflow-hidden">
-        <KnowledgeSidebar
-          selectedCategory={selectedCategory}
-          onCategorySelect={setSelectedCategory}
-          onSearch={setSearchQuery}
-        />
+    <div className="lg:-m-6 flex flex-col lg:flex-row lg:h-[calc(100vh-4rem)]">
+      {/* Knowledge Sidebar - Fixed left sidebar (hidden on mobile) */}
+      <aside className="hidden lg:block w-64 border-r border-gray-200 dark:border-dark-neutral-border bg-white dark:bg-dark-neutral-bg flex-shrink-0">
+        <div className="h-full overflow-y-auto">
+          <div className="p-4">
+            <KnowledgeSidebar
+              selectedCategory={selectedCategory}
+              onCategorySelect={setSelectedCategory}
+              onSearch={setSearchQuery}
+            />
+          </div>
+        </div>
       </aside>
 
       {/* Main Content - Scrollable */}
-      <main className="flex-1 bg-background h-screen overflow-hidden">
+      <main className="flex-1 bg-gray-100 dark:bg-dark-gray-100">
         <div className="h-full overflow-y-auto">
-          <div className="p-6 space-y-6">
-            {!selectedKnowledgeId && (
-              <div className="flex items-center gap-3">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="lg:hidden"
-                  onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                >
-                  <List className="h-4 w-4" />
-                </Button>
-
-                <div className="relative flex-1 max-w-md">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    type="text"
-                    placeholder="Search knowledge base..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-
-                <Tabs
-                  value={viewMode}
-                  onValueChange={(v) => setViewMode(v as "grid" | "list" | "timeline")}
-                >
-                  <TabsList>
-                    <TabsTrigger value="grid">
-                      <Grid className="h-4 w-4" />
-                    </TabsTrigger>
-                    <TabsTrigger value="list">
-                      <List className="h-4 w-4" />
-                    </TabsTrigger>
-                    <TabsTrigger value="timeline">
-                      <Clock className="h-4 w-4" />
-                    </TabsTrigger>
-                  </TabsList>
-                </Tabs>
-
-                {canGenerateSummaries && (
-                  <Button
-                    onClick={handleGenerateSummaries}
-                    variant="outline"
-                    disabled={generateSummaries.isPending}
-                  >
-                    {generateSummaries.isPending ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                      <Sparkles className="mr-2 h-4 w-4" />
-                    )}
-                    {generateSummaries.isPending
-                      ? "Generating..."
-                      : `Generate Summaries (${Math.min(10, itemsWithoutSummary.length)})`}
-                  </Button>
-                )}
-                <Button onClick={() => setAddDialogOpen(true)}>
+          <div className="p-6 lg:p-6">
+            <PageContainer
+              breadcrumbs={[
+                { id: "dashboard", label: "Dashboard", href: "/dashboard" },
+                { id: "knowledge", label: "Knowledge Base", href: "/knowledge" },
+              ]}
+              title="Knowledge Base"
+              description="Your personal knowledge command center"
+              actions={
+                <Button onClick={() => setAddDialogOpen(true)} size="default">
                   <Plus className="mr-2 h-4 w-4" />
                   Add Knowledge
                 </Button>
-              </div>
-            )}
+              }
+            >
+              {/* Metrics Dashboard */}
+              <MetricsGrid metrics={metrics} columns={4} />
 
-            <div>
-              {selectedKnowledgeId ? (
-                <KnowledgeDetailView
-                  knowledgeId={selectedKnowledgeId}
-                  onBack={() => setSelectedKnowledgeId(null)}
-                  onDelete={() => setSelectedKnowledgeId(null)}
-                />
+              {/* Filter Bar */}
+              <FilterBar
+                searchPlaceholder="Search knowledge base..."
+                searchValue={searchQuery}
+                onSearchChange={setSearchQuery}
+                quickFilters={quickFilters}
+                onQuickFilterClick={setActiveFilter}
+                viewModes={["grid", "list", "timeline"]}
+                currentView={viewMode}
+                onViewChange={setViewMode}
+                actions={
+                  itemsWithoutSummary.length > 0 ? (
+                    <Button
+                      onClick={handleGenerateSummaries}
+                      variant="outline"
+                      size="sm"
+                      disabled={generateSummaries.isPending}
+                    >
+                      {generateSummaries.isPending ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <Sparkles className="mr-2 h-4 w-4" />
+                      )}
+                      Generate Summaries
+                    </Button>
+                  ) : null
+                }
+              />
+
+              {/* Content Grid */}
+              {isLoading ? (
+                <div className="flex items-center justify-center h-64">
+                  <Loader2 className="h-8 w-8 animate-spin text-blue-accent" />
+                </div>
               ) : (
-                <>
-                  {viewMode === "grid" && renderGridView()}
-                  {viewMode === "list" && renderListView()}
-                  {viewMode === "timeline" && renderTimelineView()}
-                </>
+                <ContentGrid
+                  items={filteredItems}
+                  viewMode={viewMode}
+                  renderCard={(item, index) => renderKnowledgeCard(item, index, viewMode)}
+                  gridColumns={3}
+                  emptyState={
+                    <EmptyState
+                      icon={BookOpen}
+                      title="No knowledge items found"
+                      description={
+                        searchQuery
+                          ? "Try adjusting your search or filters"
+                          : "Start building your knowledge base by adding your first item"
+                      }
+                      action={
+                        !searchQuery ? (
+                          <Button onClick={() => setAddDialogOpen(true)}>
+                            <Plus className="mr-2 h-4 w-4" />
+                            Add Knowledge
+                          </Button>
+                        ) : undefined
+                      }
+                    />
+                  }
+                />
               )}
-            </div>
+            </PageContainer>
+
+            <AddKnowledgeDialog
+              open={addDialogOpen}
+              onOpenChange={setAddDialogOpen}
+              onSuccess={() => refetch()}
+            />
           </div>
         </div>
       </main>
-
-      <AddKnowledgeDialog
-        open={addDialogOpen}
-        onOpenChange={setAddDialogOpen}
-        onSuccess={() => {
-          // Optionally show a success message
-        }}
-      />
     </div>
   );
 }

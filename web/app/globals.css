@@ -1,9 +1,13 @@
+/* Google Fonts - Frox Design System */
+@import url('https://fonts.googleapis.com/css2?family=Chivo:wght@400;700;900&family=Noto+Sans:wght@400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
+    /* Shadcn/UI System Colors - Consailt Theme */
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
@@ -24,9 +28,44 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 179 80% 27%; /* Teal ring */
     --radius: 0.5rem;
+
+    /* Frox Design System - Gray Scale */
+    --gray-0: #ffffff;
+    --gray-100: #f5f5fa;
+    --gray-200: #e2e2ea;
+    --gray-300: #c6cbd9;
+    --gray-400: #9a9aaf;
+    --gray-500: #7e7e8f;
+    --gray-600: #656575;
+    --gray-700: #535362;
+    --gray-800: #2e2e3a;
+    --gray-850: #262631;
+    --gray-900: #262631;
+    --gray-1000: #16161e;
+    --gray-1100: #07070c;
+
+    /* Frox Design System - Accent Colors */
+    --blue-accent: #2775ff;
+    --green-accent: #50d1b2;
+    --violet-accent: #7747ca;
+    --orange-accent: #ec8c56;
+    --yellow-accent: #ece663;
+    --indigo-accent: #5415f1;
+    --emerald-accent: #5eea8d;
+    --fuchsia-accent: #dd50d6;
+    --red-accent: #e23738;
+    --sky-accent: #0bd6f4;
+    --pink-accent: #fb7bb8;
+    --color-brands: #7364db;
+    --neutral-accent: #e8edf2;
+
+    /* Frox Design System - Neutral Backgrounds */
+    --neutral-bg: #ffffff;
+    --neutral-border: #ffffff;
   }
 
   .dark {
+    /* Shadcn/UI System Colors - Dark Mode */
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
     --card: 222.2 84% 4.9%;
@@ -46,6 +85,44 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 179 89% 49%; /* Teal ring for dark mode */
+
+    /* Frox Design System - Dark Gray Scale */
+    --dark-gray-0: #000000;
+    --dark-gray-100: #0f0f12;
+    --dark-gray-200: #1e1e24;
+    --dark-gray-300: #2c2c35;
+    --dark-gray-400: #64646f;
+    --dark-gray-500: #8b8b93;
+    --dark-gray-600: #70707c;
+    --dark-gray-700: #8a8a98;
+    --dark-gray-800: #a9a9b7;
+    --dark-gray-850: #c0c0cc;
+    --dark-gray-900: #d0d0da;
+    --dark-gray-1000: #eaeaf4;
+    --dark-gray-1100: #f1f1f1;
+
+    /* Frox Design System - Dark Neutral Backgrounds */
+    --dark-neutral-bg: #1f2128;
+    --dark-neutral-border: #313442;
+  }
+
+  html.dark {
+    /* Override gray scale for dark mode */
+    --gray-0: var(--dark-gray-0);
+    --gray-100: var(--dark-gray-100);
+    --gray-200: var(--dark-gray-200);
+    --gray-300: var(--dark-gray-300);
+    --gray-400: var(--dark-gray-400);
+    --gray-500: var(--dark-gray-500);
+    --gray-600: var(--dark-gray-600);
+    --gray-700: var(--dark-gray-700);
+    --gray-800: var(--dark-gray-800);
+    --gray-850: var(--dark-gray-850);
+    --gray-900: var(--dark-gray-900);
+    --gray-1000: var(--dark-gray-1000);
+    --gray-1100: var(--dark-gray-1100);
+    --neutral-bg: var(--dark-neutral-bg);
+    --neutral-border: var(--dark-neutral-border);
   }
 }
 
@@ -56,4 +133,64 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+@layer utilities {
+  /* Frox Design System Utilities */
+  .header-1 {
+    @apply text-header-1 font-bold;
+  }
+  .filter-black {
+    filter: brightness(0%);
+  }
+  .filter-white {
+    filter: brightness(0) invert(1);
+  }
+}
+
+/* ============================================================================
+   Cross-Browser Scrollbar Styles (Phase 1.5)
+   ============================================================================ */
+
+/* Firefox scrollbar hiding */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--gray-300) transparent;
+}
+
+/* Firefox - hide scrollbar completely where needed */
+.scrollbar-hide {
+  scrollbar-width: none;
+}
+
+/* Dark mode scrollbar for Firefox */
+.dark * {
+  scrollbar-color: var(--gray-dark-300) transparent;
+}
+
+/* WebKit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--gray-300);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gray-400);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: var(--gray-dark-300);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: var(--gray-dark-400);
 }

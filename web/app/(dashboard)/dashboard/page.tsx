@@ -31,6 +31,7 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 import { trpc } from "@/app/providers/trpc-provider";
+import { PageHeader } from "@/components/dashboard/page-header";
 
 export default function DashboardPage() {
   const { user } = useUser();
@@ -39,7 +40,8 @@ export default function DashboardPage() {
 
   // Calculate knowledge statistics
   const totalClients = projects?.length || 0;
-  const activeProjects = projects?.filter((p: any) => p.status === "active").length || 0;
+  const activeProjects =
+    projects?.filter((p) => p.status === "active").length || 0;
 
   // Mock knowledge stats (will be real when DB is set up)
   const knowledgeStats = {
@@ -66,77 +68,104 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header with Search */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Knowledge Dashboard</h1>
-        <p className="text-muted-foreground">
-          Welcome back, {user?.firstName || "Consultant"}! Capture and leverage insights from your
-          engagements.
-        </p>
-
+    <div className="space-y-6">
+      {/* Page Header with Breadcrumbs */}
+      <PageHeader
+        title="Knowledge Dashboard"
+        description={`Welcome back, ${user?.firstName || "Consultant"}! Capture and leverage insights from your engagements.`}
+        breadcrumbs={[
+          { id: "home", label: "Home", onClick: () => {} },
+          { id: "dashboard", label: "Dashboard" },
+        ]}
+      >
         {/* Global Knowledge Search */}
         <div className="mt-4 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-dark-400" />
           <Input
+            variant="frox"
             type="search"
             placeholder="Search across all your knowledge base..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10 pr-4 py-2 w-full md:w-2/3"
           />
-          <kbd className="absolute right-3 top-1/2 transform -translate-y-1/2 hidden md:inline-block px-2 py-1 text-xs font-semibold text-gray-500 bg-gray-100 border border-gray-200 rounded">
+          <kbd className="absolute right-3 top-1/2 transform -translate-y-1/2 hidden md:inline-block px-2 py-1 text-xs font-semibold text-gray-500 bg-gray-100 border border-gray-200 rounded dark:bg-gray-dark-100 dark:border-gray-dark-200 dark:text-gray-dark-500">
             ⌘K
           </kbd>
         </div>
-      </div>
+      </PageHeader>
 
       {/* Knowledge Metrics */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="bg-gradient-to-br from-indigo-50 to-white">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <Card
+          variant="frox"
+          className="bg-gradient-to-br from-indigo-50 to-white dark:from-indigo-950/20 dark:to-dark-neutral-bg"
+        >
+          <CardHeader
+            variant="frox"
+            className="flex flex-row items-center justify-between space-y-0 pb-2"
+          >
             <CardTitle className="text-sm font-medium">Knowledge Entries</CardTitle>
-            <Database className="h-4 w-4 text-tekhelet-600" />
+            <Database className="h-4 w-4 text-color-brands" />
           </CardHeader>
-          <CardContent>
+          <CardContent variant="frox">
             <div className="text-2xl font-bold">{knowledgeStats.totalNotes}</div>
-            <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <TrendingUp className="h-3 w-3 text-green-600" />+{knowledgeStats.weeklyGrowth} this
-              week
+            <p className="text-xs text-gray-500 dark:text-gray-dark-500 flex items-center gap-1">
+              <TrendingUp className="h-3 w-3 text-green" />+{knowledgeStats.weeklyGrowth} this week
             </p>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-purple-50 to-white">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <Card
+          variant="frox"
+          className="bg-gradient-to-br from-purple-50 to-white dark:from-purple-950/20 dark:to-dark-neutral-bg"
+        >
+          <CardHeader
+            variant="frox"
+            className="flex flex-row items-center justify-between space-y-0 pb-2"
+          >
             <CardTitle className="text-sm font-medium">Active Clients</CardTitle>
-            <Users className="h-4 w-4 text-tekhelet-600" />
+            <Users className="h-4 w-4 text-color-brands" />
           </CardHeader>
-          <CardContent>
+          <CardContent variant="frox">
             <div className="text-2xl font-bold">{activeProjects}</div>
-            <p className="text-xs text-muted-foreground">{totalClients} total projects</p>
+            <p className="text-xs text-gray-500 dark:text-gray-dark-500">
+              {totalClients} total projects
+            </p>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-green-50 to-white">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <Card
+          variant="frox"
+          className="bg-gradient-to-br from-green-50 to-white dark:from-green-950/20 dark:to-dark-neutral-bg"
+        >
+          <CardHeader
+            variant="frox"
+            className="flex flex-row items-center justify-between space-y-0 pb-2"
+          >
             <CardTitle className="text-sm font-medium">AI Insights</CardTitle>
-            <Sparkles className="h-4 w-4 text-green-600" />
+            <Sparkles className="h-4 w-4 text-green" />
           </CardHeader>
-          <CardContent>
+          <CardContent variant="frox">
             <div className="text-2xl font-bold">{knowledgeStats.recentInsights}</div>
-            <p className="text-xs text-muted-foreground">Generated this week</p>
+            <p className="text-xs text-gray-500 dark:text-gray-dark-500">Generated this week</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-orange-50 to-white">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <Card
+          variant="frox"
+          className="bg-gradient-to-br from-orange-50 to-white dark:from-orange-950/20 dark:to-dark-neutral-bg"
+        >
+          <CardHeader
+            variant="frox"
+            className="flex flex-row items-center justify-between space-y-0 pb-2"
+          >
             <CardTitle className="text-sm font-medium">Knowledge Growth</CardTitle>
-            <Zap className="h-4 w-4 text-orange-600" />
+            <Zap className="h-4 w-4 text-orange" />
           </CardHeader>
-          <CardContent>
+          <CardContent variant="frox">
             <div className="text-2xl font-bold">+16%</div>
-            <p className="text-xs text-muted-foreground">vs last month</p>
+            <p className="text-xs text-gray-500 dark:text-gray-dark-500">vs last month</p>
           </CardContent>
         </Card>
       </div>
@@ -264,7 +293,7 @@ export default function DashboardPage() {
         <CardContent>
           {recentProjects.length > 0 ? (
             <div className="space-y-4">
-              {recentProjects.map((project: any) => (
+              {recentProjects.map((project) => (
                 <Link
                   key={project.id}
                   href={`/projects/${project.id}/knowledge`}

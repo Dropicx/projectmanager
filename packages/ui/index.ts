@@ -83,3 +83,47 @@ export { Switch } from "./components/switch";
 export { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/tabs";
 export { Textarea } from "./components/textarea";
 export { cn } from "./lib/utils";
+
+// Frox Design System Components
+export {
+  FroxSidebar,
+  type FroxSidebarMenuItem,
+  type FroxSidebarCategory,
+} from "./components/frox/frox-sidebar";
+export {
+  FroxHeader,
+  type FroxNotificationProps,
+  type FroxDropdownAction,
+} from "./components/frox/frox-header";
+export {
+  FroxBreadcrumb,
+  type FroxBreadcrumbItem,
+} from "./components/frox/frox-breadcrumb";
+export {
+  FroxStatCard,
+  FroxTrendIndicator,
+  type FroxStatCardProps,
+  type FroxTrendIndicatorProps,
+} from "./components/frox/frox-stat-card";
+export { FroxSkeleton } from "./components/frox/frox-skeleton";
+export { FroxStatCardSkeleton } from "./components/frox/frox-stat-card-skeleton";
+export { FroxCardSkeleton, type FroxCardSkeletonProps } from "./components/frox/frox-card-skeleton";
+export { FroxListSkeleton, type FroxListSkeletonProps } from "./components/frox/frox-list-skeleton";
+
+// Foundation Components
+export { MetricsGrid, type MetricsGridProps } from "./components/metrics-grid";
+export {
+  PageContainer,
+  type PageContainerProps,
+} from "./components/page-container";
+export {
+  FilterBar,
+  type FilterBarProps,
+  type FilterOption,
+  type ViewMode,
+} from "./components/filter-bar";
+export { EmptyState, type EmptyStateProps } from "./components/empty-state";
+export {
+  ContentGrid,
+  type ContentGridProps,
+} from "./components/content-grid";
