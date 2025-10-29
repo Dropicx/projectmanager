@@ -111,13 +111,14 @@ export const FroxSidebar = React.forwardRef<HTMLElement, FroxSidebarProps>(
           className
         )}
       >
-        {/* Collapse/Expand Button */}
+        {/* Collapse/Expand Button - Hidden on mobile, visible on desktop */}
         <button
           type="button"
           onClick={handleToggleCollapse}
           className={cn(
             "absolute p-2 border-neutral right-0 border bg-white rounded-full cursor-pointer duration-300 translate-x-1/2 hover:opacity-75 dark:bg-dark-neutral-bg dark:border-dark-neutral-border z-10",
-            "top-6"
+            "top-6",
+            "hidden lg:block"
           )}
           aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >

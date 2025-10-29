@@ -111,7 +111,7 @@ export const FroxHeader = React.forwardRef<HTMLElement, FroxHeaderProps>(
 
         {/* Search Bar */}
         {showSearch && (
-          <div className="bg-gray-100 flex rounded-xl w-full m-0 py-[14px] px-[18px] xl:w-[360px] dark:bg-gray-dark-100 lg:max-w-[250px] xl:max-w-[360px] lg:mr-[47px] lg:ml-6 order-last lg:order-first">
+          <div className="bg-gray-100 flex rounded-xl w-full m-0 py-[14px] px-[18px] xl:w-[360px] dark:bg-gray-dark-100 lg:max-w-[250px] xl:max-w-[360px] lg:mr-[47px] lg:ml-6 order-last lg:order-first basis-full lg:basis-auto">
             <Search className="h-5 w-5 text-gray-300 dark:text-gray-dark-300 shrink-0" />
             <input
               type="text"
@@ -132,7 +132,7 @@ export const FroxHeader = React.forwardRef<HTMLElement, FroxHeaderProps>(
         )}
 
         {/* Notification Icons & Profile */}
-        <div className="flex items-center order-2 user-noti gap-[30px] xl:gap-[48px] lg:order-3 lg:mr-0">
+        <div className="flex items-center order-1 user-noti gap-[30px] xl:gap-[48px] lg:order-3 lg:mr-0">
           {/* Notifications */}
           {notifications.map((notification, index) => (
             <FroxNotificationIcon key={index} {...notification} />

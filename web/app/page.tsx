@@ -43,7 +43,7 @@ export default function HomePage() {
                 alt="Consailt Logo"
                 width={1200}
                 height={360}
-                className="h-20 sm:h-24 md:h-32 lg:h-40 w-auto"
+                className="h-28 sm:h-32 md:h-32 lg:h-40 w-auto"
               />
             </div>
             <div className="flex items-center space-x-4">
