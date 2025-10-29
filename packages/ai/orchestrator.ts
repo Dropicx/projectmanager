@@ -364,12 +364,24 @@ export class AIOrchestrator {
     budgetConstraint?: number;
     preferredModel?: string;
   }): Promise<AIResponse> {
+    // Map broader urgency values to AITask's narrower type
+    const urgency: "realtime" | "batch" = params.urgency === "realtime" ? "realtime" : "batch";
+
+    // Map broader accuracyRequired values to AITask's narrower type
+    // "high" -> "critical", "low" -> "standard", "standard" -> "standard"
+    const accuracyRequired: "standard" | "critical" =
+      params.accuracyRequired === "high"
+        ? "critical"
+        : params.accuracyRequired === "low"
+          ? "standard"
+          : "standard";
+
     const task: AITask = {
       type: params.preferredModel === "nova-lite" ? "quick_summary" : "general",
       prompt: params.prompt,
       complexity: params.complexity || 3,
-      urgency: params.urgency || "batch",
-      accuracyRequired: params.accuracyRequired || "standard",
+      urgency,
+      accuracyRequired,
       contextLength: params.contextLength || 4000,
       budgetConstraint: params.budgetConstraint || 100,
       userId: params.userId,
