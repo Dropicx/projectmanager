@@ -86,7 +86,7 @@ export const FroxHeader = React.forwardRef<HTMLElement, FroxHeaderProps>(
       <header
         ref={ref}
         className={cn(
-          "flex items-center justify-start lg:justify-between flex-wrap bg-neutral-bg p-5 gap-5 md:py-6 md:pl-[25px] md:pr-[38px] lg:flex-nowrap dark:bg-dark-neutral-bg lg:gap-0",
+          "flex items-center justify-between flex-wrap bg-neutral-bg p-5 gap-3 md:gap-5 md:py-6 md:pl-[25px] md:pr-[38px] lg:flex-nowrap dark:bg-dark-neutral-bg lg:gap-0",
           className
         )}
       >
@@ -95,7 +95,7 @@ export const FroxHeader = React.forwardRef<HTMLElement, FroxHeaderProps>(
           <button
             type="button"
             onClick={onMobileMenuToggle}
-            className="lg:hidden p-2.5 -ml-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-dark-100 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center order-0 shrink-0"
+            className="lg:hidden p-2.5 -ml-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-dark-100 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center order-0"
             aria-label="Toggle mobile menu"
           >
             <Menu className="h-6 w-6 text-gray-500 dark:text-gray-dark-500" />
@@ -134,7 +134,7 @@ export const FroxHeader = React.forwardRef<HTMLElement, FroxHeaderProps>(
         )}
 
         {/* Notification Icons & Profile */}
-        <div className="flex items-center order-1 user-noti gap-[30px] xl:gap-[48px] lg:order-3 lg:mr-0 shrink-0">
+        <div className="flex items-center order-1 user-noti gap-4 md:gap-[30px] xl:gap-[48px] lg:order-3 lg:mr-0">
           {/* Notifications */}
           {notifications.map((notification, index) => (
             <FroxNotificationIcon key={index} {...notification} />
