@@ -38,7 +38,7 @@ const handler = (req: NextRequest) =>
           `[ERROR] Full error:`,
           JSON.stringify(error, Object.getOwnPropertyNames(error))
         );
-        console.error(`[ERROR] Error cause:`, error.cause);
+        console.error(`[ERROR] Error cause:`, (error as any)?.cause);
         throw error;
       }
 

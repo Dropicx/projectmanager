@@ -84,7 +84,7 @@ export default clerkMiddleware(async (auth, req) => {
       console.error("Clerk middleware error:", error);
 
       // If it's a rate limit error from Clerk, return a proper response
-      if (error?.status === 429 || error?.message?.includes("rate")) {
+      if ((error as any)?.status === 429 || (error as any)?.message?.includes("rate")) {
         return new NextResponse(
           "Authentication service rate limit exceeded. Please try again in a few minutes.",
           {
