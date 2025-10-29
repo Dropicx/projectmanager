@@ -38,34 +38,7 @@ Railway Project: consailt
 
 ## Configuration Files
 
-### 1. railway.json
-
-This file configures the **default service** (web service):
-
-```json
-{
-  "$schema": "https://railway.app/railway.schema.json",
-  "build": {
-    "builder": "DOCKERFILE",
-    "dockerfilePath": "Dockerfile",
-    "buildArgs": {
-      "SERVICE": "web"
-    }
-  },
-  "deploy": {
-    "startCommand": "cd /app/web && node server.js",
-    "restartPolicyType": "ON_FAILURE",
-    "restartPolicyMaxRetries": 3,
-    "healthcheckPath": "/api/health",
-    "healthcheckTimeout": 30,
-    "numReplicas": 1
-  }
-}
-```
-
-**Location**: `/railway.json` (root of repository)
-
-### 2. dockerfiles/ Directory
+### 1. dockerfiles/ Directory
 
 Service-specific Dockerfiles:
 
