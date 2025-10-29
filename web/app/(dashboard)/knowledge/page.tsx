@@ -95,7 +95,9 @@ export default function KnowledgePage() {
     // Calculate this week's items (last 7 days)
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-    const thisWeekItems = knowledgeItems.filter((item) => new Date(item.createdAt) >= oneWeekAgo);
+    const thisWeekItems = knowledgeItems.filter(
+      (item: any) => new Date(item.createdAt) >= oneWeekAgo
+    );
 
     return [
       {
