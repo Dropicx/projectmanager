@@ -7,12 +7,14 @@ WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@9.14.0 --activate
 
 # Copy all package.json files for better caching
+# Worker needs: database, api, ai (copy web/ui for dependency resolution, but won't build them)
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
-COPY web/package.json ./web/
 COPY worker/package.json ./worker/
 COPY packages/ai/package.json ./packages/ai/
 COPY packages/api/package.json ./packages/api/
 COPY packages/database/package.json ./packages/database/
+# Copy other packages' package.json files for pnpm workspace dependency resolution
+COPY web/package.json ./web/
 COPY packages/ui/package.json ./packages/ui/
 
 # Install all dependencies
@@ -21,7 +23,9 @@ RUN pnpm install --frozen-lockfile
 # Copy all source files
 COPY . .
 
-# Build packages first
+# Build only packages needed by worker service
+# Worker needs: database, api, ai (not ui)
+
 WORKDIR /app/packages/ai
 RUN pnpm install --frozen-lockfile && \
     chmod +x build.sh && \
@@ -32,9 +36,6 @@ RUN pnpm build
 
 WORKDIR /app/packages/api
 RUN pnpm build
-
-WORKDIR /app/packages/ui
-RUN pnpm build || true
 
 # Build worker service
 WORKDIR /app/worker
@@ -59,14 +60,14 @@ COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
 COPY --from=builder /app/pnpm-lock.yaml ./pnpm-lock.yaml
 
-# Copy package.json files for all packages
+# Copy package.json files only for packages needed by worker
+# Worker needs: database, api, ai (not ui)
 COPY --from=builder /app/worker/package.json ./worker/package.json
 COPY --from=builder /app/packages/ai/package.json ./packages/ai/package.json
 COPY --from=builder /app/packages/database/package.json ./packages/database/package.json
 COPY --from=builder /app/packages/api/package.json ./packages/api/package.json
-COPY --from=builder /app/packages/ui/package.json ./packages/ui/package.json
 
-# Copy built dist folders
+# Copy built dist folders (only needed packages)
 COPY --from=builder /app/worker/dist ./worker/dist
 COPY --from=builder /app/packages/ai/dist ./packages/ai/dist
 COPY --from=builder /app/packages/database/dist ./packages/database/dist

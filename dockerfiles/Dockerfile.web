@@ -7,13 +7,15 @@ WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@9.14.0 --activate
 
 # Copy all package.json files for better caching
+# Web needs: database, api, ui (copy worker/ai for dependency resolution, but won't build them)
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY web/package.json ./web/
-COPY worker/package.json ./worker/
-COPY packages/ai/package.json ./packages/ai/
 COPY packages/api/package.json ./packages/api/
 COPY packages/database/package.json ./packages/database/
 COPY packages/ui/package.json ./packages/ui/
+# Copy other packages' package.json files for pnpm workspace dependency resolution
+COPY worker/package.json ./worker/
+COPY packages/ai/package.json ./packages/ai/
 
 # Install all dependencies
 RUN pnpm install --frozen-lockfile
@@ -21,11 +23,8 @@ RUN pnpm install --frozen-lockfile
 # Copy all source files
 COPY . .
 
-# Build packages first
-WORKDIR /app/packages/ai
-RUN pnpm install --frozen-lockfile && \
-    chmod +x build.sh && \
-    pnpm build
+# Build only packages needed by web service
+# Web needs: database, api, ui (not ai)
 
 WORKDIR /app/packages/database
 RUN pnpm build
@@ -74,7 +73,10 @@ COPY --from=builder /app/web/next.config.js ./web/next.config.js
 COPY --from=builder /app/web/server.js ./web/server.js
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/web/node_modules ./web/node_modules
-COPY --from=builder /app/packages ./packages
+# Copy only packages needed by web: database, api, ui
+COPY --from=builder /app/packages/database ./packages/database
+COPY --from=builder /app/packages/api ./packages/api
+COPY --from=builder /app/packages/ui ./packages/ui
 
 USER nextjs
 EXPOSE 3000
