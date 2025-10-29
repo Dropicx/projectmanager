@@ -18,20 +18,55 @@ const handler = (req: NextRequest) =>
         return createContext();
       }
 
-      const clerkUser: any = await currentUser();
+      const clerkUser = await currentUser();
+
+      console.log(`[DEBUG] Looking up user: ${userId}`);
 
       // Get or create user in database
-      const dbUser = await db
-        .select()
-        .from(users)
-        .where(eq(users.id, userId))
-        .limit(1)
-        .then((rows: any) => rows[0]);
+      let dbUser: any;
+      try {
+        dbUser = await db
+          .select()
+          .from(users)
+          .where(eq(users.id, userId))
+          .limit(1)
+          .then((rows) => rows[0]);
+        console.log(`[DEBUG] User lookup result:`, dbUser ? "Found" : "Not found");
+      } catch (error) {
+        console.error(`[ERROR] User lookup failed:`, error.message);
+        console.error(
+          `[ERROR] Full error:`,
+          JSON.stringify(error, Object.getOwnPropertyNames(error))
+        );
+        console.error(`[ERROR] Error cause:`, error.cause);
+        throw error;
+      }
 
       // Get or create organization if user has one
       let organizationId = orgId || dbUser?.organization_id;
 
-      // Create a default organization if user doesn't have one
+      // In development, use the demo organization for all users
+      // This allows seeing seeded data without additional setup
+      const useDemoOrg =
+        process.env.USE_DEMO_ORG === "true" || process.env.NODE_ENV === "development";
+      const DEMO_ORG_ID = "00000000-0000-0000-0000-000000000001";
+
+      if (!organizationId && useDemoOrg) {
+        // Check if demo organization exists
+        const demoOrg = await db
+          .select()
+          .from(organizations)
+          .where(eq(organizations.id, DEMO_ORG_ID))
+          .limit(1)
+          .then((rows) => rows[0]);
+
+        if (demoOrg) {
+          console.log(`[DEV] Assigning user ${userId} to demo organization`);
+          organizationId = DEMO_ORG_ID;
+        }
+      }
+
+      // Create a default organization if user doesn't have one (production behavior)
       if (!organizationId) {
         const [newOrg] = await db
           .insert(organizations)
@@ -40,6 +75,7 @@ const handler = (req: NextRequest) =>
           })
           .returning();
         organizationId = newOrg.id;
+        console.log(`Created new organization ${organizationId} for user ${userId}`);
       }
 
       // Create or update user in database

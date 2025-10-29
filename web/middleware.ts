@@ -63,11 +63,6 @@ export default clerkMiddleware(async (auth, req) => {
     }
   }
 
-  // If Clerk is not configured, allow all requests
-  if (!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY) {
-    return;
-  }
-
   // Protect routes when Clerk is configured
   if (!isPublicRoute(req)) {
     try {
@@ -84,7 +79,7 @@ export default clerkMiddleware(async (auth, req) => {
         signInUrl.searchParams.set("redirect_url", req.url);
         return NextResponse.redirect(signInUrl);
       }
-    } catch (error: any) {
+    } catch (error) {
       // Handle Clerk errors gracefully
       console.error("Clerk middleware error:", error);
 

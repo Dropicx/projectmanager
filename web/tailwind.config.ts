@@ -1,6 +1,58 @@
 import type { Config } from "tailwindcss";
 
+// Frox Design System - Gray Scale
+const froxGray = {
+  0: "var(--gray-0)",
+  100: "var(--gray-100)",
+  200: "var(--gray-200)",
+  300: "var(--gray-300)",
+  400: "var(--gray-400)",
+  500: "var(--gray-500)",
+  600: "var(--gray-600)",
+  700: "var(--gray-700)",
+  800: "var(--gray-800)",
+  850: "var(--gray-850)",
+  900: "var(--gray-900)",
+  1000: "var(--gray-1000)",
+  1100: "var(--gray-1100)",
+};
+
+// Frox Design System - Accent Colors
+const froxAccents = {
+  blue: "var(--blue-accent)",
+  green: "var(--green-accent)",
+  violet: "var(--violet-accent)",
+  orange: "var(--orange-accent)",
+  yellow: "var(--yellow-accent)",
+  indigo: "var(--indigo-accent)",
+  emerald: "var(--emerald-accent)",
+  fuchsia: "var(--fuchsia-accent)",
+  red: "var(--red-accent)",
+  sky: "var(--sky-accent)",
+  pink: "var(--pink-accent)",
+  neutral: "var(--neutral-accent)",
+};
+
+// Frox Design System - Typography
+const froxTypography = {
+  "header-1": ["40px", "60px"] as [string, string],
+  "header-2": ["32px", "39px"] as [string, string],
+  "header-3": ["28px", "34px"] as [string, string],
+  "header-4": ["28px", "34px"] as [string, string],
+  "header-5": ["24px", "30px"] as [string, string],
+  "header-6": ["20px", "18px"] as [string, string],
+  "header-7": ["18px", "22px"] as [string, string],
+  normal: ["14px", "16px"] as [string, string],
+  subtitle: ["16px", "16px"] as [string, string],
+  "subtitle-semibold": ["16px", "20px"] as [string, string],
+  "btn-label": ["16px", "16px"] as [string, string],
+  "mini-btn-label": ["14px", "12px"] as [string, string],
+  desc: ["12px", "16px"] as [string, string],
+  "mini-desc": ["9px", "11px"] as [string, string],
+};
+
 const config: Config = {
+  darkMode: "class", // Frox uses class-based dark mode
   content: [
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -10,8 +62,12 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      // Custom breakpoints (Frox pattern)
+      screens: {
+        xs: "500px",
+      },
       colors: {
-        // Brand Colors
+        // Consailt Brand Colors (preserved)
         teal: {
           DEFAULT: "#0e7c7b",
           100: "#031918",
@@ -72,7 +128,34 @@ const config: Config = {
           800: "#e9dbb9",
           900: "#f4eddc",
         },
-        // System Colors
+        // Frox Gray Scale (for dashboard UI)
+        gray: froxGray,
+        // Frox Dark Gray Scale
+        "gray-dark": {
+          0: "var(--dark-gray-0)",
+          100: "var(--dark-gray-100)",
+          200: "var(--dark-gray-200)",
+          300: "var(--dark-gray-300)",
+          400: "var(--dark-gray-400)",
+          500: "var(--dark-gray-500)",
+          600: "var(--dark-gray-600)",
+          700: "var(--dark-gray-700)",
+          800: "var(--dark-gray-800)",
+          850: "var(--dark-gray-850)",
+          900: "var(--dark-gray-900)",
+          1000: "var(--dark-gray-1000)",
+          1100: "var(--dark-gray-1100)",
+        },
+        // Frox Accent Colors
+        ...froxAccents,
+        // Frox Brand Color
+        "color-brands": "var(--color-brands)",
+        // Frox Neutral Backgrounds
+        "neutral-bg": "var(--neutral-bg)",
+        "neutral-border": "var(--neutral-border)",
+        "dark-neutral-bg": "var(--dark-neutral-bg)",
+        "dark-neutral-border": "var(--dark-neutral-border)",
+        // Shadcn System Colors (preserved)
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -106,6 +189,14 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+      },
+      // Frox Typography
+      fontSize: froxTypography,
+      // Frox Font Families
+      fontFamily: {
+        sans: ["Noto Sans", "system-ui", "sans-serif"],
+        display: ["Chivo", "system-ui", "sans-serif"],
+        inter: ["Inter", "system-ui", "sans-serif"],
       },
       borderRadius: {
         lg: "var(--radius)",
