@@ -5,7 +5,6 @@ import {
   BarChart3,
   Bell,
   Briefcase,
-  ChevronLeft,
   Database,
   LayoutDashboard,
   Menu,
@@ -125,15 +124,6 @@ export function DashboardSidebar() {
               )}
             </button>
           )}
-
-          {/* Mobile close button */}
-          <button
-            type="button"
-            onClick={toggleMobile}
-            className="lg:hidden p-1.5 rounded-md hover:bg-white/10"
-          >
-            <ChevronLeft className="h-5 w-5 text-white/80" />
-          </button>
         </div>
 
         {/* Search bar or icon */}
