@@ -11,7 +11,7 @@
         "builder": "DOCKERFILE"
       },
       "deploy": {
-        "startCommand": "cd /app/web && node server.js",
+        "startCommand": "node server.js",
         "restartPolicyType": "ON_FAILURE",
         "restartPolicyMaxRetries": 3,
         "healthcheckPath": "/api/health",
@@ -58,7 +58,7 @@
         "builder": "DOCKERFILE"
       },
       "deploy": {
-        "startCommand": "cd /app/worker && node dist/index.js",
+        "startCommand": "node dist/index.js",
         "restartPolicyType": "ON_FAILURE",
         "restartPolicyMaxRetries": 3,
         "numReplicas": 1
