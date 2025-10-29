@@ -86,7 +86,7 @@ export const FroxHeader = React.forwardRef<HTMLElement, FroxHeaderProps>(
       <header
         ref={ref}
         className={cn(
-          "flex items-center justify-between flex-wrap bg-neutral-bg p-5 gap-5 md:py-6 md:pl-[25px] md:pr-[38px] lg:flex-nowrap dark:bg-dark-neutral-bg lg:gap-0",
+          "flex items-center justify-start lg:justify-between flex-wrap bg-neutral-bg p-5 gap-5 md:py-6 md:pl-[25px] md:pr-[38px] lg:flex-nowrap dark:bg-dark-neutral-bg lg:gap-0",
           className
         )}
       >
@@ -95,7 +95,7 @@ export const FroxHeader = React.forwardRef<HTMLElement, FroxHeaderProps>(
           <button
             type="button"
             onClick={onMobileMenuToggle}
-            className="lg:hidden p-2.5 -ml-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-dark-100 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+            className="lg:hidden p-2.5 -ml-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-dark-100 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center order-0 shrink-0"
             aria-label="Toggle mobile menu"
           >
             <Menu className="h-6 w-6 text-gray-500 dark:text-gray-dark-500" />
@@ -111,7 +111,7 @@ export const FroxHeader = React.forwardRef<HTMLElement, FroxHeaderProps>(
 
         {/* Search Bar */}
         {showSearch && (
-          <div className="bg-gray-100 flex rounded-xl w-full m-0 py-[14px] px-[18px] xl:w-[360px] dark:bg-gray-dark-100 lg:max-w-[250px] xl:max-w-[360px] lg:mr-[47px] lg:ml-6 order-last lg:order-first basis-full lg:basis-auto">
+          <div className="bg-gray-100 flex rounded-xl w-full m-0 py-[14px] px-[18px] xl:w-[360px] dark:bg-gray-dark-100 lg:max-w-[250px] xl:max-w-[360px] lg:mr-[47px] lg:ml-6 order-2 lg:order-first basis-full lg:basis-auto">
             <Search className="h-5 w-5 text-gray-300 dark:text-gray-dark-300 shrink-0" />
             <input
               type="text"
@@ -128,11 +128,13 @@ export const FroxHeader = React.forwardRef<HTMLElement, FroxHeaderProps>(
 
         {/* Browse Dropdown */}
         {showBrowse && browseActions.length > 0 && (
-          <FroxBrowseDropdown actions={browseActions} />
+          <div className="hidden lg:block">
+            <FroxBrowseDropdown actions={browseActions} />
+          </div>
         )}
 
         {/* Notification Icons & Profile */}
-        <div className="flex items-center order-1 user-noti gap-[30px] xl:gap-[48px] lg:order-3 lg:mr-0">
+        <div className="flex items-center order-1 user-noti gap-[30px] xl:gap-[48px] lg:order-3 lg:mr-0 shrink-0">
           {/* Notifications */}
           {notifications.map((notification, index) => (
             <FroxNotificationIcon key={index} {...notification} />
