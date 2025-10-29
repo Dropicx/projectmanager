@@ -35,13 +35,19 @@ function getPostgresClient(url: string) {
   // Detect Railway internal networking (uses IPv6 and internal domains)
   const isInternalRailway = url.includes(".railway.internal");
 
-  if (isInternalRailway) {
-    // Railway internal connections - optimized for performance
+  // Detect local development (Docker containers)
+  const isLocalDevelopment =
+    url.includes("localhost") || url.includes("postgres:5432") || url.includes("127.0.0.1");
+
+  if (isInternalRailway || isLocalDevelopment) {
+    // Railway internal connections or local development - optimized for performance
     return postgres(url, {
-      ssl: false, // Internal connections don't require SSL
+      ssl: false, // Internal/local connections don't require SSL
       connection: {
         application_name: "consulting-platform", // For connection tracking
       },
+      // Explicitly disable all SSL/TLS for local development
+      prepare: false,
     });
   }
 

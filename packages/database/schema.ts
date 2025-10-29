@@ -58,7 +58,9 @@ export const organizations = pgTable("organizations", {
 
   // Organization classification
   type: text("type", { enum: ["individual", "team", "firm"] }).default("individual"),
-  subscription_tier: text("tier", { enum: ["free", "pro", "enterprise"] }).default("free"),
+  subscription_tier: text("subscription_tier", { enum: ["free", "pro", "enterprise"] }).default(
+    "free"
+  ),
 
   // Configuration and settings
   settings: jsonb("settings").default({}),
