@@ -36,14 +36,14 @@ export default function HomePage() {
       <section className="relative min-h-screen px-6 pt-8 pb-20 lg:pt-12 lg:pb-32 overflow-hidden">
         <div className="max-w-7xl mx-auto relative z-10">
           {/* Integrated Navigation */}
-          <nav className="flex items-center justify-between mb-20">
+          <nav className="flex flex-col md:flex-row items-center md:justify-between gap-6 md:gap-0 mb-20">
             <div className="flex items-center">
               <Image
                 src="/logos/biglogo.png"
                 alt="Consailt Logo"
                 width={1200}
                 height={360}
-                className="h-48 w-auto"
+                className="h-20 sm:h-24 md:h-32 lg:h-40 w-auto"
               />
             </div>
             <div className="flex items-center space-x-4">
