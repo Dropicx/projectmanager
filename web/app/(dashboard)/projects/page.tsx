@@ -46,7 +46,7 @@ export default function ProjectsPage() {
     const activeProjects = projects.filter((p: { status: string }) => p.status === "active");
     const completedProjects = projects.filter((p: { status: string }) => p.status === "completed");
     const atRiskProjects = projects.filter(
-      (p) => p.status === "on-hold" || p.status === "cancelled"
+      (p: { status: string }) => p.status === "on-hold" || p.status === "cancelled"
     );
 
     const totalProjects = projects.length;
@@ -175,7 +175,7 @@ export default function ProjectsPage() {
     });
   };
 
-  const getTimelineString = (timeline: { startDate?: string | null; endDate?: string | null }) => {
+  const getTimelineString = (timeline: any) => {
     if (!timeline || typeof timeline !== "object") return "No timeline set";
     const start = timeline.start || timeline.startDate;
     const end = timeline.end || timeline.endDate;
@@ -184,7 +184,7 @@ export default function ProjectsPage() {
   };
 
   // Filter projects
-  const filteredProjects = projects.filter((project: { name: string; status: string }) => {
+  const filteredProjects = projects.filter((project: { name: string; status: string; description?: string }) => {
     // Filter by status
     if (activeFilter !== "all") {
       if (activeFilter === "at-risk") {

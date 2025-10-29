@@ -293,7 +293,7 @@ export default function DashboardPage() {
         <CardContent>
           {recentProjects.length > 0 ? (
             <div className="space-y-4">
-              {recentProjects.map((project) => (
+              {recentProjects.map((project: any) => (
                 <Link
                   key={project.id}
                   href={`/projects/${project.id}/knowledge`}

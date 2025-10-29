@@ -79,7 +79,7 @@ export default clerkMiddleware(async (auth, req) => {
         signInUrl.searchParams.set("redirect_url", req.url);
         return NextResponse.redirect(signInUrl);
       }
-    } catch (error) {
+    } catch (error: unknown) {
       // Handle Clerk errors gracefully
       console.error("Clerk middleware error:", error);
 

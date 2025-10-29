@@ -81,7 +81,7 @@ export default function KnowledgePage() {
   const itemsWithoutSummary = knowledgeItems.filter((item: any) => !item.summary);
 
   const handleGenerateSummaries = useCallback(() => {
-    const idsToGenerate = itemsWithoutSummary.slice(0, 10).map((item) => item.id);
+    const idsToGenerate = itemsWithoutSummary.slice(0, 10).map((item: any) => item.id);
     generateSummaries.mutate({ knowledgeIds: idsToGenerate });
   }, [itemsWithoutSummary, generateSummaries]);
 

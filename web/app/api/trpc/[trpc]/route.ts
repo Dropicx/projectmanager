@@ -32,8 +32,8 @@ const handler = (req: NextRequest) =>
           .limit(1)
           .then((rows) => rows[0]);
         console.log(`[DEBUG] User lookup result:`, dbUser ? "Found" : "Not found");
-      } catch (error) {
-        console.error(`[ERROR] User lookup failed:`, error.message);
+      } catch (error: unknown) {
+        console.error(`[ERROR] User lookup failed:`, (error as Error).message);
         console.error(
           `[ERROR] Full error:`,
           JSON.stringify(error, Object.getOwnPropertyNames(error))
