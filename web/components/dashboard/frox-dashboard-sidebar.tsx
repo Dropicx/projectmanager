@@ -134,7 +134,7 @@ export function FroxDashboardSidebar() {
         menuItems={menuItems}
         secondaryMenuItems={secondaryMenuItems}
         categories={categories}
-        showCategories={true}
+        showCategories={false}
         showUpgradeCard={false}
         showDarkModeToggle={true}
         collapsed={isCollapsed}

@@ -173,45 +173,15 @@ export const FroxSidebar = React.forwardRef<HTMLElement, FroxSidebarProps>(
               </>
             )}
 
-            {/* Categories Section */}
-            {showCategories && categories.length > 0 && (
+            {/* Dark Mode Toggle Section (after separator) */}
+            {showDarkModeToggle && (
               <>
                 <Separator className="w-full bg-neutral h-[1px] mb-[21px] dark:bg-dark-neutral-border" />
-                {!isCollapsed && (
-                  <div className="category-list">
-                    <h3 className="text-sm font-bold text-gray-1100 py-3 px-6 dark:text-gray-dark-1100">
-                      Categories
-                    </h3>
-                    <div className="space-y-0">
-                      {categories.map((category) => (
-                        <button
-                          key={category.id}
-                          type="button"
-                          onClick={() => onCategoryClick?.(category)}
-                          className="flex items-center justify-between py-3 pl-6 w-full hover:opacity-75 transition-opacity"
-                        >
-                          <span className="text-gray-500 text-normal dark:text-gray-dark-500">
-                            {category.label}
-                          </span>
-                          {category.count !== undefined && (
-                            <div
-                              className={cn(
-                                "grid place-items-center rounded w-[18px] h-[18px]",
-                                category.color === "yellow" && "bg-yellow",
-                                category.color === "orange" && "bg-orange",
-                                category.color === "pink" && "bg-pink",
-                                category.color === "green" && "bg-green",
-                                category.color === "blue" && "bg-blue"
-                              )}
-                            >
-                              <p className="font-medium text-gray-1100 text-[11px] leading-[11px]">
-                                {category.count}
-                              </p>
-                            </div>
-                          )}
-                        </button>
-                      ))}
-                    </div>
+                {isCollapsed ? (
+                  <FroxDarkModeToggleMinimized />
+                ) : (
+                  <div className="rounded-xl bg-neutral pt-4 flex items-center gap-5 pr-[18px] pb-[13px] pl-[19px] dark:bg-dark-neutral-border mb-4">
+                    <FroxDarkModeToggle />
                   </div>
                 )}
               </>
@@ -243,13 +213,6 @@ export const FroxSidebar = React.forwardRef<HTMLElement, FroxSidebarProps>(
         {/* Bottom Section */}
         <div className="shrink-0">
           {children}
-
-          {/* Dark Mode Toggle (if enabled) */}
-          {showDarkModeToggle && !isCollapsed && (
-            <div className="rounded-xl bg-neutral pt-4 flex items-center gap-5 mt-5 pr-[18px] pb-[13px] pl-[19px] dark:bg-dark-neutral-border mx-[25px] mb-[25px]">
-              <FroxDarkModeToggle />
-            </div>
-          )}
         </div>
       </aside>
     );
@@ -475,6 +438,111 @@ const FroxDarkModeToggle: React.FC = () => {
       >
         <svg
           className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
+          />
+        </svg>
+      </button>
+    </div>
+  );
+};
+
+// ============================================================================
+// Dark Mode Toggle Minimized Component (for collapsed sidebar)
+// ============================================================================
+
+const FroxDarkModeToggleMinimized: React.FC = () => {
+  const [isDark, setIsDark] = React.useState(false);
+
+  React.useEffect(() => {
+    // Check if dark mode is enabled on mount
+    if (typeof window !== 'undefined') {
+      const isDarkMode = document.documentElement.classList.contains('dark');
+      setIsDark(isDarkMode);
+    }
+  }, []);
+
+  const toggleDarkMode = () => {
+    setIsDark(!isDark);
+    if (typeof window !== 'undefined') {
+      if (!isDark) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    }
+  };
+
+  return (
+    <div className="flex flex-col items-center gap-3 py-3">
+      {/* Sun Icon */}
+      <button
+        type="button"
+        onClick={() => isDark && toggleDarkMode()}
+        className="sun-icon cursor-pointer p-2 hover:bg-gray-100 dark:hover:bg-gray-dark-100 rounded-lg transition-colors"
+        title="Light mode"
+      >
+        <svg
+          className="w-5 h-5 text-gray-500 dark:text-gray-dark-500"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+          />
+        </svg>
+      </button>
+
+      {/* Moon Icon */}
+      <button
+        type="button"
+        onClick={() => !isDark && toggleDarkMode()}
+        className="moon-icon cursor-pointer p-2 hover:bg-gray-100 dark:hover:bg-gray-dark-100 rounded-lg transition-colors"
+        title="Dark mode"
+      >
+        <svg
+          className="w-5 h-5 text-gray-500 dark:text-gray-dark-500"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+          />
+        </svg>
+      </button>
+
+      {/* Fullscreen Button */}
+      <button
+        type="button"
+        onClick={() => {
+          if (typeof window !== 'undefined') {
+            if (!document.fullscreenElement) {
+              document.documentElement.requestFullscreen();
+            } else {
+              document.exitFullscreen();
+            }
+          }
+        }}
+        className="fullscreen-icon cursor-pointer p-2 hover:bg-gray-100 dark:hover:bg-gray-dark-100 rounded-lg transition-colors"
+        title="Toggle fullscreen"
+      >
+        <svg
+          className="w-5 h-5 text-gray-500 dark:text-gray-dark-500"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
