@@ -106,7 +106,7 @@ export const FroxSidebar = React.forwardRef<HTMLElement, FroxSidebarProps>(
       <aside
         ref={ref}
         className={cn(
-          "relative flex flex-col justify-between bg-white border-r border-neutral dark:bg-dark-neutral-bg dark:border-dark-neutral-border transition-all duration-300",
+          "relative flex flex-col justify-between bg-white border-r border-neutral dark:bg-dark-neutral-bg dark:border-dark-neutral-border transition-all duration-300 h-screen overflow-hidden",
           isCollapsed ? "w-32" : "w-[257px]",
           className
         )}
@@ -131,9 +131,9 @@ export const FroxSidebar = React.forwardRef<HTMLElement, FroxSidebarProps>(
         </button>
 
         {/* Content Container */}
-        <div className="flex flex-col h-full p-[25px]">
+        <div className="flex flex-col h-full p-[25px] overflow-hidden">
           {/* Logo Section */}
-          <div className="mb-10">
+          <div className="mb-10 shrink-0">
             {isCollapsed ? (
               <div className="flex justify-center">{logoCollapsed || logo}</div>
             ) : (
@@ -142,7 +142,7 @@ export const FroxSidebar = React.forwardRef<HTMLElement, FroxSidebarProps>(
           </div>
 
           {/* Menu Section */}
-          <ScrollArea className="flex-1 -mx-[25px] px-[25px]">
+          <ScrollArea className="flex-1 -mx-[25px] px-[25px] overflow-y-auto">
             <div className="pt-[35px] lg:pt-[35px] pb-[18px] space-y-1">
               {menuItems.map((item) => (
                 <FroxSidebarItem
@@ -241,14 +241,16 @@ export const FroxSidebar = React.forwardRef<HTMLElement, FroxSidebarProps>(
         </div>
 
         {/* Bottom Section */}
-        {children}
+        <div className="shrink-0">
+          {children}
 
-        {/* Dark Mode Toggle (if enabled) */}
-        {showDarkModeToggle && !isCollapsed && (
-          <div className="rounded-xl bg-neutral pt-4 flex items-center gap-5 mt-5 pr-[18px] pb-[13px] pl-[19px] dark:bg-dark-neutral-border mx-[25px] mb-[25px]">
-            <FroxDarkModeToggle />
-          </div>
-        )}
+          {/* Dark Mode Toggle (if enabled) */}
+          {showDarkModeToggle && !isCollapsed && (
+            <div className="rounded-xl bg-neutral pt-4 flex items-center gap-5 mt-5 pr-[18px] pb-[13px] pl-[19px] dark:bg-dark-neutral-border mx-[25px] mb-[25px]">
+              <FroxDarkModeToggle />
+            </div>
+          )}
+        </div>
       </aside>
     );
   }
