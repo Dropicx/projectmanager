@@ -7,8 +7,6 @@ import {
 } from "@consulting-platform/ui";
 import {
   Bell,
-  BookOpen,
-  FileText,
   LogOut,
   Mail,
   MessageSquare,
@@ -52,22 +50,6 @@ export function FroxDashboardHeader() {
     },
   ];
 
-  // Browse dropdown actions
-  const browseActions: FroxDropdownAction[] = [
-    {
-      id: "knowledge",
-      label: "Knowledge Base",
-      icon: BookOpen,
-      onClick: () => router.push("/knowledge"),
-    },
-    {
-      id: "projects",
-      label: "Projects",
-      icon: FileText,
-      onClick: () => router.push("/projects"),
-    },
-  ];
-
   // Profile dropdown actions
   const profileActions: FroxDropdownAction[] = [
     {
@@ -105,8 +87,7 @@ export function FroxDashboardHeader() {
       searchValue={searchValue}
       onSearchChange={handleSearchChange}
       showSearch={true}
-      showBrowse={true}
-      browseActions={browseActions}
+      showBrowse={false}
       notifications={notifications}
       profileActions={profileActions}
       onMobileMenuToggle={() => setIsMobileOpen(true)}
