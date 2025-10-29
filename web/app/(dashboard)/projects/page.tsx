@@ -43,8 +43,8 @@ export default function ProjectsPage() {
 
   // Calculate project metrics
   const metrics = useMemo((): FroxStatCardProps[] => {
-    const activeProjects = projects.filter((p) => p.status === "active");
-    const completedProjects = projects.filter((p) => p.status === "completed");
+    const activeProjects = projects.filter((p: { status: string }) => p.status === "active");
+    const completedProjects = projects.filter((p: { status: string }) => p.status === "completed");
     const atRiskProjects = projects.filter(
       (p) => p.status === "on-hold" || p.status === "cancelled"
     );
@@ -115,19 +115,19 @@ export default function ProjectsPage() {
     {
       id: "active",
       label: "Active",
-      count: projects.filter((p) => p.status === "active").length,
+      count: projects.filter((p: { status: string }) => p.status === "active").length,
       active: activeFilter === "active",
     },
     {
       id: "planning",
       label: "Planning",
-      count: projects.filter((p) => p.status === "planning").length,
+      count: projects.filter((p: { status: string }) => p.status === "planning").length,
       active: activeFilter === "planning",
     },
     {
       id: "completed",
       label: "Completed",
-      count: projects.filter((p) => p.status === "completed").length,
+      count: projects.filter((p: { status: string }) => p.status === "completed").length,
       active: activeFilter === "completed",
     },
   ];
@@ -175,7 +175,7 @@ export default function ProjectsPage() {
     });
   };
 
-  const getTimelineString = (timeline) => {
+  const getTimelineString = (timeline: { startDate?: string | null; endDate?: string | null }) => {
     if (!timeline || typeof timeline !== "object") return "No timeline set";
     const start = timeline.start || timeline.startDate;
     const end = timeline.end || timeline.endDate;
@@ -184,7 +184,7 @@ export default function ProjectsPage() {
   };
 
   // Filter projects
-  const filteredProjects = projects.filter((project) => {
+  const filteredProjects = projects.filter((project: { name: string; status: string }) => {
     // Filter by status
     if (activeFilter !== "all") {
       if (activeFilter === "at-risk") {

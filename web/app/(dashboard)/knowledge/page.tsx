@@ -78,7 +78,7 @@ export default function KnowledgePage() {
   });
 
   // Items without summary (defined before metrics to avoid reference errors)
-  const itemsWithoutSummary = knowledgeItems.filter((item) => !item.summary);
+  const itemsWithoutSummary = knowledgeItems.filter((item: any) => !item.summary);
 
   const handleGenerateSummaries = useCallback(() => {
     const idsToGenerate = itemsWithoutSummary.slice(0, 10).map((item) => item.id);
@@ -88,16 +88,14 @@ export default function KnowledgePage() {
   // Calculate metrics for FroxStatCards
   const metrics = useMemo((): FroxStatCardProps[] => {
     const totalItems = knowledgeItems.length;
-    const itemsWithSummary = knowledgeItems.filter((item) => item.summary).length;
+    const itemsWithSummary = knowledgeItems.filter((item: any) => item.summary).length;
     const summaryCompletionRate =
       totalItems > 0 ? Math.round((itemsWithSummary / totalItems) * 100) : 0;
 
     // Calculate this week's items (last 7 days)
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-    const thisWeekItems = knowledgeItems.filter(
-      (item) => new Date(item.createdAt) >= oneWeekAgo
-    );
+    const thisWeekItems = knowledgeItems.filter((item) => new Date(item.createdAt) >= oneWeekAgo);
 
     return [
       {
@@ -166,13 +164,13 @@ export default function KnowledgePage() {
     {
       id: "notes",
       label: "Notes",
-      count: knowledgeItems.filter((item) => item.type === "pattern").length,
+      count: knowledgeItems.filter((item: any) => item.type === "pattern").length,
       active: activeFilter === "notes",
     },
     {
       id: "templates",
       label: "Templates",
-      count: knowledgeItems.filter((item) => item.type === "template").length,
+      count: knowledgeItems.filter((item: any) => item.type === "template").length,
       active: activeFilter === "templates",
     },
   ];
@@ -390,7 +388,7 @@ export default function KnowledgePage() {
   };
 
   // Filter knowledge items based on active filter
-  const filteredItems = knowledgeItems.filter((item) => {
+  const filteredItems = knowledgeItems.filter((item: any) => {
     if (activeFilter === "all") return true;
     if (activeFilter === "notes") return item.type === "pattern";
     if (activeFilter === "templates") return item.type === "template";

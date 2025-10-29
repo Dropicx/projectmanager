@@ -41,7 +41,7 @@ export default function DashboardPage() {
   // Calculate knowledge statistics
   const totalClients = projects?.length || 0;
   const activeProjects =
-    projects?.filter((p) => p.status === "active").length || 0;
+    projects?.filter((p: { status: string }) => p.status === "active").length || 0;
 
   // Mock knowledge stats (will be real when DB is set up)
   const knowledgeStats = {
