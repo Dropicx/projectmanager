@@ -106,7 +106,7 @@ export const FroxSidebar = React.forwardRef<HTMLElement, FroxSidebarProps>(
       <aside
         ref={ref}
         className={cn(
-          "relative flex flex-col justify-between bg-white border-r border-neutral dark:bg-dark-neutral-bg dark:border-dark-neutral-border transition-all duration-300 h-screen",
+          "relative flex flex-col justify-between bg-white border-r border-neutral dark:bg-dark-neutral-bg dark:border-dark-neutral-border transition-all duration-300 min-h-screen",
           isCollapsed ? "w-32" : "w-[257px]",
           className
         )}
