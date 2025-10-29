@@ -224,7 +224,7 @@ export default function KnowledgePage() {
   };
 
   // Render knowledge card based on view mode
-  const renderKnowledgeCard = (item, _index: number, mode: ViewMode) => {
+  const renderKnowledgeCard = (item: any, _index: number, mode: ViewMode) => {
     const Icon = getTypeIcon(item.type || "guide");
     const displayType = mapBackendType(item.type || "guide");
 

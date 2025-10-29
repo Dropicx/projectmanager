@@ -184,30 +184,32 @@ export default function ProjectsPage() {
   };
 
   // Filter projects
-  const filteredProjects = projects.filter((project: { name: string; status: string; description?: string }) => {
-    // Filter by status
-    if (activeFilter !== "all") {
-      if (activeFilter === "at-risk") {
-        if (project.status !== "on-hold" && project.status !== "cancelled") return false;
-      } else if (project.status !== activeFilter) {
-        return false;
+  const filteredProjects = projects.filter(
+    (project: { name: string; status: string; description?: string }) => {
+      // Filter by status
+      if (activeFilter !== "all") {
+        if (activeFilter === "at-risk") {
+          if (project.status !== "on-hold" && project.status !== "cancelled") return false;
+        } else if (project.status !== activeFilter) {
+          return false;
+        }
       }
-    }
 
-    // Filter by search query
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      return (
-        project.name?.toLowerCase().includes(query) ||
-        project.description?.toLowerCase().includes(query)
-      );
-    }
+      // Filter by search query
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        return (
+          project.name?.toLowerCase().includes(query) ||
+          project.description?.toLowerCase().includes(query)
+        );
+      }
 
-    return true;
-  });
+      return true;
+    }
+  );
 
   // Render project card
-  const renderProjectCard = (project, _index: number, mode: ViewMode) => {
+  const renderProjectCard = (project: any, _index: number, mode: ViewMode) => {
     // Grid View Card
     if (mode === "grid") {
       return (
