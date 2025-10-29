@@ -30,8 +30,11 @@ RUN if [ "$RSSHUB_VERSION" = "latest" ]; then \
         git clone --depth 1 --branch v${RSSHUB_VERSION} https://github.com/DIYgod/RSSHub.git /app; \
     fi
 
-# Install RSSHub dependencies
-RUN cd /app && npm install --production
+# Install RSSHub dependencies (including dev dependencies for build)
+RUN cd /app && npm install
+
+# Build RSSHub
+RUN cd /app && npm run build
 
 # Expose RSSHub port
 EXPOSE 1200
