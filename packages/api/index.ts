@@ -1,3 +1,5 @@
+export * from "./lib/feed-alerts";
+export * from "./lib/feed-health";
 export {
   type FeedCategory,
   type FeedConfig,

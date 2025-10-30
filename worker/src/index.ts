@@ -27,7 +27,7 @@ import { CronJob } from "cron";
 import { eq } from "drizzle-orm";
 import { Redis } from "ioredis";
 import "./health"; // Start health check server
-import { checkAlerts } from "@consulting-platform/api/lib/feed-alerts";
+import { checkAlerts } from "@consulting-platform/api";
 
 // Redis connection configuration for BullMQ
 const redisOptions = {
