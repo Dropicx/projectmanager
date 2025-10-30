@@ -695,6 +695,54 @@ export const filesRelations = relations(files, ({ one }) => ({
   }),
 }));
 
+// Feed Monitoring - Health status per RSS feed
+export const feed_health = pgTable(
+  "feed_health",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    feed_key: text("feed_key").notNull(), // matches keys in brief360-feeds.ts
+    health_status: text("health_status", {
+      enum: ["healthy", "degraded", "failing", "disabled"],
+    })
+      .notNull()
+      .default("healthy"),
+    last_successful_fetch: timestamp("last_successful_fetch"),
+    consecutive_failures: integer("consecutive_failures").default(0),
+    success_rate_24h: real("success_rate_24h"),
+    success_rate_7d: real("success_rate_7d"),
+    last_error: text("last_error"),
+    last_error_at: timestamp("last_error_at"),
+    auto_disabled_at: timestamp("auto_disabled_at"),
+    created_at: timestamp("created_at").defaultNow(),
+    updated_at: timestamp("updated_at").defaultNow(),
+  },
+  (table) => ({
+    feedKeyIdx: index("feed_health_feed_key_idx").on(table.feed_key),
+    statusIdx: index("feed_health_status_idx").on(table.health_status),
+  })
+);
+
+// Feed Monitoring - Metrics per fetch attempt
+export const feed_metrics = pgTable(
+  "feed_metrics",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    feed_key: text("feed_key").notNull(),
+    fetch_timestamp: timestamp("fetch_timestamp").defaultNow().notNull(),
+    success: boolean("success").notNull().default(true),
+    duration_ms: integer("duration_ms"),
+    articles_fetched: integer("articles_fetched").default(0),
+    articles_inserted: integer("articles_inserted").default(0),
+    articles_skipped: integer("articles_skipped").default(0),
+    error_message: text("error_message"),
+    error_type: text("error_type"),
+  },
+  (table) => ({
+    feedKeyIdx: index("feed_metrics_feed_key_idx").on(table.feed_key),
+    tsIdx: index("feed_metrics_timestamp_idx").on(table.fetch_timestamp),
+  })
+);
+
 // News Articles - RSS Feed Storage
 export const news_articles = pgTable(
   "news_articles",

@@ -1,11 +1,13 @@
 import { db, news_articles } from "@consulting-platform/database";
 import { and, desc, eq, gte, lt } from "drizzle-orm";
 import Parser from "rss-parser";
+import { BRIEF360_FEEDS } from "./brief360-feeds";
 import {
-  BRIEF360_FEEDS,
-  type FeedConfig as Brief360FeedConfig,
-  type Brief360FeedKey,
-} from "./brief360-feeds";
+  ensureFeedHealthRecordsExist,
+  isFeedDisabled,
+  recordFeedMetric,
+  updateFeedHealthAfterResult,
+} from "./feed-health";
 
 const parser = new Parser({
   customFields: {
@@ -38,7 +40,7 @@ export interface NewsArticle {
   guid: string | null;
   published_at: Date;
   fetched_at: Date;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }
 
 export interface FeedConfig {
@@ -50,6 +52,22 @@ export interface FeedConfig {
   fetch_frequency_minutes?: number;
   category?: string;
 }
+
+type ArticleInsert = {
+  title: string;
+  description: string | null;
+  content: string | null;
+  link: string;
+  image_url: string | null;
+  thumbnail_url: string | null;
+  author: string | null;
+  categories: string[];
+  tags: string[];
+  source: string;
+  guid: string | null;
+  published_at: Date;
+  metadata: Record<string, unknown>;
+};
 
 // Original RSS Feed Categories Configuration (legacy)
 export const RSS_FEED_CATEGORIES = {
@@ -100,6 +118,9 @@ export function getAllFeeds(): Map<string, FeedConfig> {
     }
   }
 
+  // Initialize feed health records (idempotent)
+  void ensureFeedHealthRecordsExist(Array.from(feeds.keys()));
+
   return feeds;
 }
 
@@ -133,7 +154,18 @@ export async function fetchAndStoreRSSFeed(feedKey: string | FeedCategory): Prom
 
   // Try to find feed in all feeds
   if (allFeeds.has(feedKey)) {
-    feedConfig = allFeeds.get(feedKey)!;
+    const cfg = allFeeds.get(feedKey);
+    if (!cfg) {
+      return {
+        success: false,
+        error: `Feed not found: ${String(feedKey)}`,
+        insertedCount: 0,
+        skippedCount: 0,
+        totalFetched: 0,
+        category: String(feedKey),
+      };
+    }
+    feedConfig = cfg;
     feedKeyUsed = feedKey;
   } else if (feedKey in RSS_FEED_CATEGORIES) {
     // Legacy category support
@@ -164,6 +196,19 @@ export async function fetchAndStoreRSSFeed(feedKey: string | FeedCategory): Prom
     };
   }
 
+  // Check health-based disable
+  if (await isFeedDisabled(feedKeyUsed)) {
+    console.log(`[RSS Parser] ⛔ Feed health status disabled: ${feedKeyUsed}`);
+    return {
+      success: false,
+      error: "Feed is disabled due to health policy",
+      insertedCount: 0,
+      skippedCount: 0,
+      totalFetched: 0,
+      category: feedKeyUsed,
+    };
+  }
+
   // Normalize URL (handle RSSHub routing)
   let feedUrl = feedConfig.url;
   if (feedConfig.feed_type === "rsshub") {
@@ -178,7 +223,7 @@ export async function fetchAndStoreRSSFeed(feedKey: string | FeedCategory): Prom
     console.log(`[RSS Parser]   Description: ${feedConfig.description}`);
 
     const fetchStart = Date.now();
-    let feed: any;
+    let feed: unknown;
 
     try {
       // Try to fetch without retry logic first
@@ -186,16 +231,32 @@ export async function fetchAndStoreRSSFeed(feedKey: string | FeedCategory): Prom
 
       // Add timeout and better error handling
       const timeout = parseInt(process.env.RSS_FETCH_TIMEOUT_MS || "30000", 10);
-      feed = (await Promise.race([
+      feed = await Promise.race([
         parser.parseURL(feedUrl),
         new Promise((_, reject) =>
           setTimeout(() => reject(new Error(`Feed fetch timeout after ${timeout}ms`)), timeout)
         ),
-      ])) as any;
+      ]);
     } catch (parseError) {
       // If parsing fails, log detailed error and return gracefully
       console.error(`[RSS Parser] ⚠️ Failed to parse feed: ${feedKeyUsed}`);
       console.error(`[RSS Parser]   Error details: ${(parseError as Error).message}`);
+      const durationMs = Date.now() - fetchStart;
+      await recordFeedMetric({
+        feedKey: feedKeyUsed,
+        success: false,
+        durationMs,
+        articlesFetched: 0,
+        articlesInserted: 0,
+        articlesSkipped: 0,
+        errorMessage: (parseError as Error).message,
+        errorType: "parse_error",
+      });
+      await updateFeedHealthAfterResult({
+        feedKey: feedKeyUsed,
+        success: false,
+        errorMessage: (parseError as Error).message,
+      });
       return {
         success: false,
         error: `Feed parsing failed: ${(parseError as Error).message.substring(0, 200)}`,
@@ -208,10 +269,11 @@ export async function fetchAndStoreRSSFeed(feedKey: string | FeedCategory): Prom
 
     const fetchDuration = ((Date.now() - fetchStart) / 1000).toFixed(2);
 
-    const articles = [];
+    const articles: ArticleInsert[] = [];
 
     // Validate feed has items
-    if (!feed || !feed.items || !Array.isArray(feed.items)) {
+    const feedObj = feed as { items?: unknown[]; title?: string; description?: string };
+    if (!feedObj || !feedObj.items || !Array.isArray(feedObj.items)) {
       console.log(`[RSS Parser] ⚠️ Feed has no valid items for ${feedKeyUsed}`);
       return {
         success: false,
@@ -224,9 +286,9 @@ export async function fetchAndStoreRSSFeed(feedKey: string | FeedCategory): Prom
     }
 
     // Limit the number of articles to process
-    const itemsToProcess = feed.items.slice(0, RSS_FEED_CONFIG.maxArticlesPerFeed);
+    const itemsToProcess = feedObj.items.slice(0, RSS_FEED_CONFIG.maxArticlesPerFeed);
     console.log(`[RSS Parser]   Feed fetched in ${fetchDuration}s`);
-    console.log(`[RSS Parser]   Total articles in feed: ${feed.items.length}`);
+    console.log(`[RSS Parser]   Total articles in feed: ${feedObj.items.length}`);
     console.log(
       `[RSS Parser]   Articles to process: ${itemsToProcess.length} (limit: ${RSS_FEED_CONFIG.maxArticlesPerFeed})`
     );
@@ -238,56 +300,63 @@ export async function fetchAndStoreRSSFeed(feedKey: string | FeedCategory): Prom
         let thumbnailUrl = null;
 
         // Check for media content
-        if ((item as any).mediaContent) {
-          const mediaContent = (item as any).mediaContent;
-          if (mediaContent.$?.url) {
-            imageUrl = mediaContent.$.url;
-          }
-        }
+        const itemObj = item as Record<string, unknown>;
+        const mediaContent = (itemObj as any).mediaContent as { $?: { url?: string } } | undefined;
+        if (mediaContent?.$?.url) imageUrl = mediaContent.$.url;
 
         // Check for media thumbnail
-        if ((item as any).mediaThumbnail) {
-          const mediaThumbnail = (item as any).mediaThumbnail;
-          if (mediaThumbnail.$?.url) {
-            thumbnailUrl = mediaThumbnail.$.url;
-          }
-        }
+        const mediaThumbnail = (itemObj as any).mediaThumbnail as
+          | { $?: { url?: string } }
+          | undefined;
+        if (mediaThumbnail?.$?.url) thumbnailUrl = mediaThumbnail.$.url;
 
         // Check for enclosure (common for images)
-        if ((item as any).enclosure?.url) {
-          if (!imageUrl) {
-            imageUrl = (item as any).enclosure.url;
-          }
-        }
+        const enclosure = (itemObj as any).enclosure as { url?: string } | undefined;
+        if (enclosure?.url && !imageUrl) imageUrl = enclosure.url;
 
         // Extract content
-        const content = (item as any).contentEncoded || item.content || item.contentSnippet || null;
+        const content =
+          ((itemObj as any).contentEncoded as string | undefined) ||
+          ((item as { content?: string }).content ??
+            (item as { contentSnippet?: string }).contentSnippet) ||
+          null;
 
         // Prepare article data
         // Ensure arrays are proper arrays, not strings or other types
         let categories: string[] = [];
-        if (Array.isArray(item.categories)) {
-          categories = item.categories;
-        } else if (item.categories && typeof item.categories === "string") {
-          categories = [item.categories];
+        if (Array.isArray((item as { categories?: unknown }).categories)) {
+          categories = (item as { categories: string[] }).categories;
+        } else if (
+          (item as { categories?: unknown }).categories &&
+          typeof (item as { categories?: unknown }).categories === "string"
+        ) {
+          categories = [(item as { categories: string }).categories];
         }
 
         const articleData = {
-          title: item.title || "Untitled",
-          description: item.contentSnippet || item.content || null,
+          title: (item as { title?: string }).title || "Untitled",
+          description:
+            (item as { contentSnippet?: string; content?: string }).contentSnippet ||
+            (item as { content?: string }).content ||
+            null,
           content: content,
-          link: item.link || "",
+          link: (item as { link?: string }).link || "",
           image_url: imageUrl,
           thumbnail_url: thumbnailUrl,
-          author: item.creator || null,
+          author: (item as { creator?: string }).creator || null,
           categories: categories,
           tags: [] as string[],
           source: feedUrl,
-          guid: item.guid || item.link || null,
-          published_at: item.pubDate ? new Date(item.pubDate) : new Date(),
+          guid:
+            (item as { guid?: string; link?: string }).guid ||
+            (item as { link?: string }).link ||
+            null,
+          published_at: (item as { pubDate?: string }).pubDate
+            ? new Date((item as { pubDate?: string }).pubDate as string)
+            : new Date(),
           metadata: {
-            feed_title: feed.title,
-            feed_description: feed.description,
+            feed_title: feedObj.title,
+            feed_description: feedObj.description,
             feed_category: feedKeyUsed,
             feed_category_name: feedConfig.name,
             feed_type: feedConfig.feed_type || "rss",
@@ -352,6 +421,16 @@ export async function fetchAndStoreRSSFeed(feedKey: string | FeedCategory): Prom
     console.log(`[RSS Parser]     • Duplicate articles skipped: ${skippedCount}`);
     console.log(`[RSS Parser]   Feed sync completed for: ${feedKeyUsed}`);
 
+    const durationMs = Date.now() - fetchStart;
+    await recordFeedMetric({
+      feedKey: feedKeyUsed,
+      success: true,
+      durationMs,
+      articlesFetched: articles.length,
+      articlesInserted: insertedCount,
+      articlesSkipped: skippedCount,
+    });
+    await updateFeedHealthAfterResult({ feedKey: feedKeyUsed, success: true });
     return {
       success: true,
       insertedCount,
@@ -361,6 +440,21 @@ export async function fetchAndStoreRSSFeed(feedKey: string | FeedCategory): Prom
     };
   } catch (error) {
     console.error(`[RSS Parser] ❌ Unexpected error for ${feedKeyUsed}:`, error);
+    await recordFeedMetric({
+      feedKey: feedKeyUsed,
+      success: false,
+      durationMs: 0,
+      articlesFetched: 0,
+      articlesInserted: 0,
+      articlesSkipped: 0,
+      errorMessage: error instanceof Error ? error.message : "Unknown error",
+      errorType: "unexpected_error",
+    });
+    await updateFeedHealthAfterResult({
+      feedKey: feedKeyUsed,
+      success: false,
+      errorMessage: error instanceof Error ? error.message : String(error),
+    });
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
@@ -380,16 +474,12 @@ export async function getRecentNewsArticles(
   cutoffDate.setDate(cutoffDate.getDate() - daysBack);
 
   // Build the where clause
-  let whereClause: any;
-  if (feedCategory) {
-    const feedUrl = RSS_FEED_CATEGORIES[feedCategory].url;
-    whereClause = and(
-      gte(news_articles.published_at, cutoffDate),
-      eq(news_articles.source, feedUrl)
-    );
-  } else {
-    whereClause = gte(news_articles.published_at, cutoffDate);
-  }
+  const whereClause = feedCategory
+    ? and(
+        gte(news_articles.published_at, cutoffDate),
+        eq(news_articles.source, RSS_FEED_CATEGORIES[feedCategory].url)
+      )
+    : gte(news_articles.published_at, cutoffDate);
 
   const articles = await db
     .select()
@@ -495,7 +585,7 @@ async function processFeedsInBatches(
 
     // Process batch concurrently with limit
     const batchResults = await Promise.all(
-      batch.map(async ({ key, config }) => {
+      batch.map(async ({ key }) => {
         try {
           const result = await fetchAndStoreRSSFeed(key);
           return { category: key, ...result };

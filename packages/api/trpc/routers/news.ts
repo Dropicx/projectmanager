@@ -1,11 +1,17 @@
 import { z } from "zod";
 import {
+  getAllFeedHealth,
+  getFeedHealthSummary,
+  getFeedMetrics,
+  type HealthStatus,
+  updateFeedStatus,
+} from "../../lib/feed-health";
+import {
   type FeedCategory,
   fetchAndStoreRSSFeed,
   getAllFeeds,
   getAllNewsArticles,
   getRecentNewsArticles,
-  RSS_FEED_CATEGORIES,
   syncAllRssFeeds,
 } from "../../lib/rss-parser";
 import { protectedProcedure, router } from "../trpc";
@@ -111,4 +117,55 @@ export const newsRouter = router({
       enabled: feeds.filter((f) => f.enabled).length,
     };
   }),
+
+  // Monitoring endpoints
+  getFeedHealth: protectedProcedure
+    .input(
+      z
+        .object({
+          feedKey: z.string().optional(),
+        })
+        .optional()
+    )
+    .query(async ({ input }) => {
+      const all = await getAllFeedHealth();
+      if (input?.feedKey) {
+        return all.filter((f) => f.feed_key === input.feedKey);
+      }
+      return all;
+    }),
+
+  getFeedMetrics: protectedProcedure
+    .input(
+      z
+        .object({
+          feedKey: z.string(),
+          sinceDays: z.number().min(1).max(30).optional(),
+        })
+        .required()
+    )
+    .query(async ({ input }) => {
+      const since = input.sinceDays
+        ? new Date(Date.now() - input.sinceDays * 24 * 60 * 60 * 1000)
+        : undefined;
+      return await getFeedMetrics(input.feedKey, since);
+    }),
+
+  getFeedHealthSummary: protectedProcedure.query(async () => {
+    return await getFeedHealthSummary();
+  }),
+
+  updateFeedStatus: protectedProcedure
+    .input(
+      z
+        .object({
+          feedKey: z.string(),
+          status: z.enum(["healthy", "degraded", "failing", "disabled"]),
+        })
+        .required()
+    )
+    .mutation(async ({ input }) => {
+      await updateFeedStatus(input.feedKey, input.status as HealthStatus);
+      return { success: true };
+    }),
 });

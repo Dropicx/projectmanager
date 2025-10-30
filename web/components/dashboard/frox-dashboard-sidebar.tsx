@@ -12,6 +12,7 @@ import {
   LayoutDashboard,
   Newspaper,
   Settings,
+  Shield,
   Sparkles,
 } from "lucide-react";
 import Image from "next/image";
@@ -66,6 +67,12 @@ export function FroxDashboardSidebar() {
       label: "Analytics",
       icon: BarChart3,
       href: "/analytics",
+    },
+    {
+      id: "admin-rss",
+      label: "Admin · RSS",
+      icon: Shield,
+      href: "/admin/rss",
     },
   ];
 

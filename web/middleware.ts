@@ -70,7 +70,10 @@ export default clerkMiddleware(async (auth, req) => {
       if (!userId) {
         // For dashboard routes, let the client-side handle the redirect
         // This prevents server-side errors and allows for better UX
-        if (req.nextUrl.pathname.startsWith("/dashboard")) {
+        if (
+          req.nextUrl.pathname.startsWith("/dashboard") ||
+          req.nextUrl.pathname.startsWith("/admin")
+        ) {
           return NextResponse.next();
         }
 
@@ -79,12 +82,19 @@ export default clerkMiddleware(async (auth, req) => {
         signInUrl.searchParams.set("redirect_url", req.url);
         return NextResponse.redirect(signInUrl);
       }
+
+      // Minimal admin check placeholder (future: fetch user role)
+      if (req.nextUrl.pathname.startsWith("/admin")) {
+        // Currently only ensures the user is authenticated. Role check can be added here
+        return NextResponse.next();
+      }
     } catch (error: unknown) {
       // Handle Clerk errors gracefully
       console.error("Clerk middleware error:", error);
 
+      const err = error as { status?: number; message?: string };
       // If it's a rate limit error from Clerk, return a proper response
-      if ((error as any)?.status === 429 || (error as any)?.message?.includes("rate")) {
+      if (err?.status === 429 || err?.message?.includes("rate")) {
         return new NextResponse(
           "Authentication service rate limit exceeded. Please try again in a few minutes.",
           {
@@ -97,7 +107,10 @@ export default clerkMiddleware(async (auth, req) => {
       }
 
       // For dashboard routes, let client-side handle the error
-      if (req.nextUrl.pathname.startsWith("/dashboard")) {
+      if (
+        req.nextUrl.pathname.startsWith("/dashboard") ||
+        req.nextUrl.pathname.startsWith("/admin")
+      ) {
         return NextResponse.next();
       }
 

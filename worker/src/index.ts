@@ -27,6 +27,7 @@ import { CronJob } from "cron";
 import { eq } from "drizzle-orm";
 import { Redis } from "ioredis";
 import "./health"; // Start health check server
+import { checkAlerts } from "@consulting-platform/api/lib/feed-alerts";
 
 // Redis connection configuration for BullMQ
 const redisOptions = {
@@ -90,7 +91,7 @@ const queueConnection = new Redis(redisUrl, {
 const aiInsightsQueue = new Queue("ai-insights", { connection: queueConnection });
 const riskAssessmentQueue = new Queue("risk-assessment", { connection: queueConnection });
 const knowledgeSummaryQueue = new Queue("knowledge-summary", { connection: queueConnection });
-const embeddingQueue = new Queue("embedding-generation", { connection: queueConnection });
+const _embeddingQueue = new Queue("embedding-generation", { connection: queueConnection });
 
 // Background job processors
 const workerConnection1 = new Redis(redisUrl, {
@@ -246,7 +247,7 @@ const knowledgeSummaryWorker = new Worker(
             });
 
             // Update item with AI summary - save to summary column
-            const existingMetadata = (item.metadata as any) || {};
+            const existingMetadata = (typeof item.metadata === "object" && item.metadata) || {};
             await db
               .update(knowledge_base)
               .set({
@@ -296,7 +297,7 @@ const knowledgeSummaryWorker = new Worker(
         });
 
         // Update knowledge item with AI summary - save to summary column
-        const existingMetadata = (item.metadata as any) || {};
+        const existingMetadata = (typeof item.metadata === "object" && item.metadata) || {};
         await db
           .update(knowledge_base)
           .set({
@@ -359,7 +360,7 @@ const getBedrockClient = (): BedrockRuntimeClient => {
   });
 };
 
-const embeddingWorker = new Worker(
+const _embeddingWorker = new Worker(
   "embedding-generation",
   async (job) => {
     const { knowledgeId, content, userId, organizationId } = job.data;
@@ -465,7 +466,7 @@ async function updateKnowledgeEmbedding(knowledgeId: string, embedding: number[]
   await db
     .update(knowledge_base)
     .set({
-      embedding: embedding as any, // Cast for JSONB
+      embedding: embedding as unknown as number[], // JSONB-safe cast without any
       updated_at: new Date(),
     })
     .where(eq(knowledge_base.id, knowledgeId));
@@ -557,6 +558,13 @@ async function runRssSyncForFrequency(frequencyMinutes: number, frequencyName: s
     console.error(`[RSS SYNC] ❌ ${frequencyName} sync failed:`, error);
     console.error("========================================\n");
   }
+
+  // After each run, check for alerts
+  try {
+    await checkAlerts();
+  } catch (e) {
+    console.error("[RSS SYNC] Alert check failed:", e);
+  }
 }
 
 // Priority 1: Security feeds (15 minutes) - Critical security feeds
@@ -643,6 +651,13 @@ const dailyRssSyncJob = new CronJob(
       console.error("[RSS SYNC] ❌ Daily full sync failed:", error);
       console.error("========================================\n");
     }
+
+    // Check alerts after daily sync
+    try {
+      await checkAlerts();
+    } catch (e) {
+      console.error("[RSS SYNC] Alert check failed:", e);
+    }
   },
   null,
   true,
@@ -657,38 +672,49 @@ console.log("========================================");
 
 const rssStartTime = Date.now();
 syncAllRssFeeds()
-  .then((results: any) => {
-    const duration = ((Date.now() - rssStartTime) / 1000).toFixed(2);
+  .then(
+    (
+      results: Array<{
+        success: boolean;
+        insertedCount: number;
+        skippedCount: number;
+        totalFetched: number;
+        category?: string;
+        error?: string;
+      }>
+    ) => {
+      const duration = ((Date.now() - rssStartTime) / 1000).toFixed(2);
 
-    console.log("========================================");
-    console.log("[RSS SYNC] Initial sync completed successfully");
-    console.log(`[RSS SYNC] Total duration: ${duration} seconds`);
-    console.log("[RSS SYNC] Results by feed:");
+      console.log("========================================");
+      console.log("[RSS SYNC] Initial sync completed successfully");
+      console.log(`[RSS SYNC] Total duration: ${duration} seconds`);
+      console.log("[RSS SYNC] Results by feed:");
 
-    let totalInserted = 0;
-    let totalSkipped = 0;
-    let totalFetched = 0;
+      let totalInserted = 0;
+      let totalSkipped = 0;
+      let totalFetched = 0;
 
-    for (const result of results) {
-      if (result.success) {
-        console.log(`[RSS SYNC]   - ${result.category}:`);
-        console.log(`[RSS SYNC]     • Fetched: ${result.totalFetched} articles`);
-        console.log(`[RSS SYNC]     • Inserted: ${result.insertedCount} new`);
-        console.log(`[RSS SYNC]     • Skipped: ${result.skippedCount} duplicates`);
-        totalInserted += result.insertedCount || 0;
-        totalSkipped += result.skippedCount || 0;
-        totalFetched += result.totalFetched || 0;
-      } else {
-        console.log(`[RSS SYNC]   - ${result.category}: FAILED - ${result.error}`);
+      for (const result of results) {
+        if (result.success) {
+          console.log(`[RSS SYNC]   - ${result.category}:`);
+          console.log(`[RSS SYNC]     • Fetched: ${result.totalFetched} articles`);
+          console.log(`[RSS SYNC]     • Inserted: ${result.insertedCount} new`);
+          console.log(`[RSS SYNC]     • Skipped: ${result.skippedCount} duplicates`);
+          totalInserted += result.insertedCount || 0;
+          totalSkipped += result.skippedCount || 0;
+          totalFetched += result.totalFetched || 0;
+        } else {
+          console.log(`[RSS SYNC]   - ${result.category}: FAILED - ${result.error}`);
+        }
       }
-    }
 
-    console.log("[RSS SYNC] Summary:");
-    console.log(`[RSS SYNC]   • Total articles fetched: ${totalFetched}`);
-    console.log(`[RSS SYNC]   • Total new articles: ${totalInserted}`);
-    console.log(`[RSS SYNC]   • Total duplicates skipped: ${totalSkipped}`);
-    console.log("========================================\n");
-  })
+      console.log("[RSS SYNC] Summary:");
+      console.log(`[RSS SYNC]   • Total articles fetched: ${totalFetched}`);
+      console.log(`[RSS SYNC]   • Total new articles: ${totalInserted}`);
+      console.log(`[RSS SYNC]   • Total duplicates skipped: ${totalSkipped}`);
+      console.log("========================================\n");
+    }
+  )
   .catch((error) => {
     console.error("[RSS SYNC] ❌ Initial sync failed:", error);
     console.error("========================================\n");
