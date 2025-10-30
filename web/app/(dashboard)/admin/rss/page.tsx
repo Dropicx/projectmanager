@@ -5,7 +5,7 @@ import { FeedHealthTable } from "@/components/rss/FeedHealthTable";
 import { trpc } from "../../../providers/trpc-provider";
 
 export default function AdminRssPage() {
-  const healthQuery = trpc.news.getFeedHealth.useQuery();
+  const healthQuery = trpc.news.getFeedHealth.useQuery({});
   const summaryQuery = trpc.news.getFeedHealthSummary.useQuery();
 
   if (healthQuery.isLoading || summaryQuery.isLoading) {
