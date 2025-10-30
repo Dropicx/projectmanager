@@ -7,16 +7,20 @@ const AUTO_DISABLE_THRESHOLD = parseInt(process.env.FEED_AUTO_DISABLE_THRESHOLD 
 
 export async function ensureFeedHealthRecordsExist(feedKeys: string[]): Promise<void> {
   const uniqueKeys = Array.from(new Set(feedKeys));
-  for (const key of uniqueKeys) {
-    const existing = await db
-      .select()
-      .from(feed_health)
-      .where(eq(feed_health.feed_key, key))
-      .limit(1);
-    if (existing.length === 0) {
-      await db.insert(feed_health).values({ feed_key: key, health_status: "healthy" });
-    }
-  }
+  if (uniqueKeys.length === 0) return;
+
+  // Bulk insert with UPSERT semantics to avoid unique constraint violations
+  const rows = uniqueKeys.map((key) => ({
+    feed_key: key,
+    health_status: "healthy" as HealthStatus,
+  }));
+
+  // Prefer explicit target for PostgreSQL
+  // Drizzle PG supports onConflictDoNothing({ target })
+  // Optional chaining keeps backward compatibility if the helper isn't present
+  await (db.insert(feed_health).values(rows) as any).onConflictDoNothing?.({
+    target: feed_health.feed_key,
+  });
 }
 
 export async function isFeedDisabled(feedKey: string): Promise<boolean> {
