@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { FeedActions } from "../../../../../components/rss/FeedActions";
-import { FeedMetricsChart } from "../../../../../components/rss/FeedMetricsChart";
+import { FeedActions } from "@/components/rss/FeedActions";
+import { FeedMetricsChart } from "@/components/rss/FeedMetricsChart";
 import { trpc } from "../../../../providers/trpc-provider";
 
 export default function AdminRssDetailPage() {

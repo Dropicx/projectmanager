@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FeedHealthTable } from "../../../../../components/rss/FeedHealthTable";
+import { FeedHealthTable } from "@/components/rss/FeedHealthTable";
 import { trpc } from "../../../providers/trpc-provider";
 
 export default function AdminRssPage() {
